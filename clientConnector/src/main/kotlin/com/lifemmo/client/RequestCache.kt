@@ -21,10 +21,10 @@ data class ReplyObject (
 ){
 
     fun onReceive(clientPacket: ClientPacket){
-        clientPacket.toReplyPacket().use {replyPacket->
-            callback?.onReceive(replyPacket)
-            deferred?.complete(replyPacket)
-            future?.complete(replyPacket)
+        clientPacket.use {
+            callback?.onReceive(it.toReplyPacket())
+            deferred?.complete(it.toReplyPacket())
+            future?.complete(it.toReplyPacket())
         }
     }
     fun throws(exception:Exception){

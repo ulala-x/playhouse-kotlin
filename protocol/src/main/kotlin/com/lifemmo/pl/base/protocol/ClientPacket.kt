@@ -108,6 +108,10 @@ class ProtoPayload : Payload {
                 buffer = ByteBufferAllocator.getBuf(byteString!!)
             }
         }
+
+        if(buffer == null){
+            log.error("buffer is null")
+        }
         return this.buffer!!
     }
 
