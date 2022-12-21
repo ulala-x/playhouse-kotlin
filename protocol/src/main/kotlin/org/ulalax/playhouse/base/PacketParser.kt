@@ -1,11 +1,11 @@
 package org.ulalax.playhouse.base
 
-import org.ulalax.playhouse.base.protocol.ClientPacket
-import org.ulalax.playhouse.base.protocol.ProtoPayload
+import org.ulalax.playhouse.protocol.ClientPacket
+import org.ulalax.playhouse.protocol.ProtoPayload
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
 import org.apache.logging.log4j.kotlin.logger
-import org.ulalax.playhouse.Common
+import org.ulalax.playhouse.protocol.Common
 import java.io.InputStream
 
 object PacketParser {

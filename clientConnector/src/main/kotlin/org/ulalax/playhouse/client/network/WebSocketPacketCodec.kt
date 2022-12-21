@@ -1,14 +1,14 @@
 package org.ulalax.playhouse.client.network
 
 import org.ulalax.playhouse.base.PacketParser
-import org.ulalax.playhouse.base.protocol.ClientPacket
+import org.ulalax.playhouse.protocol.ClientPacket
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageCodec
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.kotlin.logger
 
-class WebSocketPacketCodec : MessageToMessageCodec< BinaryWebSocketFrame,ClientPacket>() {
+class WebSocketPacketCodec : MessageToMessageCodec< BinaryWebSocketFrame, ClientPacket>() {
     private val log = logger()
     override fun encode(ctx: ChannelHandlerContext, msg: ClientPacket, out: MutableList<Any>) {
 //        val buffer = ByteBufferAllocator.allocator.buffer()

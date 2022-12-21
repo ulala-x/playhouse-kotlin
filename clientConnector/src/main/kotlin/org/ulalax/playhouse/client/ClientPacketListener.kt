@@ -1,6 +1,6 @@
 package org.ulalax.playhouse.client
 
-import org.ulalax.playhouse.base.protocol.Packet
+import org.ulalax.playhouse.protocol.Packet
 
 
 fun interface ClientPacketListener {

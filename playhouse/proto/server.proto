@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package org.ulalax.playhouse.base;
+package org.ulalax.playhouse.protocol;
 import "common.proto";
 
 message RouteHeaderMsg {
@@ -11,7 +11,7 @@ message RouteHeaderMsg {
   bool is_base = 5;
   bool is_backend = 6;
   string session_info = 7;
-  int64 room_id = 8;
+  int64 stage_id = 8;
   int64 account_id = 9;
 }
 
@@ -54,8 +54,8 @@ message DisconnectNoticeMsg {
 //////////////// for room service //////////////////////////
 
 
-message CreateJoinRoomReq {
-  string roomType = 1;
+message CreateJoinStageReq {
+  string stageType = 1;
   string create_payload_name = 2;
   bytes create_payload = 3;
   string join_payload_name =4;
@@ -64,7 +64,7 @@ message CreateJoinRoomReq {
   int32 sid = 7;
 }
 
-message CreateJoinRoomRes {
+message CreateJoinStageRes {
   bool isCreated =1;
   string create_payload_name = 2;
   bytes create_payload = 3;
@@ -72,21 +72,21 @@ message CreateJoinRoomRes {
   bytes join_payload = 5;
 }
 
-message CreateRoomReq {
-  string roomType = 1;
+message CreateStageReq {
+  string stage_type = 1;
 //  int64 accountId = 2;
   string payload_name = 3;
   bytes payload = 4;
 }
 
-message CreateRoomRes {
-  int64 roomId =1;
+message CreateStageRes {
+  int64 stage_id =1;
   string payload_name = 2;
   bytes payload = 3;
 }
 
-message JoinRoomReq {
-//  int64 roomId = 1;
+message JoinStageReq {
+//  int64 stageId = 1;
 //  int64 accountId = 2;
   string sessionEndpoint = 1;
   int32 sid = 2;
@@ -94,33 +94,33 @@ message JoinRoomReq {
   bytes payload = 4;
 }
 
-message JoinRoomMsg{
-  string roomEndpoint = 1;
-  int64 roomId = 2;
+message JoinStageMsg{
+  string playEndpoint = 1;
+  int64 stage_id = 2;
 
 
 }
 
-message JoinRoomRes {
+message JoinStageRes {
   string payload_name = 1;
   bytes payload = 2;
 }
 
-message LeaveRoomMsg {
+message LeaveStageMsg {
 }
 
-//message LeaveRoomRes {
+//message LeaveStageRes {
 //  bool result =1;
 //  string payload_name = 2;
 //  bytes payload = 3;
 //}
 
-message DeleteRoomReq {
+message DeleteStageReq {
   string payload_name = 1;
   bytes payload = 2;
 }
 
-message DeleteRoomRes {
+message DeleteStageRes {
   string payload_name = 1;
   bytes payload = 2;
 }
@@ -139,12 +139,12 @@ message TimerMsg {
   int32 count = 5;
 }
 
-message RoomTimer {}
+message StageTimer {}
 
 
-message ForceLeaveRoom {
+message ForceLeaveStage {
 }
-message DestroyRoom {
+message DestroyStage {
 }
 
 message AsyncBlock {

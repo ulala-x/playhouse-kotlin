@@ -1,10 +1,10 @@
 package org.ulalax.playhouse.client
 
 import com.github.benmanes.caffeine.cache.*
-import org.ulalax.playhouse.Common.BaseErrorCode
-import org.ulalax.playhouse.base.protocol.ClientPacket
-import org.ulalax.playhouse.base.protocol.ReplyCallback
-import org.ulalax.playhouse.base.protocol.ReplyPacket
+import org.ulalax.playhouse.protocol.Common.BaseErrorCode
+import org.ulalax.playhouse.protocol.ClientPacket
+import org.ulalax.playhouse.protocol.ReplyCallback
+import org.ulalax.playhouse.protocol.ReplyPacket
 import kotlinx.coroutines.CompletableDeferred
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.kotlin.logger

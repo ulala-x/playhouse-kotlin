@@ -1,6 +1,6 @@
 package org.ulalax.playhouse.client
 
-import org.ulalax.playhouse.base.protocol.Packet
+import org.ulalax.playhouse.protocol.Packet
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

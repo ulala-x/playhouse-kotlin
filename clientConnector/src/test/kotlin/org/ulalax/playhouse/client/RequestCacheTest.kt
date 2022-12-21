@@ -1,6 +1,6 @@
 package org.ulalax.playhouse.client
 
-import org.ulalax.playhouse.base.protocol.ReplyPacket
+import org.ulalax.playhouse.protocol.ReplyPacket
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat

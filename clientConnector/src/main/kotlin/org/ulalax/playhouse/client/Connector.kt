@@ -1,10 +1,10 @@
 package org.ulalax.playhouse.client
 
 import org.ulalax.playhouse.client.network.ClientNetwork
-import org.ulalax.playhouse.base.protocol.ClientPacket
-import org.ulalax.playhouse.base.protocol.Packet
-import org.ulalax.playhouse.base.protocol.ReplyCallback
-import org.ulalax.playhouse.base.protocol.ReplyPacket
+import org.ulalax.playhouse.protocol.ClientPacket
+import org.ulalax.playhouse.protocol.Packet
+import org.ulalax.playhouse.protocol.ReplyCallback
+import org.ulalax.playhouse.protocol.ReplyPacket
 import kotlinx.coroutines.CompletableDeferred
 import java.net.URI
 

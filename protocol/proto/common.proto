@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package org.ulalax.playhouse;
+package org.ulalax.playhouse.protocol;
 
 /**
 client packet

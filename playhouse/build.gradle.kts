@@ -15,7 +15,7 @@ publishing {
     publications {
         create<MavenPublication>("maven") {
             groupId = Versions.groupId
-            artifactId = "plbase"
+            artifactId = "playhouse"
             version = Versions.version
             from(components["java"])
         }

@@ -2,7 +2,7 @@ package org.ulalax.playhouse.client.network
 
 import org.ulalax.playhouse.client.BasePacketListener
 import org.ulalax.playhouse.base.ByteBufferAllocator
-import org.ulalax.playhouse.base.protocol.ClientPacket
+import org.ulalax.playhouse.protocol.ClientPacket
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.Channel
 import io.netty.channel.ChannelInitializer

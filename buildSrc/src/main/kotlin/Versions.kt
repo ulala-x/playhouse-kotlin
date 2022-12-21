@@ -15,7 +15,7 @@ object Versions {
     val embedded_redis = "0.7.3"
     val lettuce = "6.2.0.RELEASE"
 
-    val groupId = "org.ulalax.playhouse.base"
+    val groupId = "org.ulalax.playhouse"
     val version = "1.0"
 
 }

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package org.ulalax.playhouse.base;
+package org.ulalax.playhouse.protocol;
 
 
 message TestMsg{
