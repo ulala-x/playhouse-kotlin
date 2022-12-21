@@ -4,7 +4,7 @@ import com.google.protobuf.gradle.*
  */
 
 plugins {
-    id("com.lifemmo.pl.base.kotlin-library-conventions")
+    id("org.ulalax.playhouse.kotlin-library-conventions")
 }
 
 

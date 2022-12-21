@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package org.ulalax.playhouse.base;
+
+
+message TestMsg{
+  string testMsg = 1;
+  int32 testNumber = 2;
+}
+
+message ApiTestMsg1{
+  string testMsg = 1;
+  int32 testNumber = 2;
+}
+message ApiTestMsg2{
+  string testMsg = 1;
+  int32 testNumber = 2;
+}
+
+message ApiHandlerTestMsg1{
+  string testMsg = 1;
+  int32 testNumber = 2;
+}
+message ApiHandlerTestMsg2{
+  string testMsg = 1;
+  int32 testNumber = 2;
+}

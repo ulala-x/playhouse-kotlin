@@ -1,2 +1,2 @@
-# plbase
-projectL 에서 사용하는 base 모듈
+# playhouse
+게임 서버 프레임 워크
