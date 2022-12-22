@@ -52,7 +52,6 @@ open class BaseSenderImpl(private val serviceId: String,
     }
 
 
-
     override fun sendToClient(sessionEndpoint: String,sid:Int,packet: Packet){
         val routePacket = RoutePacket.clientOf(serviceId,sid,packet)
         communicateClient.send(sessionEndpoint, routePacket)
@@ -105,31 +104,31 @@ open class BaseSenderImpl(private val serviceId: String,
         communicateClient.send(playEndpoint, routePacket)
     }
 
-    override fun callToApi(apiEndpoint:String, packet: Packet, sessionInfo: String, replyCallback: ReplyCallback){
-        val seq = getSequence()
-        reqCache.put(seq, ReplyObject(callback = replyCallback))
-        var routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = true).apply {
-            setMsgSeq(seq)
-        }
-        communicateClient.send(apiEndpoint, routePacket)
-    }
-
-    override fun callToApi(apiEndpoint: String, sessionInfo: String, packet: Packet): ReplyPacket {
-        val seq = getSequence()
-        val future = CompletableFuture<ReplyPacket>()
-        reqCache.put(seq, ReplyObject(future =  future))
-        var routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = true).apply {
-            setMsgSeq(seq)
-        }
-        communicateClient.send(apiEndpoint, routePacket)
-        return future.get()
-    }
+//    override fun callToApi(apiEndpoint:String, packet: Packet, sessionInfo: String, replyCallback: ReplyCallback){
+//        val seq = getSequence()
+//        reqCache.put(seq, ReplyObject(callback = replyCallback))
+//        var routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = true).apply {
+//            setMsgSeq(seq)
+//        }
+//        communicateClient.send(apiEndpoint, routePacket)
+//    }
+//
+//    override fun callToApi(apiEndpoint: String, sessionInfo: String, packet: Packet): ReplyPacket {
+//        val seq = getSequence()
+//        val future = CompletableFuture<ReplyPacket>()
+//        reqCache.put(seq, ReplyObject(future =  future))
+//        var routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = true).apply {
+//            setMsgSeq(seq)
+//        }
+//        communicateClient.send(apiEndpoint, routePacket)
+//        return future.get()
+//    }
 
     override suspend fun requestToApi(apiEndpoint: String, sessionInfo: String, packet: Packet): ReplyPacket {
-        return deferredToApi(apiEndpoint,sessionInfo,packet).await()
+        return asyncToApi(apiEndpoint,sessionInfo,packet).await()
     }
 
-    override fun deferredToApi(
+    override fun asyncToApi(
         apiEndpoint: String,
         sessionInfo: String,
         packet: Packet,
@@ -145,26 +144,26 @@ open class BaseSenderImpl(private val serviceId: String,
     }
 
 
-    override fun callToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet, replyCallback: ReplyCallback){
-        val seq = getSequence()
-        reqCache.put(seq, ReplyObject(callback = replyCallback))
-        var routePacket = RoutePacket.stageOf(stageId,accountId,packet, isBase = false, isBackend = true).apply {
-            setMsgSeq(seq)
-        }
-        communicateClient.send(playEndpoint,routePacket )
-    }
-
-    override fun callToRoom(playEndpoint: String, stageId: Long, accountId: Long, packet: Packet): ReplyPacket {
-        val seq = getSequence()
-        val future = CompletableFuture<ReplyPacket>()
-        reqCache.put(seq, ReplyObject(future = future))
-        var routePacket = RoutePacket.stageOf(stageId,accountId,packet, isBase = false, isBackend = true).apply {
-            setMsgSeq(seq)
-        }
-        communicateClient.send(playEndpoint,routePacket )
-
-        return future.get()
-    }
+//    override fun callToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet, replyCallback: ReplyCallback){
+//        val seq = getSequence()
+//        reqCache.put(seq, ReplyObject(callback = replyCallback))
+//        var routePacket = RoutePacket.stageOf(stageId,accountId,packet, isBase = false, isBackend = true).apply {
+//            setMsgSeq(seq)
+//        }
+//        communicateClient.send(playEndpoint,routePacket )
+//    }
+//
+//    override fun callToRoom(playEndpoint: String, stageId: Long, accountId: Long, packet: Packet): ReplyPacket {
+//        val seq = getSequence()
+//        val future = CompletableFuture<ReplyPacket>()
+//        reqCache.put(seq, ReplyObject(future = future))
+//        var routePacket = RoutePacket.stageOf(stageId,accountId,packet, isBase = false, isBackend = true).apply {
+//            setMsgSeq(seq)
+//        }
+//        communicateClient.send(playEndpoint,routePacket )
+//
+//        return future.get()
+//    }
 
     fun callToBaseRoom(playEndpoint: String, stageId: Long, accountId: Long, packet: Packet): ReplyPacket {
         val seq = getSequence()
@@ -179,7 +178,7 @@ open class BaseSenderImpl(private val serviceId: String,
     }
 
 
-    override fun deferredToRoom(
+    override fun asyncToRoom(
         playEndpoint: String,
         stageId: Long,
         accountId: Long,
@@ -200,7 +199,7 @@ open class BaseSenderImpl(private val serviceId: String,
         accountId: Long,
         packet: Packet,
     ): ReplyPacket {
-        return deferredToRoom(playEndpoint,stageId,accountId,packet).await()
+        return asyncToRoom(playEndpoint,stageId,accountId,packet).await()
     }
 
     suspend fun requestToBaseRoom(
@@ -223,13 +222,13 @@ open class BaseSenderImpl(private val serviceId: String,
         communicateClient.send(endpoint, RoutePacket.systemOf(packet,false))
     }
 
-    override fun callToSystem(endpoint: String, packet: Packet): ReplyPacket {
+    override suspend fun requestToSystem(endpoint: String, packet: Packet): ReplyPacket {
         val msgSeq = this.reqCache.getSequence()
         val routePacket = RoutePacket.systemOf(packet,false).apply { routeHeader.header.msgSeq = msgSeq }
+        val deferred = CompletableDeferred<ReplyPacket>()
+        this.reqCache.put(msgSeq, ReplyObject(deferred = deferred))
         communicateClient.send(endpoint,routePacket)
-        val future = CompletableFuture<ReplyPacket>()
-        this.reqCache.put(msgSeq, ReplyObject(future = future))
-        return future.get()
+        return deferred.await()
     }
 
 

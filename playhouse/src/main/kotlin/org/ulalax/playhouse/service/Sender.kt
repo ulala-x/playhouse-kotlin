@@ -2,7 +2,6 @@ package org.ulalax.playhouse.service
 
 import org.ulalax.playhouse.communicator.ServerInfo
 import org.ulalax.playhouse.protocol.Packet
-import org.ulalax.playhouse.protocol.ReplyCallback
 import org.ulalax.playhouse.protocol.ReplyPacket
 import org.ulalax.playhouse.service.api.CreateJoinStageResult
 import org.ulalax.playhouse.service.api.CreateStageResult
@@ -31,18 +30,18 @@ interface BaseSender {
     fun sendToClient(sessionEndpoint: String,sid:Int,packet: Packet)
     fun sendToApi(apiEndpoint:String, sessionInfo: String,packet: Packet)
     fun sendToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet)
-    fun callToApi(apiEndpoint:String, packet: Packet, sessionInfo: String, replyCallback: ReplyCallback)
-    fun callToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet, replyCallback: ReplyCallback)
-    fun callToApi(apiEndpoint:String, sessionInfo: String,packet: Packet): ReplyPacket
-    fun callToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet): ReplyPacket
+//    fun callToApi(apiEndpoint:String, packet: Packet, sessionInfo: String, replyCallback: ReplyCallback)
+//    fun callToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet, replyCallback: ReplyCallback)
+//    fun callToApi(apiEndpoint:String, sessionInfo: String,packet: Packet): ReplyPacket
+//    fun callToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet): ReplyPacket
     suspend fun requestToApi(apiEndpoint:String, sessionInfo: String, packet: Packet): ReplyPacket
     suspend fun requestToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet): ReplyPacket
 
-    fun deferredToApi(apiEndpoint:String, sessionInfo: String, packet: Packet): CompletableDeferred<ReplyPacket>
-    fun deferredToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet):CompletableDeferred<ReplyPacket>
+    fun asyncToApi(apiEndpoint:String, sessionInfo: String, packet: Packet): CompletableDeferred<ReplyPacket>
+    fun asyncToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet):CompletableDeferred<ReplyPacket>
 
     fun sendToSystem(endpoint: String, packet: Packet)
-    fun callToSystem(endpoint: String, packet: Packet): ReplyPacket
+    suspend fun requestToSystem(endpoint: String, packet: Packet): ReplyPacket
 
     fun sessionClose(sessionEndpoint: String,sid:Int)
 

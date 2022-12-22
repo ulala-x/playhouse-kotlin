@@ -52,12 +52,12 @@ class ActorSenderImpl(val accountId:Long,
         return baseStage.stageSenderImpl.requestToApi(serverInfo.bindEndpoint,sessionInfo,packet)
     }
 
-    override fun deferredToApi(sessionInfo: String, packet: Packet): CompletableDeferred<ReplyPacket> {
+    override fun asyncToApi(sessionInfo: String, packet: Packet): CompletableDeferred<ReplyPacket> {
         var serverInfo = serverInfoCenter.findServer(apiEndpoint)
         if( !serverInfo.isValid()){
             serverInfo = serverInfoCenter.findRoundRobinServer(serverInfo.serviceId)
         }
-        return baseStage.stageSenderImpl.deferredToApi(serverInfo.bindEndpoint,sessionInfo,packet)
+        return baseStage.stageSenderImpl.asyncToApi(serverInfo.bindEndpoint,sessionInfo,packet)
     }
 
     fun update(sessionEndpoint: String, sid: Int,apiEndpoint: String) {
