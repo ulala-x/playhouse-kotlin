@@ -23,7 +23,6 @@ class BaseStage(
     communicateClient: CommunicateClient,
     reqCache: RequestCache,
     private val serverInfoCenter: ServerInfoCenter,
-
     ) {
     private val log = logger()
     private val msgHandler = BaseStageCmdHandler()
@@ -43,7 +42,6 @@ class BaseStage(
         msgHandler.register(StageTimer.getDescriptor().name, StageTimerCmd(playService))
         msgHandler.register(DisconnectNoticeMsg.getDescriptor().name, DisconnectNoticeCmd(playService))
         msgHandler.register(AsyncBlock.getDescriptor().name, AsyncBlockCmd<Any>(playService))
-
     }
 
     private suspend fun dispatch(routePacket: RoutePacket) {

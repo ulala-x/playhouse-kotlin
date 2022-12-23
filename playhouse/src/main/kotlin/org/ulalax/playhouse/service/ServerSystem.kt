@@ -5,10 +5,10 @@ import org.ulalax.playhouse.protocol.Packet
 interface ServerSystem {
     val systemPanel: SystemPanel
     val baseSender: BaseSender
-    fun onStart()
-    fun onDispatch(packet: Packet)
-    fun onStop()
-    fun onPause()
-    fun onResume()
+    suspend fun onStart()
+    suspend fun onDispatch(packet: Packet)
+    suspend fun onStop()
+    suspend fun onPause()
+    suspend fun onResume()
 
 }

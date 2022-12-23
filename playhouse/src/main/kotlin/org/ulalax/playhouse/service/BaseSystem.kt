@@ -1,5 +1,6 @@
 package org.ulalax.playhouse.service
 
+import kotlinx.coroutines.runBlocking
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.Packet
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -34,7 +35,7 @@ class BaseSystem(private val serverSystem: ServerSystem, private val baseSender:
         running = false
     }
 
-    private fun messingLoop(){
+    private fun messingLoop()  = runBlocking {
         while(running){
             var routePacket = msgQueue.poll()
             while(routePacket!=null){
