@@ -18,17 +18,23 @@ repositories {
     mavenLocal()
 }
 
+//configure<SourceSetContainer> {
+//    named("main") {
+//        java.srcDir("src/core/java")
+//    }
+//}
 
-tasks {
-    val sourcesJar by creating(Jar::class) {
-        archiveClassifier.set("sources")
-        from(kotlin.sourceSets.getByName("main").kotlin.srcDirs)
-    }
 
-    artifacts {
-        archives(sourcesJar)
-    }
-}
+//tasks {
+//    val sourcesJar by creating(Jar::class) {
+//        archiveClassifier.set("sources")
+//        from(kotlin.sourceSets.getByName("main").kotlin)
+//    }
+//
+//    artifacts {
+//        archives(sourcesJar)
+//    }
+//}
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {

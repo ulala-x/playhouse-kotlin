@@ -13,6 +13,13 @@ plugins {
 group =  Versions.groupId
 version = Versions.version
 
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+
 publishing {
     publications {
         create<MavenPublication>("maven") {
