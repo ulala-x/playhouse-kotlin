@@ -1,9 +1,6 @@
 package org.ulalax.playhouse.service
 
-import org.ulalax.playhouse.communicator.CommunicateClient
-import org.ulalax.playhouse.communicator.Communicator
-import org.ulalax.playhouse.communicator.ServerInfo
-import org.ulalax.playhouse.communicator.ServerInfoCenter
+import org.ulalax.playhouse.communicator.*
 
 class SystemPanelImpl(
     private val serverInfoCenter: ServerInfoCenter,
@@ -14,15 +11,15 @@ class SystemPanelImpl(
 
     lateinit var communicator: Communicator
 
-    override fun randomServerInfo(serviceId:String): ServerInfo {
+    override fun randomServerInfo(serviceId:String): ServerInfoImpl {
         return serverInfoCenter.findRoundRobinServer(serviceId)
     }
 
-    override fun serverInfo(endpoint: String): ServerInfo {
+    override fun serverInfo(endpoint: String): ServerInfoImpl {
         return serverInfoCenter.findServer(endpoint)
     }
 
-    override fun serverList(): List<ServerInfo> {
+    override fun serverList(): List<ServerInfoImpl> {
         return serverInfoCenter.getServerList()
     }
 
@@ -38,7 +35,7 @@ class SystemPanelImpl(
         communicator.stop()
     }
 
-    override fun serverState(): ServerInfo.ServerState {
+    override fun serverState(): ServerState {
         return communicator.serverState()
     }
 

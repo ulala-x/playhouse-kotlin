@@ -28,7 +28,7 @@ class PlayService(val serviceId:String,
                   ) : Service {
     private val log = logger()
 
-    private var state = AtomicReference(ServerInfo.ServerState.DISABLE)
+    private var state = AtomicReference(ServerState.DISABLE)
     private val baseUsers:MutableMap<Long, BaseActor> = ConcurrentHashMap()
     private val baseRooms:MutableMap<Long, BaseStage> = ConcurrentHashMap()
     private lateinit var threadForCoroutine:Thread
@@ -37,7 +37,7 @@ class PlayService(val serviceId:String,
     private val baseSender = BaseSenderImpl(serviceId, communicateClient ,requestCache)
 
     override fun onStart() {
-        state.set(ServerInfo.ServerState.RUNNING)
+        state.set(ServerState.RUNNING)
 
         threadForCoroutine = Thread{ messageLoop() }
         threadForCoroutine.start()
@@ -55,7 +55,7 @@ class PlayService(val serviceId:String,
     }
 
     private fun messageLoop() = runBlocking {
-        while(state.get() != ServerInfo.ServerState.DISABLE){
+        while(state.get() != ServerState.DISABLE){
             var routePacket = msgQueue.poll()
             while(routePacket!=null){
                 routePacket.use {
@@ -172,7 +172,7 @@ class PlayService(val serviceId:String,
     }
 
     override fun onStop() {
-        state.set(ServerInfo.ServerState.DISABLE)
+        state.set(ServerState.DISABLE)
 
     }
 
@@ -180,7 +180,7 @@ class PlayService(val serviceId:String,
         return baseUsers.size
     }
 
-    override fun serverState(): ServerInfo.ServerState {
+    override fun serverState(): ServerState {
         return state.get()
     }
 
@@ -193,11 +193,11 @@ class PlayService(val serviceId:String,
     }
 
     override fun pause() {
-        this.state.set(ServerInfo.ServerState.PAUSE)
+        this.state.set(ServerState.PAUSE)
     }
 
     override fun resume() {
-        this.state.set(ServerInfo.ServerState.RUNNING)
+        this.state.set(ServerState.RUNNING)
     }
 
     fun findUser(accountId: Long): BaseActor? {

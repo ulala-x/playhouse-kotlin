@@ -13,12 +13,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.protocol.Server.AuthenticateMsg
-import org.ulalax.playhouse.communicator.CommunicateClient
-import org.ulalax.playhouse.communicator.ServerInfo
-import org.ulalax.playhouse.communicator.ServerInfoCenter
-import org.ulalax.playhouse.communicator.ServiceType
-import org.ulalax.playhouse.service.session.SessionClient
 
 
 internal class SessionClientTest {
@@ -61,7 +57,7 @@ internal class SessionClientTest {
 
         urls.add("api:test")
         whenever(serviceCenter.findRoundRobinServer("api")).thenReturn(
-            ServerInfo.of("tcp://127.0.0.1:0021", ServiceType.API,"api", ServerInfo.ServerState.RUNNING,21,System.currentTimeMillis())
+            ServerInfoImpl.of("tcp://127.0.0.1:0021", ServiceType.API,"api", ServerState.RUNNING,21,System.currentTimeMillis())
         )
 
         val sessionClient = SessionClient(serviceId,sid,channel,serviceCenter,communicateClient,urls,reqCache)

@@ -16,7 +16,7 @@ class MessageLoop(private val server: CommunicateServer)  {
             while(running){
                 client.communicate()
                 server.communicate()
-                sleep(10)
+                sleep(50)
             }
         }.apply { this.start() }
     }

@@ -1,6 +1,5 @@
 package org.ulalax.playhouse.service
 
-import org.ulalax.playhouse.communicator.ServerInfo
 import org.ulalax.playhouse.protocol.Packet
 import org.ulalax.playhouse.protocol.ReplyPacket
 import org.ulalax.playhouse.service.api.CreateJoinStageResult
@@ -8,6 +7,8 @@ import org.ulalax.playhouse.service.api.CreateStageResult
 import org.ulalax.playhouse.service.api.JoinStageResult
 import org.ulalax.playhouse.service.play.base.TimerCallback
 import kotlinx.coroutines.CompletableDeferred
+import org.ulalax.playhouse.communicator.ServerInfo
+import org.ulalax.playhouse.communicator.ServerState
 import java.time.Duration
 
 
@@ -20,7 +21,7 @@ interface SystemPanel{
     fun pause()
     fun resume()
     fun shutdown()
-    fun serverState(): ServerInfo.ServerState
+    fun serverState(): ServerState
 
 
 }

@@ -5,9 +5,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.ulalax.playhouse.protocol.Server.*
-import org.ulalax.playhouse.communicator.LettuceRedisClient
-import org.ulalax.playhouse.communicator.ServerInfo
-import org.ulalax.playhouse.communicator.ServiceType
 import redis.embedded.RedisServer
 
 
@@ -39,20 +36,20 @@ class LettuceRedisClientTest {
 
         val update1 = ServerInfoMsg.newBuilder().setEndpoint(endpoint1)
             .setServiceType(ServiceType.SESSION.name)
-            .setServerState(ServerInfo.ServerState.RUNNING.name).setTimestamp(System.currentTimeMillis())
+            .setServerState(ServerState.RUNNING.name).setTimestamp(System.currentTimeMillis())
             .setWeightingPoint(0).build()
 
         val update2 = ServerInfoMsg.newBuilder().setEndpoint(endpoint2)
             .setServiceType(ServiceType.API.name)
-            .setServerState(ServerInfo.ServerState.RUNNING.name).setTimestamp(System.currentTimeMillis())
+            .setServerState(ServerState.RUNNING.name).setTimestamp(System.currentTimeMillis())
             .setWeightingPoint(0).build()
 
-        redisClient.updateServerInfo(ServerInfo.of(update1))
-        redisClient.updateServerInfo(ServerInfo.of(update2))
+        redisClient.updateServerInfo(ServerInfoImpl.of(update1))
+        redisClient.updateServerInfo(ServerInfoImpl.of(update2))
 
         val serverList = redisClient.getServerList("")
         assertThat(serverList.size).isEqualTo(2)
-        assertThat(serverList[0].state).isEqualTo(ServerInfo.ServerState.RUNNING)
+        assertThat(serverList[0].state).isEqualTo(ServerState.RUNNING)
         assertThat(serverList).anyMatch { it.bindEndpoint == endpoint1 }.anyMatch{it.bindEndpoint == endpoint2}
     }
 
@@ -62,18 +59,18 @@ class LettuceRedisClientTest {
 
         val serverInfoMsg = ServerInfoMsg.newBuilder().setEndpoint("")
             .setServiceType(ServiceType.SESSION.name)
-            .setServerState(ServerInfo.ServerState.RUNNING.name).setTimestamp(timestamp)
+            .setServerState(ServerState.RUNNING.name).setTimestamp(timestamp)
             .setWeightingPoint(0).build()
 
-        val serverInfo = ServerInfo.of(serverInfoMsg)
+        val serverInfo = ServerInfoImpl.of(serverInfoMsg)
 
         assertThat(serverInfo.timeOver()).isFalse
 
-        serverInfo.timeStamp = timestamp - 59000
+        serverInfo.lastUpdate = timestamp - 59000
 
         assertThat(serverInfo.timeOver()).isFalse
 
-        serverInfo.timeStamp = timestamp - 61000
+        serverInfo.lastUpdate = timestamp - 61000
 
         assertThat(serverInfo.timeOver()).isTrue
 

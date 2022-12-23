@@ -14,7 +14,7 @@ interface Service {
     fun onReceive(routePacket: RoutePacket)
     fun onStop()
     fun weightPoint():Int
-    fun serverState(): ServerInfo.ServerState
+    fun serverState(): ServerState
     fun serviceType(): ServiceType
     fun serviceId():String
     fun pause()
@@ -39,8 +39,8 @@ class DefaultService : Service {
         return 0
     }
 
-    override fun serverState(): ServerInfo.ServerState {
-        return ServerInfo.ServerState.RUNNING
+    override fun serverState(): ServerState {
+        return ServerState.RUNNING
     }
 
     override fun serviceType(): ServiceType {

@@ -4,11 +4,8 @@ import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.kotlin.logger
 import org.ulalax.playhouse.ErrorCode
+import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.protocol.Server.DisconnectNoticeMsg
-import org.ulalax.playhouse.communicator.CommunicateClient
-import org.ulalax.playhouse.communicator.ServerInfo
-import org.ulalax.playhouse.communicator.Service
-import org.ulalax.playhouse.communicator.ServiceType
 import org.ulalax.playhouse.service.RequestCache
 import org.ulalax.playhouse.service.SystemPanelImpl
 import java.util.concurrent.atomic.AtomicReference
@@ -23,11 +20,11 @@ class ApiService(
     ) : Service {
 
     private val log = logger()
-    private val state = AtomicReference(ServerInfo.ServerState.DISABLE)
+    private val state = AtomicReference(ServerState.DISABLE)
     private val apiReflection = ApiReflection(apiOption.apiPath,apiOption.applicationContext)
 
     override fun onStart() {
-        state.set(ServerInfo.ServerState.RUNNING)
+        state.set(ServerState.RUNNING)
         apiReflection.callInitMethod(systemPanelImpl,apiBaseSenderImpl)
     }
 
@@ -76,14 +73,14 @@ class ApiService(
     }
 
     override fun onStop() {
-        state.set(ServerInfo.ServerState.DISABLE)
+        state.set(ServerState.DISABLE)
     }
 
     override fun weightPoint(): Int {
         return 0
     }
 
-    override fun serverState(): ServerInfo.ServerState {
+    override fun serverState(): ServerState {
          return state.get()
     }
 
@@ -96,11 +93,11 @@ class ApiService(
     }
 
     override fun pause() {
-        state.set(ServerInfo.ServerState.PAUSE)
+        state.set(ServerState.PAUSE)
     }
 
     override fun resume() {
-        state.set(ServerInfo.ServerState.RUNNING)
+        state.set(ServerState.RUNNING)
     }
 
 }

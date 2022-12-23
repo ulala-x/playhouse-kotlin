@@ -25,7 +25,7 @@ class SessionService(private val serviceId:String,
 
     private val log = logger()
     private val clients = ConcurrentHashMap<Int, SessionClient>()
-    private var state = AtomicReference(ServerInfo.ServerState.DISABLE)
+    private var state = AtomicReference(ServerState.DISABLE)
     private val sessionNetwork = SessionNetwork(sessionOption,this)
     private val performanceTester = PerformanceTester(showQps,"client")
     private val clientQueue = ConcurrentLinkedQueue<Pair<Int, ClientPacket>>()
@@ -35,7 +35,7 @@ class SessionService(private val serviceId:String,
     override fun onStart() {
 
         sessionNetwork.bind(sessionPort)
-        state.set(ServerInfo.ServerState.RUNNING)
+        state.set(ServerState.RUNNING)
         performanceTester.start()
 
         clientMessageLoopThread = Thread{ clientMessageLoop() }
@@ -48,7 +48,7 @@ class SessionService(private val serviceId:String,
 
     private fun clientMessageLoop() {
 
-        while(state.get() != ServerInfo.ServerState.DISABLE) {
+        while(state.get() != ServerState.DISABLE) {
             var message = clientQueue.poll()
             while(message!=null){
                 val sessionId = message.first
@@ -72,7 +72,7 @@ class SessionService(private val serviceId:String,
 
     private fun serverMessageLoop() {
 
-        while(state.get() != ServerInfo.ServerState.DISABLE) {
+        while(state.get() != ServerState.DISABLE) {
             var routePacket = serverQueue.poll()
             while(routePacket!=null){
 
@@ -119,7 +119,7 @@ class SessionService(private val serviceId:String,
 
     override fun onStop() {
         performanceTester.stop()
-        state.set(ServerInfo.ServerState.DISABLE)
+        state.set(ServerState.DISABLE)
         sessionNetwork.shutdown()
     }
 
@@ -127,7 +127,7 @@ class SessionService(private val serviceId:String,
         return clients.size
     }
 
-    override fun serverState(): ServerInfo.ServerState {
+    override fun serverState(): ServerState {
         return state.get()
     }
 
@@ -140,11 +140,11 @@ class SessionService(private val serviceId:String,
     }
 
     override fun pause() {
-        this.state.set(ServerInfo.ServerState.PAUSE)
+        this.state.set(ServerState.PAUSE)
     }
 
     override fun resume() {
-        this.state.set(ServerInfo.ServerState.RUNNING)
+        this.state.set(ServerState.RUNNING)
     }
 
     override fun onConnect(channel: Channel) {

@@ -6,12 +6,12 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class ServerInfoCenterImpl : ServerInfoCenter {
     private val log = logger()
-    private val serverInfoMap:MutableMap<String, ServerInfo> = ConcurrentHashMap()
-    private var serverInfoList:List<ServerInfo> = ArrayList()
+    private val serverInfoMap:MutableMap<String, ServerInfoImpl> = ConcurrentHashMap()
+    private var serverInfoList:List<ServerInfoImpl> = ArrayList()
     private val offset = AtomicInteger()
 
-    override fun update(serverList: List<ServerInfo>): List<ServerInfo> {
-            val updatedMap = HashMap<String, ServerInfo>()
+    override fun update(serverList: List<ServerInfoImpl>): List<ServerInfoImpl> {
+            val updatedMap = HashMap<String, ServerInfoImpl>()
             serverList.forEach { newInfo ->
                 newInfo.checkTimeout()
 
@@ -36,7 +36,7 @@ class ServerInfoCenterImpl : ServerInfoCenter {
             return updatedMap.values.toList()
     }
 
-    override fun findServer(endpoint: String): ServerInfo {
+    override fun findServer(endpoint: String): ServerInfoImpl {
         val serverInfo = serverInfoMap[endpoint]
         if(serverInfo == null || !serverInfo.isValid()){
             throw CommunicatorException.NotExistServerInfo()
@@ -44,10 +44,10 @@ class ServerInfoCenterImpl : ServerInfoCenter {
         return serverInfo
     }
 
-    override fun findRoundRobinServer(serviceId:String): ServerInfo {
+    override fun findRoundRobinServer(serviceId:String): ServerInfoImpl {
         val list = serverInfoList
             .filter {
-                       it.state.name == ServerInfo.ServerState.RUNNING.name
+                       it.state.name == ServerState.RUNNING.name
                         && it.serviceId == serviceId
             }
 
@@ -64,7 +64,7 @@ class ServerInfoCenterImpl : ServerInfoCenter {
         return list[index]
     }
 
-    override fun getServerList(): List<ServerInfo> {
+    override fun getServerList(): List<ServerInfoImpl> {
         return serverInfoList
     }
 

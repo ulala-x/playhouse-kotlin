@@ -17,14 +17,14 @@ class LettuceRedisClient(redisIp:String,redisBindPort:Int) : StorageClient {
     private lateinit var asyncCommands: RedisAsyncCommands<ByteArray, ByteArray>
     private val redisKey = "plbase_serverinfos"
 
-    override fun updateServerInfo(serverInfo: ServerInfo) {
+    override fun updateServerInfo(serverInfo: ServerInfoImpl) {
         //asyncCommands.expire(redisKey.toByteArray(),60)
         asyncCommands.hset(redisKey.toByteArray(),serverInfo.bindEndpoint.toByteArray(),serverInfo.toByteArray())
     }
 
-    override fun getServerList(endpoint:String): List<ServerInfo> {
+    override fun getServerList(endpoint:String): List<ServerInfoImpl> {
         return asyncCommands.hgetall(redisKey.toByteArray()).get(1,TimeUnit.SECONDS)
-            .values.map {serverInfo-> ServerInfo.of(Server.ServerInfoMsg.parseFrom(serverInfo)) }
+            .values.map {serverInfo-> ServerInfoImpl.of(Server.ServerInfoMsg.parseFrom(serverInfo)) }
             .filter { it.bindEndpoint != endpoint }.toList()
     }
 

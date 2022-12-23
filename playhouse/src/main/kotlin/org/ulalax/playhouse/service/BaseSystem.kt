@@ -1,10 +1,10 @@
 package org.ulalax.playhouse.service
 
-import org.ulalax.playhouse.protocol.Common.BaseErrorCode
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.Packet
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.protocol.Common.*
 import java.lang.Thread.sleep
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -64,7 +64,7 @@ class BaseSystem(private val serverSystem: ServerSystem, private val baseSender:
                         }
                     }catch (e:Exception){
                         log.error(ExceptionUtils.getStackTrace(e))
-                        baseSender.errorReply(routePacket.routeHeader,BaseErrorCode.SYSTEM_ERROR_VALUE)
+                        baseSender.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE)
                     }finally {
                         baseSender.clearCurrentPacketHeader()
                     }

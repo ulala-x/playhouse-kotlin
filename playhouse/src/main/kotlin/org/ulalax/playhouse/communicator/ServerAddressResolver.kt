@@ -22,7 +22,7 @@ class ServerAddressResolver (
             try{
 
                 storageClient.updateServerInfo(
-                    ServerInfo.of(
+                    ServerInfoImpl.of(
                         bindEndpoint,
                         service.serviceType(),
                         service.serviceId(),
@@ -37,8 +37,8 @@ class ServerAddressResolver (
 
                 updateList.forEach { serverInfo->
                     when(serverInfo.state){
-                        ServerInfo.ServerState.RUNNING -> communicateClient.connect(serverInfo.bindEndpoint)
-                        ServerInfo.ServerState.DISABLE -> communicateClient.disconnect(serverInfo.bindEndpoint)
+                        ServerState.RUNNING -> communicateClient.connect(serverInfo.bindEndpoint)
+                        ServerState.DISABLE -> communicateClient.disconnect(serverInfo.bindEndpoint)
                         else -> {}
                     }
                 }

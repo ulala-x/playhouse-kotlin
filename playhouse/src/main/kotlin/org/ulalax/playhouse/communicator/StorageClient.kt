@@ -3,7 +3,7 @@ package org.ulalax.playhouse.communicator
 
 
 interface StorageClient {
-    fun updateServerInfo(serverInfo: ServerInfo)
-    fun getServerList(endpoint:String):List<ServerInfo>
+    fun updateServerInfo(serverInfo: ServerInfoImpl)
+    fun getServerList(endpoint:String):List<ServerInfoImpl>
 }
 

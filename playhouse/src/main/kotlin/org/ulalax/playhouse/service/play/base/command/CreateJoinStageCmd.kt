@@ -14,7 +14,7 @@ class CreateJoinStageCmd(override val playService: PlayService) : BaseStageCmd {
     override suspend fun execute(baseStage: BaseStage, routePacket: RoutePacket) {
         val request = CreateJoinStageReq.parseFrom(routePacket.buffer())
         val createStagePacket = Packet(request.createPayloadName,request.createPayload)
-        val StageType = request.stageType
+        val stageType = request.stageType
         val joinStagePacket = Packet(request.joinPayloadName,request.joinPayload)
         val accountId = routePacket.accountId()
         val stageId = routePacket.stageId()
@@ -25,13 +25,13 @@ class CreateJoinStageCmd(override val playService: PlayService) : BaseStageCmd {
         var createReply: ReplyPacket
         val responseBuilder = CreateJoinStageRes.newBuilder()
 
-        if(!playService.isValidType(StageType)){
+        if(!playService.isValidType(stageType)){
             playService.errorReply(routePacket.routeHeader, ErrorCode.STAGE_TYPE_IS_INVALID)
             return
         }
 
         if(!baseStage.isCreated){
-            createReply = baseStage.create(StageType,createStagePacket)
+            createReply = baseStage.create(stageType,createStagePacket)
             responseBuilder
                 .setCreatePayloadName(createReply.msgName)
                 .setCreatePayload(ByteString.copyFrom(createReply.buffer()))

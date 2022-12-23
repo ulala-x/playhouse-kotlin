@@ -10,7 +10,6 @@ class CommunicatorOption(
     val serverSystem:(SystemPanel, BaseSender) -> ServerSystem,
     val showQps:Boolean,
 ){
-
     class Builder {
         var port:Int = 0
         lateinit var serverSystem: (SystemPanel, BaseSender) -> ServerSystem
@@ -74,8 +73,8 @@ class Communicator(private val option: CommunicatorOption,
     }
 
     private fun updateDisable(){
-        storageClient.updateServerInfo(ServerInfo.of(option.bindEndpoint, service).apply {
-            state = ServerInfo.ServerState.DISABLE
+        storageClient.updateServerInfo(ServerInfoImpl.of(option.bindEndpoint, service).apply {
+            state = ServerState.DISABLE
         })
     }
 
@@ -121,7 +120,7 @@ class Communicator(private val option: CommunicatorOption,
         this.baseSystem.resume()
     }
 
-    fun serverState(): ServerInfo.ServerState {
+    fun serverState(): ServerState {
         return this.service.serverState()
     }
 }

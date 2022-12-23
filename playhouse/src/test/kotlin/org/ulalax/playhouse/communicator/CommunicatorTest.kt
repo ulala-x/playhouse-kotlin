@@ -4,9 +4,6 @@ import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.ulalax.playhouse.communicator.ServerInfo
-import org.ulalax.playhouse.communicator.Service
-import org.ulalax.playhouse.communicator.ServiceType
 import redis.embedded.RedisServer
 
 object TestSession: Service {
@@ -29,8 +26,8 @@ object TestSession: Service {
         return 10
     }
 
-    override fun serverState(): ServerInfo.ServerState {
-        return ServerInfo.ServerState.RUNNING
+    override fun serverState(): ServerState {
+        return ServerState.RUNNING
     }
 
     override fun serviceType(): ServiceType {
