@@ -99,11 +99,9 @@ interface StageSender : BaseSender {
     fun addRepeatTimer(initialDelay: Duration, period: Duration, timerCallback: TimerCallback): Long
     fun addCountTimer(initialDelay: Duration, count: Int, period: Duration, timerCallback: TimerCallback): Long
     fun cancelTimer(timerId: Long)
-    fun closeRoom()
+    fun closeStage()
 
     suspend fun <T> asyncBlock(preCallback: AsyncPreCallback<T>, postCallback: AsyncPostCallback<T>? = null)
-
-
 
 }
 

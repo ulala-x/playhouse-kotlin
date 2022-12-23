@@ -72,7 +72,7 @@ class StageSenderImpl(
         this.timerIds.remove(timerId)
     }
 
-    override fun closeRoom() {
+    override fun closeStage() {
 
         timerIds.forEach{timerId->
             val packet = RoutePacket.addTimerOf(TimerMsg.Type.CANCEL,this.stageId,timerId,{}, Duration.ZERO, Duration.ZERO)
