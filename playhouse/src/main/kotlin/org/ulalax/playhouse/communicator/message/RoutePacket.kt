@@ -6,7 +6,7 @@ import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.protocol.*
 import org.ulalax.playhouse.service.AsyncPostCallback
 import org.ulalax.playhouse.service.play.base.TimerCallback
-import java.nio.ByteBuffer
+import org.zeromq.ZFrame
 import java.time.Duration
 
 
@@ -85,8 +85,12 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
 //            .setRouteHeaderMsg(routeHeader.toMsg())
 //            .setMessage(message).build()
 //    }
-    override fun buffer(): ByteBuffer {
-        return payload.buffer().nioBuffer()
+    override fun frame(): ZFrame {
+        return payload.frame()
+    }
+
+    override fun data(): ByteArray {
+        return frame().data();
     }
 
     fun toReplyPacket(): ReplyPacket {

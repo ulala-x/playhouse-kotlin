@@ -81,7 +81,7 @@ internal class ApiReflectionTest {
             resultValue = apiBaseSender.serviceId()
         }
         @ApiHandler("ApiTestMsg1") fun test1(sessionInfo:String, packet: Packet, apiSender: ApiSender){
-            val message = ApiTestMsg1.parseFrom(packet.buffer())
+            val message = ApiTestMsg1.parseFrom(packet.data())
             resultValue = message.testMsg
 
         }

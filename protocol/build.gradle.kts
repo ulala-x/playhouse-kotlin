@@ -67,6 +67,7 @@ sourceSets {
 
 
 dependencies {
+//    implementation("org.zeromq:zmqj:4.3.4.1")
     // https://mvnrepository.com/artifact/it.ozimov/embedded-redis
     //implementation("org.zeromq:jmq:1.0")
 //    api(project(":zmq"))

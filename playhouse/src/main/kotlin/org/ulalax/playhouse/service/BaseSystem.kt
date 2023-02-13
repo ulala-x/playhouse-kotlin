@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 class BaseSystem(private val serverSystem: ServerSystem, private val baseSender: BaseSenderImpl) {
 
     private val log = logger()
-    private val thread = Thread { messingLoop() }
+    private val thread = Thread({ messingLoop() },"system:message-loop")
     private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
     private var running = true
 

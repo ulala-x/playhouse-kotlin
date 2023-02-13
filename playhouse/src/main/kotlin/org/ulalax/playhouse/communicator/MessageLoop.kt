@@ -11,14 +11,14 @@ class MessageLoop(private val server: CommunicateServer)  {
 
     fun start() {
         val client = server.getClient()
-        this.thread = Thread{
+        this.thread = Thread({
             logger.info("start system loop")
             while(running){
                 client.communicate()
                 server.communicate()
-                sleep(50)
+                sleep(10)
             }
-        }.apply { this.start() }
+        },"communicator:system-message-loop").apply { this.start() }
     }
 
     fun stop(){

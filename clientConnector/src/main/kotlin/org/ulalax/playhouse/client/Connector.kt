@@ -8,26 +8,41 @@ import org.ulalax.playhouse.protocol.ReplyPacket
 import kotlinx.coroutines.CompletableDeferred
 import java.net.URI
 
-class Connector(private val reqTimeoutSec:Long, clientPacketListener: ClientPacketListener) {
+class Connector(private val reqTimeoutSec:Long,private val useWebsocket: Boolean=false, clientPacketListener: ClientPacketListener ) {
 
     private lateinit var clientNetwork: ClientNetwork
     private val requestCache = RequestCache(reqTimeoutSec)
     private val connectorListener = BasePacketListener(requestCache,clientPacketListener)
 
     fun connect(host:String,port:Int){
-        val url = "ws://$host:$port/websocket"
-        val uri = URI(url)
+
         clientNetwork = ClientNetwork(connectorListener)
-        clientNetwork.init(uri)
-        clientNetwork.connect(uri.host, port)
+
+        if(useWebsocket){
+            val url = "ws://$host:$port/websocket"
+            val uri = URI(url)
+            clientNetwork.init(uri)
+            clientNetwork.connect(uri.host, port)
+        }else{
+            clientNetwork.init(null)
+            clientNetwork.connect(host,port)
+        }
+
+
     }
 
     suspend fun deferredConnect(host:String, port:Int){
-        val url = "ws://$host:$port/websocket"
-        val uri = URI(url)
         clientNetwork = ClientNetwork(connectorListener)
-        clientNetwork.init(uri)
-        clientNetwork.deferredConnect(uri.host, port,reqTimeoutSec)
+
+        if(useWebsocket){
+            val url = "ws://$host:$port/websocket"
+            val uri = URI(url)
+            clientNetwork.init(uri)
+            clientNetwork.deferredConnect(uri.host, port,reqTimeoutSec)
+        }else{
+            clientNetwork.init(null)
+            clientNetwork.deferredConnect(host,port,reqTimeoutSec)
+        }
     }
 
     fun disconnect(){

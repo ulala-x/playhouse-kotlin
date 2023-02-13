@@ -10,7 +10,7 @@ class ZmqCommunicateServer(
 ) : CommunicateServer {
 
     private val log = logger()
-    private val zmqSocket: ZmqSocket = JZmqSocket(bindEndpoint)
+    private val zmqSocket: ZmqJSocket = ZmqJSocket(bindEndpoint)
     private val communicateClient = ZmqCommunicateClient(zmqSocket)
     lateinit var listener: CommunicateListener
 

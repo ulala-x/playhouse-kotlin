@@ -1,11 +1,10 @@
 package org.ulalax.playhouse.service.session
 
+import io.netty.channel.Channel
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.ClientPacket
 import org.ulalax.playhouse.protocol.Packet
 import org.ulalax.playhouse.service.RequestCache
-import io.netty.channel.Channel
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
 import org.apache.logging.log4j.kotlin.logger
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.communicator.CommunicateClient
@@ -85,7 +84,7 @@ class SessionClient(
                 relayTo(serviceId, clientPacket)
             }else{
                 log.warn("client is not authenticated :${msgName}")
-                channel.disconnect()
+
             }
         }
     }
@@ -132,12 +131,12 @@ class SessionClient(
         if(isBase){
             when(msgName){
                 AuthenticateMsg.getDescriptor().name -> {
-                    val authenticateMsg = AuthenticateMsg.parseFrom(packet.buffer())
+                    val authenticateMsg = AuthenticateMsg.parseFrom(packet.data())
                     authenticate(authenticateMsg.serviceId,authenticateMsg.accountId,authenticateMsg.sessionInfo)
                     log.debug("$accountId is authenticated")
                 }
                 UpdateSessionInfoMsg.getDescriptor().name ->{
-                    val updatedSessionInfo = UpdateSessionInfoMsg.parseFrom(packet.buffer())
+                    val updatedSessionInfo = UpdateSessionInfoMsg.parseFrom(packet.data())
                     updateSessionInfo(updatedSessionInfo.serviceId,updatedSessionInfo.sessionInfo)
                     log.debug("sessionInfo of $accountId is updated with $updatedSessionInfo")
                 }
@@ -146,7 +145,7 @@ class SessionClient(
                     log.debug("$accountId is required to session close")
                 }
                 JoinStageMsg.getDescriptor().name ->{
-                    val joinStageMsg = JoinStageMsg.parseFrom(packet.buffer())
+                    val joinStageMsg = JoinStageMsg.parseFrom(packet.data())
                     val playEndpoint =joinStageMsg.playEndpoint
                     val stageId = joinStageMsg.stageId
                     updateRoomInfo(playEndpoint,stageId)
@@ -175,13 +174,8 @@ class SessionClient(
         this.stageId=0
     }
 
-    fun sendToClient(clientPacket: ClientPacket){
-        //channel.writeAndFlush(BinaryWebSocketFrame(ByteBufferAllocator.getBuf(clientPacket.toMsg())))
-//        clientPacket.use {
-            channel.writeAndFlush(BinaryWebSocketFrame(clientPacket.toByteBuf()))
-//        }
+    private fun sendToClient(clientPacket: ClientPacket){
+        channel.writeAndFlush(clientPacket)
     }
-
-
 
 }

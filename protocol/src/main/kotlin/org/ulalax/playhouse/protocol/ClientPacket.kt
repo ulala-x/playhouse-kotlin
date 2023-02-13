@@ -1,12 +1,14 @@
 package org.ulalax.playhouse.protocol
 import com.google.protobuf.ByteString
 import com.google.protobuf.GeneratedMessageV3
-import org.ulalax.playhouse.base.ByteBufferAllocator
-import org.ulalax.playhouse.protocol.Common.*
 import io.netty.buffer.ByteBuf
-import io.netty.buffer.EmptyByteBuf
+import io.netty.buffer.Unpooled
+import io.netty.buffer.UnpooledByteBufAllocator
+import org.ulalax.playhouse.protocol.Common.*
 import org.apache.logging.log4j.kotlin.logger
-import java.nio.ByteBuffer
+import org.ulalax.playhouse.base.ByteBufferAllocator
+import org.ulalax.playhouse.base.PacketParser
+import org.zeromq.ZFrame
 
 class Header constructor(var msgName:String="",var errorCode:Int = 0,var msgSeq:Int=0, var baseErrorCode:Int =0, var serviceId: String=""){
     companion object {
@@ -25,119 +27,47 @@ class Header constructor(var msgName:String="",var errorCode:Int = 0,var msgSeq:
 }
 
 interface Payload : AutoCloseable{
-
-    fun buffer( isCopied: Boolean = false):ByteBuf
-    //fun frame():Frame
-//    fun retain():Payload
-//    fun release():Payload
+    fun frame():ZFrame
 }
 
-class ProtoPayload : Payload {
+class ProtoPayload constructor() : Payload {
     private val log = logger()
-    constructor(message: GeneratedMessageV3){
+    constructor(message: GeneratedMessageV3) : this() {
         this.proto = message
     }
-    constructor(message: ByteString){
+    constructor(message: ByteString): this(){
         this.byteString = message
     }
 
-    constructor(message: ByteBuf = EmptyByteBuf(ByteBufferAllocator.allocator)){
-
-//        if(message !is  EmptyByteBuf && !message.isDirect){
-//            //copy
-//            this.buffer = ByteBufferAllocator.getBuf(message.nioBuffer())
-//        }else{
-//            this.buffer = message.retainedSlice()
-//        }
-//        if(message is EmptyByteBuf){
-//            this.buffer = message
-//        }else{
-//            this.buffer = ByteBufferAllocator.getBuf(message.nioBuffer())
-//        }
-        this.buffer = message
-
+    constructor(message: ZFrame): this(){
+        this.frame = message
     }
 
-//    constructor(message: ByteBuffer){
-//        this.buffer = ByteBufferAllocator.getBuf(message)
-//        //this.buffer = Unpooled.wrappedBuffer(message)
-////        log.info("constructor buffer refcnt is ${buffer!!.refCnt()}")
-//
-//    }
-//    constructor(frame: Frame){
-//        this.frame = frame
-//    }
-
-
-    private var buffer: ByteBuf? = null
+    private var frame: ZFrame? = null
     private var byteString:ByteString? = null
     private var proto:GeneratedMessageV3? = null
-//    private var frame:Frame? = null
-
-//    override fun buffer():ByteBuffer{
-//        return byteBuf().nioBuffer()
-//    }
     override fun close() {
-        buffer?.apply {
-            this.release()
+        frame?.apply {
+            this.close()
         }
 
-//        frame?.apply {
-//            frame!!.close()
-//            frame = null
-//        }
-
-        buffer = null
+        frame = null
         byteString = null
         proto = null
     }
 
-    override fun buffer(isCopied: Boolean): ByteBuf {
-        if(buffer == null){
-//            frame?.apply {
-//                buffer = if(isCopied){
-//                    ByteBufferAllocator.getBuf(frame!!.buffer())
-//                }else{
-//                    Unpooled.wrappedBuffer(frame!!.buffer())
-//                }
-//            }
+    override fun frame(): ZFrame {
+        if(frame == null){
             proto?.apply {
-                buffer = ByteBufferAllocator.getBuf(proto!!)
+                frame = ZFrame(proto!!.toByteArray());
             }
             byteString?.apply {
-                buffer = ByteBufferAllocator.getBuf(byteString!!)
+                frame = ZFrame(byteString!!.toByteArray());
             }
         }
 
-        if(buffer == null){
-            log.error("buffer is null")
-        }
-        return this.buffer!!
+        return frame ?: ZFrame(ByteArray(0))
     }
-
-//    fun frame(): Frame {
-//        if(frame == null){
-//            buffer?.apply {
-//                frame = if(buffer is EmptyByteBuf){
-//                    Frame()
-//                }else{
-//                    Frame(buffer!!.nioBuffer())
-//                }
-//            }
-//            proto?.apply {
-//                frame = Frame(proto!!.toByteArray())
-//            }
-//
-//        }
-//
-//        return this.frame!!
-//    }
-
-//    fun moveFrame():Frame{
-//        var temp = frame()
-//        this.frame = null
-//        return temp
-//    }
 
     fun proto(): GeneratedMessageV3? {
         return proto
@@ -147,10 +77,6 @@ class ProtoPayload : Payload {
 
 class ClientPacket private constructor(val header: Header, private var payload: Payload) : BasePacket {
     companion object{
-//        fun messageOf(packetMsg: PacketMsg): ClientPacket {
-//            return ClientPacket(Header.of(packetMsg.headerMsg), packetMsg.message)
-//        }
-
         fun toServerOf(serviceId: String, packet: Packet): ClientPacket {
             val header = Header(msgName = packet.msgName,serviceId = serviceId)
 
@@ -160,6 +86,8 @@ class ClientPacket private constructor(val header: Header, private var payload: 
         fun of(headerMsg: HeaderMsg, payload: Payload): ClientPacket {
             return ClientPacket(Header.of(headerMsg),payload)
         }
+
+        private val buffer = UnpooledByteBufAllocator.DEFAULT.buffer(PacketParser.MAX_PACKET_SIZE)
     }
 
     override fun movePayload(): Payload {
@@ -168,20 +96,20 @@ class ClientPacket private constructor(val header: Header, private var payload: 
         return temp;
     }
 
-    override fun buffer(): ByteBuffer {
-        return this.payload.buffer().nioBuffer()
+    override fun frame():ZFrame {
+        return this.payload.frame()
     }
+
+    override fun data(): ByteArray {
+        return frame().data();
+    }
+
     fun serviceId():String {
         return header.serviceId
     }
     fun msgName():String {
         return header.msgName
     }
-//    fun toMsg():PacketMsg{
-//        return PacketMsg.newBuilder()
-//            .setHeaderMsg(header.toMsg())
-//            .setMessage(message).build()
-//    }
 
     fun toReplyPacket(): ReplyPacket {
         return ReplyPacket(header.errorCode,header.msgName,movePayload())
@@ -191,24 +119,23 @@ class ClientPacket private constructor(val header: Header, private var payload: 
 
         val header = header.toMsg()
         val headerSize = header.serializedSize
-        val body = (payload as ProtoPayload).buffer(false)
-        val packetSize = 1 + headerSize+body.capacity()
+        val body = frame()
+        val packetSize =1+2+headerSize+body.length()
 
-        val compositeByteBuf = ByteBufferAllocator.getCompositeBuffer()
-        val headBuffer = ByteBufferAllocator.getBuf(1+headerSize)
+        val packetBuffer = ByteBufferAllocator.getBuf(packetSize)
 
-        headBuffer.writeByte(headerSize)
-        headBuffer.writeBytes(header.toByteArray())
+        /*
+        1byte - header size
+        2byte - body size
+        header
+        body
+         */
+        packetBuffer.writeByte(headerSize)
+        packetBuffer.writeShort(body.length())
+        packetBuffer.writeBytes(header.toByteArray())
+        packetBuffer.writeBytes(body.data())
 
-        compositeByteBuf.addComponent(headBuffer)
-        compositeByteBuf.addComponent(body)
-        compositeByteBuf.writerIndex(packetSize)
-
-
-
-
-        return compositeByteBuf
-
+        return packetBuffer
     }
 
     fun setMsgSeq(msgSeq: Int) {

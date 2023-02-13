@@ -46,9 +46,9 @@ class PerformanceTester(private val showQps: Boolean,private val from: String = 
 
             val qps =  if(messageCount == 0 || seconds == 0L)  0 else messageCount / seconds
 
-            log.info("$from, $messageCount, 수행시간: ${stopWatch.getTime(TimeUnit.MILLISECONDS)} ms", )
+//            log.info("$from, $messageCount, 수행시간: ${stopWatch.getTime(TimeUnit.MILLISECONDS)} ms", )
             log.info("$from, $messageCount, qps: $qps")
-            log.info("$from, The time is now ${LocalDateTime.now()}")
+//            log.info("$from, The time is now ${LocalDateTime.now()}")
         }finally {
             stopWatch.reset()
             stopWatch.start()

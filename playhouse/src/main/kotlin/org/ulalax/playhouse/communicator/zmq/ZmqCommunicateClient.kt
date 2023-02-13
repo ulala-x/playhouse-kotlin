@@ -10,7 +10,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CopyOnWriteArraySet
 
-class ZmqCommunicateClient(private val clientSocket: ZmqSocket) : CommunicateClient {
+class ZmqCommunicateClient(private val clientSocket: ZmqJSocket) : CommunicateClient {
     private val log = logger()
 
     private val connected:MutableSet<String> = CopyOnWriteArraySet()
@@ -31,7 +31,6 @@ class ZmqCommunicateClient(private val clientSocket: ZmqSocket) : CommunicateCli
         disconnectTarget.add(endpoint)
     }
 
-
     override fun send(endpoint: String, routePacket: RoutePacket) {
         sendBucket.add(endpoint,routePacket)
     }
@@ -48,11 +47,9 @@ class ZmqCommunicateClient(private val clientSocket: ZmqSocket) : CommunicateCli
 
         try {
             while (routePacket != null) {
-
                 routePacket.use {
                     clientSocket.send(target, it)
                 }
-
                 routePacket = routePackets.poll()
             }
         }catch (e:Exception){

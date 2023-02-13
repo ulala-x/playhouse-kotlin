@@ -55,7 +55,6 @@ internal class ZmqCommunicateTest {
 
         sleep(100)
 
-
         val message = HeaderMsg.newBuilder().setMsgName("sessionPacket").build()
 
         sessionClient.send(apiEndpoint, RoutePacket.clientOf("session",0, Packet(message)))

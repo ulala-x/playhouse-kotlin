@@ -14,7 +14,7 @@ class JoinStageCmd(override val playService: PlayService): BaseStageCmd {
     private val log = logger()
     override suspend fun execute(baseStage: BaseStage, routePacket: RoutePacket) {
 
-        val request = JoinStageReq.parseFrom(routePacket.buffer())
+        val request = JoinStageReq.parseFrom(routePacket.data())
         val accountId = routePacket.accountId()
         val sessionEndpoint = request.sessionEndpoint
         val sid = request.sid
@@ -24,7 +24,7 @@ class JoinStageCmd(override val playService: PlayService): BaseStageCmd {
 
         val outcome = baseStage.join(accountId,sessionEndpoint,sid,apiEndpoint,packet)
         val response = JoinStageRes.newBuilder()
-            .setPayload(ByteString.copyFrom(outcome.buffer()))
+            .setPayload(ByteString.copyFrom(outcome.data()))
             .setPayloadName(outcome.msgName)
             .build()
 

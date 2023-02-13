@@ -16,7 +16,7 @@ class CreateStageCmd(override val playService: PlayService): BaseStageCmd {
     private val log = logger()
     override suspend fun execute(baseStage: BaseStage, routePacket: RoutePacket) {
 
-        val createStageReq = CreateStageReq.parseFrom(routePacket.buffer())
+        val createStageReq = CreateStageReq.parseFrom(routePacket.data())
         val packet = Packet(createStageReq.payloadName,createStageReq.payload)
         val StageType = createStageReq.stageType
 
@@ -37,7 +37,7 @@ class CreateStageCmd(override val playService: PlayService): BaseStageCmd {
 
             val res = CreateStageRes.newBuilder()
                 .setStageId(stageId)
-                .setPayload(ByteString.copyFrom(outcome.buffer()))
+                .setPayload(ByteString.copyFrom(outcome.data()))
                 .setPayloadName(outcome.msgName).build()
 
             baseStage.reply(ReplyPacket(outcome.errorCode,res))

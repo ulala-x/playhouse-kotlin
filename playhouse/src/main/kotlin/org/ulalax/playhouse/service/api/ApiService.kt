@@ -42,7 +42,7 @@ class ApiService(
             if (routeHeader.isBase) {
                 return when (routeHeader.msgName()) {
                     DisconnectNoticeMsg.getDescriptor().name -> {
-                        val disconnectNoticeMsg = DisconnectNoticeMsg.parseFrom(routePacket.buffer())
+                        val disconnectNoticeMsg = DisconnectNoticeMsg.parseFrom(routePacket.data())
                         apiCallBackHandler.onDisconnect(disconnectNoticeMsg.accountId, routeHeader.sessionInfo)
                     }
 

@@ -3,10 +3,7 @@ package org.ulalax.playhouse.communicator
 import org.apache.commons.validator.routines.InetAddressValidator
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.net.InetAddress
-import java.net.InetSocketAddress
-import java.net.Socket
-import java.net.URL
+import java.net.*
 
 
 object IpFinder {
@@ -31,6 +28,13 @@ object IpFinder {
             }
         }
         return findLocalIp()
+    }
+
+    fun findFreePort(): Int {
+        ServerSocket(0).use { socket ->
+            socket.reuseAddress = true
+            return socket.localPort
+        }
     }
 
     private fun checkPublicIp(urlString: String): String {

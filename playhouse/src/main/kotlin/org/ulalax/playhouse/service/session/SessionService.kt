@@ -1,13 +1,13 @@
 package org.ulalax.playhouse.service.session
 
+import io.netty.channel.Channel
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.ClientPacket
-import org.ulalax.playhouse.service.session.network.SessionPacketListener
-import org.ulalax.playhouse.service.session.network.SessionNetwork
-import io.netty.channel.Channel
 import org.apache.logging.log4j.kotlin.logger
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.service.RequestCache
+import org.ulalax.playhouse.service.session.network.netty.SessionNetwork
+import org.ulalax.playhouse.service.session.network.netty.SessionPacketListener
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
@@ -26,7 +26,7 @@ class SessionService(private val serviceId:String,
     private val log = logger()
     private val clients = ConcurrentHashMap<Int, SessionClient>()
     private var state = AtomicReference(ServerState.DISABLE)
-    private val sessionNetwork = SessionNetwork(sessionOption,this)
+    private val sessionNetwork = SessionNetwork(sessionOption,this);
     private val performanceTester = PerformanceTester(showQps,"client")
     private val clientQueue = ConcurrentLinkedQueue<Pair<Int, ClientPacket>>()
     private val serverQueue = ConcurrentLinkedQueue<RoutePacket>()
@@ -34,14 +34,15 @@ class SessionService(private val serviceId:String,
     private lateinit var serverMessageLoopThread:Thread
     override fun onStart() {
 
-        sessionNetwork.bind(sessionPort)
         state.set(ServerState.RUNNING)
         performanceTester.start()
 
-        clientMessageLoopThread = Thread{ clientMessageLoop() }
+        sessionNetwork.bind(sessionPort)
+
+        clientMessageLoopThread = Thread({ clientMessageLoop() },"session:client-message-loop")
         clientMessageLoopThread.start()
 
-        serverMessageLoopThread = Thread{ serverMessageLoop() }
+        serverMessageLoopThread = Thread({ serverMessageLoop() },"session:server-message-loop")
         serverMessageLoopThread.start()
 
     }
@@ -59,9 +60,9 @@ class SessionService(private val serviceId:String,
                     val sessionClient = clients[sessionId]
                     if (sessionClient == null) {
                         log.error("sessionId is not exist $sessionId,${clientPacket.msgName()}")
-                        return@use
+                    }else{
+                        sessionClient.onReceive(clientPacket)
                     }
-                    sessionClient.onReceive(clientPacket)
                 }
                 message = clientQueue.poll()
             }
@@ -82,9 +83,9 @@ class SessionService(private val serviceId:String,
                     val sessionClient = clients[sessionId]
                     if(sessionClient == null) {
                         log.error("sessionId is already disconnected  $sessionId,$packetName")
-                        return
+                    }else{
+                        sessionClient.onReceive(routePacket)
                     }
-                    sessionClient.onReceive(routePacket)
                 }
 
                 routePacket = serverQueue.poll()
@@ -99,23 +100,6 @@ class SessionService(private val serviceId:String,
         serverQueue.add(routePacket)
 
     }
-
-
-
-//    override fun onReceive(routePacket: RoutePacket) {
-//
-//        routePacket.use {
-//            val sessionId = routePacket.routeHeader.sid
-//            val packetName = routePacket.msgName()
-//            val sessionClient = clients[sessionId]
-//            if(sessionClient == null) {
-//                log.error("sessionId is already disconnected  $sessionId,$packetName")
-//                return
-//            }
-//            sessionClient.onReceive(routePacket)
-//        }
-//    }
-
 
     override fun onStop() {
         performanceTester.stop()
@@ -164,36 +148,20 @@ class SessionService(private val serviceId:String,
     }
 
     override fun onReceive(channel: Channel, clientPacket: ClientPacket) {
-        val sessionId = getSessionId(channel)
-        clientQueue.add(Pair(sessionId,clientPacket))
-
-
+        val sid = getSessionId(channel)
+        clientQueue.add(Pair(sid,clientPacket))
     }
-//    override fun onReceive(channel: Channel, clientPacket: ClientPacket) {
-//
-//        clientPacket.use {
-//            log.debug("SessionService:onReceive ${clientPacket.header.msgName} : from client")
-//            this.performanceTester.incCounter()
-//
-//            val sessionId = getSessionId(channel)
-//            val sessionClient = clients[sessionId]
-//            if (sessionClient == null) {
-//                log.error("sessionId is not exist $sessionId,${clientPacket.msgName()}")
-//                return
-//            }
-//            sessionClient.onReceive(clientPacket)
-//        }
-//    }
+
     override fun onDisconnect(channel: Channel) {
-        val sessionId = getSessionId(channel)
-        val sessionClient = clients[sessionId]
+        val sid = getSessionId(channel)
+        val sessionClient = clients[sid]
         if(sessionClient == null) {
-            log.error("sessionId is not exist $sessionId")
+            log.error("sessionId is not exist $sid")
             return
         }
 
         sessionClient.disconnect()
-        clients.remove(sessionId)
+        clients.remove(sid)
     }
 
 }

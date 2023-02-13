@@ -22,18 +22,19 @@ internal class ZmqSocketTest {
 //    val serverBindEndpoint = "ws://${localIp}:$serverPort"
 //    val clientBindEndpoint = "ws://${localIp}:$clientPort"
 
-    private lateinit var serverSocket: ZmqSocket
-    private lateinit var clientSocket: ZmqSocket
+    private lateinit var serverSocket: ZmqJSocket
+    private lateinit var clientSocket: ZmqJSocket
 
     @BeforeEach
     fun setUp() {
-        serverSocket = JZmqSocket(serverBindEndpoint)
+        serverSocket = ZmqJSocket(serverBindEndpoint)
         serverSocket.bind()
 
 
-        clientSocket = JZmqSocket(clientBindEndpoint)
+        clientSocket = ZmqJSocket(clientBindEndpoint)
         clientSocket.bind()
 
+        Thread.sleep(100)
         clientSocket.connect(serverBindEndpoint)
 
         Thread.sleep(100)
@@ -54,6 +55,7 @@ internal class ZmqSocketTest {
     fun send_with_empty_frame(){
         val sendRoutePacket = RoutePacket.of(RouteHeader.of(HeaderMsg.newBuilder().build()), ProtoPayload())
         clientSocket.send(serverBindEndpoint, sendRoutePacket)
+
         var receiveRoutePacket: RoutePacket? = null
         while(receiveRoutePacket==null){
             receiveRoutePacket = serverSocket.receive()
@@ -87,7 +89,7 @@ internal class ZmqSocketTest {
         assertThat(receiveRoutePacket.routeHeader.header.toMsg()).isEqualTo(header)
         assertThat(receiveRoutePacket.routeHeader.from).isEqualTo(clientBindEndpoint)
 
-        val receiveBody = TestMsg.parseFrom(receiveRoutePacket.buffer())
+        val receiveBody = TestMsg.parseFrom(receiveRoutePacket.data())
 
         assertThat(receiveBody).isEqualTo(message)
 

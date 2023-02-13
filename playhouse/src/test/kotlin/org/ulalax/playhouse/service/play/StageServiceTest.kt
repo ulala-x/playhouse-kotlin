@@ -99,7 +99,7 @@ class StageServiceTest {
         playService.onReceive(routePacket)
         Thread.sleep(100)
         assertThat(resultList.size).isEqualTo(1)
-        val createStageRes = CreateStageRes.parseFrom(resultList[0].buffer())
+        val createStageRes = CreateStageRes.parseFrom(resultList[0].data())
         assertThat(createStageRes.payloadName).isEqualTo("contentCreateRoom")
         return createStageRes.stageId
 
@@ -121,7 +121,7 @@ class StageServiceTest {
         playService.onReceive(joinRoom)
         Thread.sleep(100)
         assertThat(resultList.size).isEqualTo(3)
-        assertThat(JoinStageRes.parseFrom(resultList[2].buffer()).payloadName).isEqualTo("contentJoinRoom")
+        assertThat(JoinStageRes.parseFrom(resultList[2].data()).payloadName).isEqualTo("contentJoinRoom")
     }
 
     @Test
@@ -138,9 +138,9 @@ class StageServiceTest {
     fun create_join_room_with_create_room(){
         val createJoinRoom = createJoinRoomPacket(StageType,teststageId,1000)
         playService.onReceive(createJoinRoom)
-        Thread.sleep(100)
+        Thread.sleep(200)
         assertThat(resultList.size).isEqualTo(2)
-        val createJoinStageRes = CreateJoinStageRes.parseFrom(resultList[1].buffer())
+        val createJoinStageRes = CreateJoinStageRes.parseFrom(resultList[1].data())
         assertThat(resultList[1].msgName()).isEqualTo(CreateJoinStageRes.getDescriptor().name)
         assertThat(createJoinStageRes.isCreated).isTrue
         assertThat(createJoinStageRes.createPayloadName).isEqualTo("contentCreateRoom")
@@ -157,7 +157,7 @@ class StageServiceTest {
         Thread.sleep(100)
 
         assertThat(resultList.size).isEqualTo(3)
-        val createJoinStageRes = CreateJoinStageRes.parseFrom(resultList[2].buffer())
+        val createJoinStageRes = CreateJoinStageRes.parseFrom(resultList[2].data())
 
         assertThat(resultList[2].msgName()).isEqualTo(CreateJoinStageRes.getDescriptor().name)
         assertThat(createJoinStageRes.isCreated).isFalse

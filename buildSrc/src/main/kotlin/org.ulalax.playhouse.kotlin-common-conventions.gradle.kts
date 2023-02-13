@@ -18,23 +18,7 @@ repositories {
     mavenLocal()
 }
 
-//configure<SourceSetContainer> {
-//    named("main") {
-//        java.srcDir("src/core/java")
-//    }
-//}
 
-
-//tasks {
-//    val sourcesJar by creating(Jar::class) {
-//        archiveClassifier.set("sources")
-//        from(kotlin.sourceSets.getByName("main").kotlin)
-//    }
-//
-//    artifacts {
-//        archives(sourcesJar)
-//    }
-//}
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
@@ -59,6 +43,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     // https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.1")
+    implementation("org.zeromq:zmqj:4.3.4.1")
 
 
 
@@ -73,8 +58,11 @@ dependencies {
     testImplementation(Depend.junitJupiter)
     // https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation("org.assertj:assertj-core:3.23.1")
-    // https://mvnrepository.com/artifact/org.mockito.kotlin/mockito-kotlin
+//    // https://mvnrepository.com/artifact/org.mockito.kotlin/mockito-kotlin
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
+    testImplementation("org.mockito:mockito-inline:5.1.1")
+
+
 }
 
 

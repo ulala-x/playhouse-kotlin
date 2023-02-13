@@ -18,35 +18,35 @@ open class ApiBaseSenderImpl(serviceId:String,
         sendToBaseSession(sessionEndpoint,sid, Packet(message))
     }
 
-    override fun createRoom(playEndpoint:String,StageType:String,packet: Packet): CreateStageResult {
+    override fun createStage(playEndpoint:String, StageType:String, packet: Packet): CreateStageResult {
         val req = CreateStageReq.newBuilder()
             .setStageType(StageType)
             .setPayloadName(packet.msgName)
-            .setPayload(ByteString.copyFrom(packet.buffer())).build()
+            .setPayload(ByteString.copyFrom(packet.data())).build()
 
         val reply = callToBaseRoom(playEndpoint,0,0, Packet(req))
-        val res = CreateStageRes.parseFrom(reply.buffer())
+        val res = CreateStageRes.parseFrom(reply.data())
         return CreateStageResult(reply.errorCode,res.stageId, Packet(res.payloadName,res.payload))
     }
 
-    override fun joinRoom(playEndpoint: String, stageId: Long,
-                          accountId: Long,sessionEndpoint: String,sid:Int,
-                          packet: Packet
+    override fun joinStage(playEndpoint: String, stageId: Long,
+                           accountId: Long, sessionEndpoint: String, sid:Int,
+                           packet: Packet
     ): JoinStageResult {
         val req = JoinStageReq.newBuilder()
             .setSessionEndpoint(sessionEndpoint)
             .setSid(sid)
             .setPayloadName(packet.msgName)
-            .setPayload(ByteString.copyFrom(packet.buffer())).build()
+            .setPayload(ByteString.copyFrom(packet.data())).build()
 
         val reply  = callToBaseRoom(playEndpoint,stageId,accountId, Packet(req))
-        val res = JoinStageRes.parseFrom(reply.buffer())
+        val res = JoinStageRes.parseFrom(reply.data())
 
         return JoinStageResult(reply.errorCode, Packet(res.payloadName,res.payload))
 
     }
 
-    override fun createJoinRoom(
+    override fun createJoinStage(
         playEndpoint: String, StageType: String, stageId: Long,
         createPacket: Packet,
         accountId: Long, sessionEndpoint: String, sid:Int,
@@ -55,14 +55,14 @@ open class ApiBaseSenderImpl(serviceId:String,
         val req = CreateJoinStageReq.newBuilder()
             .setStageType(StageType)
             .setCreatePayloadName(createPacket.msgName)
-            .setCreatePayload(ByteString.copyFrom(createPacket.buffer()))
+            .setCreatePayload(ByteString.copyFrom(createPacket.data()))
             .setSessionEndpoint(sessionEndpoint)
             .setSid(sid)
             .setJoinPayloadName(joinPacket.msgName)
-            .setJoinPayload(ByteString.copyFrom(joinPacket.buffer())).build()
+            .setJoinPayload(ByteString.copyFrom(joinPacket.data())).build()
 
         val reply = callToBaseRoom(playEndpoint,stageId,accountId, Packet(req))
-        val res = CreateJoinStageRes.parseFrom(reply.buffer())
+        val res = CreateJoinStageRes.parseFrom(reply.data())
         return CreateJoinStageResult(
             reply.errorCode,
             res.isCreated,

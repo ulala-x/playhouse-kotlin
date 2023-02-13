@@ -36,10 +36,10 @@ interface BaseSender {
 //    fun callToApi(apiEndpoint:String, sessionInfo: String,packet: Packet): ReplyPacket
 //    fun callToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet): ReplyPacket
     suspend fun requestToApi(apiEndpoint:String, sessionInfo: String, packet: Packet): ReplyPacket
-    suspend fun requestToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet): ReplyPacket
+    suspend fun requestToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet): ReplyPacket
 
     fun asyncToApi(apiEndpoint:String, sessionInfo: String, packet: Packet): CompletableDeferred<ReplyPacket>
-    fun asyncToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet):CompletableDeferred<ReplyPacket>
+    fun asyncToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet):CompletableDeferred<ReplyPacket>
 
     fun sendToSystem(endpoint: String, packet: Packet)
     suspend fun requestToSystem(endpoint: String, packet: Packet): ReplyPacket
@@ -52,18 +52,18 @@ interface ApiBaseSender : BaseSender {
 
     fun updateSession(sessionEndpoint: String,sid:Int,serviceId: String,sessionInfo:String)
 
-    fun createRoom(playEndpoint:String,StageType:String,packet: Packet): CreateStageResult
-    fun joinRoom(playEndpoint:String,
-                 stageId:Long,
-                 accountId: Long,
-                 sessionEndpoint: String,
-                 sid:Int,
-                 packet: Packet
+    fun createStage(playEndpoint:String, StageType:String, packet: Packet): CreateStageResult
+    fun joinStage(playEndpoint:String,
+                  stageId:Long,
+                  accountId: Long,
+                  sessionEndpoint: String,
+                  sid:Int,
+                  packet: Packet
     ): JoinStageResult
-    fun createJoinRoom(playEndpoint:String, StageType:String, stageId:Long,
-                       createPacket: Packet,
-                       accountId: Long, sessionEndpoint: String, sid:Int,
-                       joinPacket: Packet,
+    fun createJoinStage(playEndpoint:String, StageType:String, stageId:Long,
+                        createPacket: Packet,
+                        accountId: Long, sessionEndpoint: String, sid:Int,
+                        joinPacket: Packet,
     ): CreateJoinStageResult
 }
 interface ApiSender : ApiBaseSender {

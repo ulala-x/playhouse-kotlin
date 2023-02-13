@@ -4,7 +4,6 @@ import org.ulalax.playhouse.communicator.CommunicateClient
 import org.ulalax.playhouse.communicator.message.RouteHeader
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.Packet
-import org.ulalax.playhouse.protocol.ReplyCallback
 import org.ulalax.playhouse.protocol.ReplyPacket
 import kotlinx.coroutines.CompletableDeferred
 import org.apache.logging.log4j.kotlin.logger
@@ -178,7 +177,7 @@ open class BaseSenderImpl(private val serviceId: String,
     }
 
 
-    override fun asyncToRoom(
+    override fun asyncToStage(
         playEndpoint: String,
         stageId: Long,
         accountId: Long,
@@ -193,13 +192,13 @@ open class BaseSenderImpl(private val serviceId: String,
         communicateClient.send(playEndpoint,routePacket )
         return deferred
     }
-    override suspend fun requestToRoom(
+    override suspend fun requestToStage(
         playEndpoint: String,
         stageId: Long,
         accountId: Long,
         packet: Packet,
     ): ReplyPacket {
-        return asyncToRoom(playEndpoint,stageId,accountId,packet).await()
+        return asyncToStage(playEndpoint,stageId,accountId,packet).await()
     }
 
     suspend fun requestToBaseRoom(

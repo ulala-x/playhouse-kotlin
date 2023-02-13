@@ -9,7 +9,6 @@ class SpyCommunicateClient(val resultCollector:MutableList<RoutePacket> ) : Comm
 
     override fun send(endpoint: String, routePacket: RoutePacket) {
         resultCollector.add(routePacket)
-
     }
 
     override fun communicate() {

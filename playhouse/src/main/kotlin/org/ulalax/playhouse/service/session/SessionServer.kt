@@ -32,6 +32,7 @@ class SessionServer constructor(private val commonOption: CommonOption, private 
 
         val baseSenderImpl = BaseSenderImpl(serviceId, communicateClient,requestCache)
         val systemPanelImpl = SystemPanelImpl(serverInfoCenter,communicateClient)
+
         ControlContext.baseSender = baseSenderImpl
         ControlContext.systemPanel = systemPanelImpl
 

@@ -12,7 +12,7 @@ import org.ulalax.playhouse.service.play.base.BaseStageCmd
 
 class CreateJoinStageCmd(override val playService: PlayService) : BaseStageCmd {
     override suspend fun execute(baseStage: BaseStage, routePacket: RoutePacket) {
-        val request = CreateJoinStageReq.parseFrom(routePacket.buffer())
+        val request = CreateJoinStageReq.parseFrom(routePacket.data())
         val createStagePacket = Packet(request.createPayloadName,request.createPayload)
         val stageType = request.stageType
         val joinStagePacket = Packet(request.joinPayloadName,request.joinPayload)
@@ -34,13 +34,13 @@ class CreateJoinStageCmd(override val playService: PlayService) : BaseStageCmd {
             createReply = baseStage.create(stageType,createStagePacket)
             responseBuilder
                 .setCreatePayloadName(createReply.msgName)
-                .setCreatePayload(ByteString.copyFrom(createReply.buffer()))
+                .setCreatePayload(ByteString.copyFrom(createReply.data()))
 
             if(!createReply.isSuccess()){
                 playService.removeRoom(stageId)
                 val response = CreateJoinStageRes.newBuilder()
                                     .setCreatePayloadName(createReply.msgName)
-                                    .setCreatePayload(ByteString.copyFrom(createReply.buffer())).build()
+                                    .setCreatePayload(ByteString.copyFrom(createReply.data())).build()
 
                 baseStage.reply(ReplyPacket(createReply.errorCode,response))
                 return
@@ -56,7 +56,7 @@ class CreateJoinStageCmd(override val playService: PlayService) : BaseStageCmd {
         val joinReply = baseStage.join(accountId,sessionEndpoint,sid,apiEndpoint,joinStagePacket)
         val response = responseBuilder
             .setJoinPayloadName(joinReply.msgName)
-            .setJoinPayload(ByteString.copyFrom(joinReply.buffer()))
+            .setJoinPayload(ByteString.copyFrom(joinReply.data()))
             .build()
 
         baseStage.reply(ReplyPacket(joinReply.errorCode,response))

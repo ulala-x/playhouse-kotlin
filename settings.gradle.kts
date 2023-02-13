@@ -8,4 +8,4 @@
  */
 
 rootProject.name = "PlayHouse"
-include("zmq", "playhouse","clientConnector","protocol")
+include( "playhouse","clientConnector","protocol")

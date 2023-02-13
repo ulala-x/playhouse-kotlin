@@ -8,9 +8,6 @@ interface BasePacketListener {
     fun onReceive(channel: Channel, clientPacket: ClientPacket)
     fun onDisconnect(channel: Channel)
 
-    fun getSessionId(channel:Channel): Int {
-        return Integer.parseInt(channel.id().asLongText().split('-')[2],16)
-    }
 
 
 }

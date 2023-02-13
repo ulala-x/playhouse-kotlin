@@ -2,7 +2,7 @@ package org.ulalax.playhouse.protocol
 
 import com.google.protobuf.ByteString
 import com.google.protobuf.GeneratedMessageV3
-import io.netty.buffer.ByteBuf
+import org.zeromq.ZFrame
 import java.nio.ByteBuffer
 
 interface   ReplyCallback{
@@ -12,7 +12,8 @@ interface   ReplyCallback{
 
 interface BasePacket : AutoCloseable {
     fun movePayload(): Payload
-    fun buffer():ByteBuffer
+    fun frame():ZFrame
+    fun data():ByteArray
 
 }
 
@@ -20,9 +21,14 @@ data class Packet @JvmOverloads  constructor(val msgName:String="",var payload: 
     constructor(message: GeneratedMessageV3) : this(message.descriptorForType.name, ProtoPayload(message))
     constructor( msgName: String, message:ByteString):this(msgName, ProtoPayload(message))
 
-    override fun buffer(): ByteBuffer {
-        return payload.buffer().nioBuffer()
+    override fun frame(): ZFrame {
+        return payload.frame()
     }
+
+    override fun data(): ByteArray {
+        return this.frame().data()
+    }
+
     override fun movePayload(): Payload {
         val temp = payload
         payload = ProtoPayload()
@@ -42,8 +48,12 @@ data class ReplyPacket @JvmOverloads constructor(val errorCode: Int,val msgName:
     fun isSuccess():Boolean{
         return errorCode == 0
     }
-    override fun buffer(): ByteBuffer {
-        return payload.buffer().nioBuffer()
+    override fun frame(): ZFrame {
+        return payload.frame()
+    }
+
+    override fun data(): ByteArray {
+        return frame().data()
     }
 
     override fun movePayload(): Payload {

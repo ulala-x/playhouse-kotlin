@@ -39,7 +39,7 @@ class PlayService(val serviceId:String,
     override fun onStart() {
         state.set(ServerState.RUNNING)
 
-        threadForCoroutine = Thread{ messageLoop() }
+        threadForCoroutine = Thread({ messageLoop() },"play:message-loop")
         threadForCoroutine.start()
         timerManager.start()
     }
@@ -70,9 +70,8 @@ class PlayService(val serviceId:String,
                         baseRooms[stageId]?.run { this.send(roomPacket) }
                             ?: log.error("stageId:$stageId is not exist, msgName:$msgName")
                     }
-
-                    routePacket = msgQueue.poll()
                 }
+                routePacket = msgQueue.poll()
             }
             sleep(10)
         }
