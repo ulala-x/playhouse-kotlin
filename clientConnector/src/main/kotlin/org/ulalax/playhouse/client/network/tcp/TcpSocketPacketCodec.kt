@@ -15,9 +15,7 @@ class TcpSocketPacketCodec : ByteToMessageCodec<ClientPacket>() {
     private val parser = WsPacketParser()
     override fun encode(ctx: ChannelHandlerContext, clientPacket: ClientPacket, out: ByteBuf) {
         clientPacket.use {
-            val buffer = clientPacket.toByteBuf()
-            out.writeBytes(buffer)
-            buffer.release()
+            clientPacket.toByteBuf(out)
         }
     }
 

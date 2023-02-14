@@ -57,7 +57,7 @@ dependencies {
     implementation(Depend.lettuce)
     implementation(Depend.commonsValidator)
     implementation("org.reflections:reflections:0.10.2")
-    implementation("io.netty:netty-all:4.1.79.Final")
+    implementation("io.netty:netty-all:4.1.87.Final")
     implementation("org.springframework:spring-context:5.3.22")
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-reflect
     runtimeOnly("org.jetbrains.kotlin:kotlin-reflect:1.7.20")

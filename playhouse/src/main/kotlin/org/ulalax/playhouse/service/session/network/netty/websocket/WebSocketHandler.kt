@@ -23,6 +23,7 @@ class WebSocketHandler(private val sessionPacketListener: SessionPacketListener)
     override fun handlerRemoved(ctx: ChannelHandlerContext) {
         log.info{"disconnect"}
         sessionPacketListener.onDisconnect(ctx.channel())
+        ctx.close()
     }
 
     override fun userEventTriggered(ctx: ChannelHandlerContext, evt: Any) {

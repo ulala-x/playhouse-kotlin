@@ -7,6 +7,7 @@ import io.netty.handler.codec.MessageToMessageCodec
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.base.ByteBufferAllocator
 import org.ulalax.playhouse.base.WsPacketParser
 
 class WebSocketPacketCodec : MessageToMessageCodec<BinaryWebSocketFrame, ClientPacket>() {
@@ -14,7 +15,9 @@ class WebSocketPacketCodec : MessageToMessageCodec<BinaryWebSocketFrame, ClientP
     private val parser = WsPacketParser()
     override fun encode(ctx: ChannelHandlerContext, clientPacket: ClientPacket, out: MutableList<Any>) {
         clientPacket.use {
-            out.add(BinaryWebSocketFrame(clientPacket.toByteBuf()))
+            val buffer = ByteBufferAllocator.allocator.buffer()
+            clientPacket.toByteBuf(buffer)
+            out.add(BinaryWebSocketFrame(true,0,buffer))
         }
     }
 

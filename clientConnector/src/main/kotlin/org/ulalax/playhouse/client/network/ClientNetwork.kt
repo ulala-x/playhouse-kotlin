@@ -52,7 +52,7 @@ class ClientNetwork(private val connectorListener: BasePacketListener) {
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_REUSEADDR, true)
-                .option(ChannelOption.ALLOCATOR, ByteBufferAllocator.allocator)
+                //.option(ChannelOption.ALLOCATOR, ByteBufferAllocator.allocator)
 
                 websocketHandler?.run{
                     bootstrap.handler(WebSocketInitializer(websocketHandler!!))

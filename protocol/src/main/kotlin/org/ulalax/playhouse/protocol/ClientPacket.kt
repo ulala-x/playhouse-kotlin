@@ -2,7 +2,6 @@ package org.ulalax.playhouse.protocol
 import com.google.protobuf.ByteString
 import com.google.protobuf.GeneratedMessageV3
 import io.netty.buffer.ByteBuf
-import io.netty.buffer.Unpooled
 import io.netty.buffer.UnpooledByteBufAllocator
 import org.ulalax.playhouse.protocol.Common.*
 import org.apache.logging.log4j.kotlin.logger
@@ -115,14 +114,16 @@ class ClientPacket private constructor(val header: Header, private var payload: 
         return ReplyPacket(header.errorCode,header.msgName,movePayload())
     }
 
-    fun toByteBuf(): ByteBuf {
+    fun toByteBuf(buffer:ByteBuf) {
 
         val header = header.toMsg()
         val headerSize = header.serializedSize
         val body = frame()
         val packetSize =1+2+headerSize+body.length()
 
-        val packetBuffer = ByteBufferAllocator.getBuf(packetSize)
+        buffer.capacity(packetSize)
+
+//        val buffer = ByteBufferAllocator.getBuf(packetSize)
 
         /*
         1byte - header size
@@ -130,12 +131,12 @@ class ClientPacket private constructor(val header: Header, private var payload: 
         header
         body
          */
-        packetBuffer.writeByte(headerSize)
-        packetBuffer.writeShort(body.length())
-        packetBuffer.writeBytes(header.toByteArray())
-        packetBuffer.writeBytes(body.data())
+        buffer.writeByte(headerSize)
+        buffer.writeShort(body.length())
+        buffer.writeBytes(header.toByteArray())
+        buffer.writeBytes(body.data())
 
-        return packetBuffer
+        //return buffer
     }
 
     fun setMsgSeq(msgSeq: Int) {

@@ -6,8 +6,8 @@ import io.netty.buffer.*
 import java.nio.ByteBuffer
 
 object ByteBufferAllocator {
-    //val allocator = UnpooledByteBufAllocator(false)
-    val allocator = PooledByteBufAllocator(false)
+//    val allocator = UnpooledByteBufAllocator(false)
+    val allocator = PooledByteBufAllocator(true)
 
     //val allocator = PooledByteBufAllocator(true)
 
