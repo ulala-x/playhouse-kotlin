@@ -48,11 +48,7 @@ class RequestCache(timout:Long) {
     }
 
     fun getSequence(): Int {
-        val seq =  sequence.incrementAndGet()
-        if(seq == 0){
-            return sequence.incrementAndGet()
-        }
-        return seq
+        return sequence.incrementAndGet()
     }
 
     fun put(seq: Int, replyObject: ReplyObject) {
