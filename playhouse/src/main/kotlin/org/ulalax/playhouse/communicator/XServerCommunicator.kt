@@ -1,0 +1,36 @@
+package org.ulalax.playhouse.communicator
+
+import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.communicator.socket.PlaySocket
+
+class CommunicatorServer(
+        private val playSocket:PlaySocket, private val log: Logger
+) : CommunicateServer {
+
+    private lateinit var listener: CommunicateListener
+    private var running = true;
+
+   override fun bind(listener: CommunicateListener) {
+        this.listener = listener
+        playSocket.bind()
+    }
+    override fun communicate() {
+        while(running){
+            var packet = playSocket.receive()
+            while(packet !=null){
+                try {
+                    listener.onReceive(packet)
+                }catch (e:Exception){
+                    log.error("${playSocket.id} Error during communication",this::class.simpleName,e)
+                }
+
+                packet = playSocket.receive()
+            }
+            Thread.sleep(ConstOption.THREAD_SLEEP)
+        }
+
+    }
+    override fun stop() {
+        running = false
+    }
+}

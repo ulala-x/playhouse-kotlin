@@ -1,82 +1,88 @@
-package org.ulalax.playhouse.communicator
+package org.ulalax.playhouse.communicator.socket
 
+import org.ulalax.playhouse.communicator.CommunicateListener
+import org.ulalax.playhouse.communicator.IpFinder
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import redis.embedded.RedisServer
-
-object TestSession: Service {
-    var onStart = false
-    var onStop = false
-
-    override fun onStart() {
-        onStart = true
-    }
-
-    override fun onReceive(routePacket: RoutePacket) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onStop() {
-        onStop = true
-    }
-
-    override fun weightPoint(): Int {
-        return 10
-    }
-
-    override fun serverState(): ServerState {
-        return ServerState.RUNNING
-    }
-
-    override fun serviceType(): ServiceType {
-        return ServiceType.SESSION
-    }
-
-    override fun serviceId(): String {
-        return "TestSession"
-    }
-
-    override fun pause() {
-        TODO("Not yet implemented")
-    }
-
-    override fun resume() {
-        TODO("Not yet implemented")
-    }
-}
-
-internal class CommunicatorTest{
-
-    companion object{
-        lateinit var redisServer: RedisServer
-        var port = 0
+import org.ulalax.playhouse.ConsoleLogger
+import org.ulalax.playhouse.communicator.CommunicatorClient
+import org.ulalax.playhouse.communicator.CommunicatorServer
+import org.ulalax.playhouse.communicator.message.Packet
+import org.ulalax.playhouse.protocol.Common.HeaderMsg
+import java.lang.Thread.sleep
 
 
-        @BeforeAll
-        @JvmStatic
-        fun setUp() {
-            port = TestHelper.findFreePort()
-            redisServer = RedisServer.builder().setting("maxmemory 128M").port(port).build()
-            redisServer.start()
-
-        }
-
-        @AfterAll
-        @JvmStatic
-        fun tearDown() {
-            redisServer.stop()
-        }
-    }
+internal class CommunicatorTest {
 
     @Test
-    fun startNStop() {
+    fun communicate() {
 
-    }
+        val localIp = IpFinder.findLocalIp()
 
-    @Test
-    fun awaitTermination() {
+
+        val sessionResults = mutableListOf<RoutePacket>()
+        val sessionPort = IpFinder.findFreePort()
+        val sessionEndpoint = "tcp://${localIp}:$sessionPort"
+        val sessionServer = CommunicatorServer(ZmqJPlaySocket(sessionEndpoint),ConsoleLogger())
+        val sessionClient = CommunicatorClient(ZmqJPlaySocket(sessionEndpoint),ConsoleLogger())
+
+        sessionServer.bind(object : CommunicateListener {
+            override fun onReceive(routePacket: RoutePacket) {
+                sessionResults.add(routePacket)
+            }
+        })
+
+
+        val apiResults = mutableListOf<RoutePacket>()
+        val apiPort = IpFinder.findFreePort()
+        val apiEndpoint = "tcp://${localIp}:${apiPort}"
+        val apiServer = CommunicatorServer(ZmqJPlaySocket(apiEndpoint),ConsoleLogger())
+        val apiClient = CommunicatorClient(ZmqJPlaySocket(apiEndpoint),ConsoleLogger())
+
+        apiServer.bind(object : CommunicateListener {
+            override fun onReceive(routePacket: RoutePacket) {
+                apiResults.add(routePacket)
+            }
+        })
+        sleep(100)
+
+        Thread{
+            sessionServer.communicate()
+        }.start()
+        Thread{
+            sessionClient.communicate()
+        }.start()
+        Thread{
+            apiServer.communicate()
+        }.start()
+        Thread{
+            apiClient.communicate()
+        }.start()
+
+        ///////// session to api ///////////
+
+        sessionClient.connect(apiEndpoint)
+        sleep(100)
+
+        val message = HeaderMsg.newBuilder().setMsgName("sessionPacket").build()
+
+        sessionClient.send(apiEndpoint, RoutePacket.clientOf("session",0, Packet(message)))
+        sleep(100)
+
+        assertThat(apiResults.size).isEqualTo(1)
+        assertThat(apiResults[0].msgName()).isEqualTo("HeaderMsg")
+
+//        ////////// api to session ///////////////
+
+        apiClient.connect(sessionEndpoint)
+        sleep(100)
+
+        apiClient.send(sessionEndpoint, RoutePacket.clientOf("api",0, Packet("apiPacket")))
+        sleep(200)
+
+        assertThat(sessionResults.size).isEqualTo(1)
+        assertThat(sessionResults[0].msgName()).isEqualTo("apiPacket")
     }
 
 }

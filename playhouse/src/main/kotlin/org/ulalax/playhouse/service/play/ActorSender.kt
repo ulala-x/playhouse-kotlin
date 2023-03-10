@@ -1,10 +1,10 @@
 package org.ulalax.playhouse.service.play
 
-import org.ulalax.playhouse.protocol.Packet
-import org.ulalax.playhouse.protocol.ReplyPacket
 import kotlinx.coroutines.CompletableDeferred
+import org.ulalax.playhouse.communicator.message.Packet
+import org.ulalax.playhouse.communicator.message.ReplyPacket
 
-interface ActorSender {
+interface IActorSender {
     fun accountId():Long
     fun sessionEndpoint():String
     fun apiEndpoint():String
@@ -16,8 +16,6 @@ interface ActorSender {
     fun sendToApi(sessionInfo: String,packet: Packet)
     suspend fun requestToApi(sessionInfo: String, packet: Packet): ReplyPacket
     fun asyncToApi(sessionInfo: String, packet: Packet): CompletableDeferred<ReplyPacket>
-
-
 
 
 }
