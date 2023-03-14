@@ -3,7 +3,7 @@ package org.ulalax.playhouse.communicator
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
-class XaseServerInfoCenter : ServerInfoCenter {
+class XServerInfoCenter : ServerInfoCenter {
 
     private val serverInfoMap:MutableMap<String, XServerInfo> = ConcurrentHashMap()
     private var serverInfoList:List<XServerInfo> = ArrayList()

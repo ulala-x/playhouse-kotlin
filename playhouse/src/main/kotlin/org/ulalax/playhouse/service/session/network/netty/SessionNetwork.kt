@@ -1,27 +1,21 @@
 package org.ulalax.playhouse.service.session.network.netty
 
-import org.ulalax.playhouse.base.ByteBufferAllocator
 import org.ulalax.playhouse.communicator.IpFinder
 import org.ulalax.playhouse.service.session.SessionOption
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.Channel
-import io.netty.channel.ChannelHandler
-import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
-import io.netty.channel.socket.SocketChannel
 import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
-import org.apache.logging.log4j.kotlin.logger
-import org.ulalax.playhouse.service.session.network.netty.tcp.TcpSocketHandler
-import org.ulalax.playhouse.service.session.network.netty.tcp.TcpSocketPacketCodec
+import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.service.session.network.netty.tcp.TcpSocketServerInitializer
 import org.ulalax.playhouse.service.session.network.netty.websocket.WebSocketServerInitializer
 
 class SessionNetwork(private val sessionOption: SessionOption,
-                     private val sessionPacketListener: SessionPacketListener
+                     private val sessionPacketListener: SessionPacketListener,
+                     private val log:Logger
 ) {
 
-    private val log = logger()
     private val bootstrap = ServerBootstrap()
     private lateinit var channel:Channel
     private val backlog = 1024
@@ -53,25 +47,23 @@ class SessionNetwork(private val sessionOption: SessionOption,
 //
 //
             if(sessionOption.useWebSocket){
-                childHandler(WebSocketServerInitializer(sessionOption,sessionPacketListener))
+                childHandler(WebSocketServerInitializer(sessionOption,sessionPacketListener,log))
             }else{
-                childHandler(TcpSocketServerInitializer(sessionOption,sessionPacketListener))
+                childHandler(TcpSocketServerInitializer(sessionOption,sessionPacketListener,log))
 
             }
         }
 
         channel = bootstrap.bind(port).sync().channel()
 
-        log.info("Ready for ${IpFinder.findLocalIp()}:$port")
+        log.info("Ready for ${IpFinder.findLocalIp()}:$port",this::class.simpleName)
     }
-
-
 
     fun await(){
         channel.closeFuture().sync()
     }
     fun shutdown() {
-        log.info("netty shutdown")
+        log.info("netty shutdown",this::class.simpleName)
         NettyConfigure.shutdownGracefully()
     }
 }

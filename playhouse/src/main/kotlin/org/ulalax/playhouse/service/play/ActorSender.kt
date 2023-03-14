@@ -4,7 +4,7 @@ import kotlinx.coroutines.CompletableDeferred
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.communicator.message.ReplyPacket
 
-interface IActorSender {
+interface ActorSender {
     fun accountId():Long
     fun sessionEndpoint():String
     fun apiEndpoint():String

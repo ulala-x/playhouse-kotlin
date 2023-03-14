@@ -3,7 +3,7 @@ package org.ulalax.playhouse.communicator
 import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.communicator.socket.PlaySocket
 
-class CommunicatorServer(
+class XServerCommunicator(
         private val playSocket:PlaySocket, private val log: Logger
 ) : CommunicateServer {
 

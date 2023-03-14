@@ -1,6 +1,6 @@
 package org.ulalax.playhouse.service
 
-import org.ulalax.playhouse.communicator.CommunicateClient
+import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.ulalax.playhouse.communicator.message.RouteHeader
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import kotlinx.coroutines.CompletableDeferred
@@ -12,10 +12,10 @@ import org.ulalax.playhouse.communicator.message.ReplyPacket
 import org.ulalax.playhouse.protocol.Server.*
 import java.util.concurrent.CompletableFuture
 
-open class BaseSenderImpl(private val serviceId: String,
-                          private val ICommunicateClient: CommunicateClient,
-                          private val reqCache : RequestCache
-) : BaseSender {
+open class BaseSender(private val serviceId: String,
+                      private val clientCommunicator: ClientCommunicator,
+                      private val reqCache : RequestCache
+) : CommonSender {
 
     private val log = logger()
 
@@ -43,7 +43,7 @@ open class BaseSenderImpl(private val serviceId: String,
                 val routePacket = RoutePacket.replyOf(serviceId,msgSeq,reply).apply {
                     this.routeHeader.sid = sid
                 }
-                ICommunicateClient.send(from,routePacket)
+                clientCommunicator.send(from,routePacket)
             }else{
                 log.error("not exist request packet ${reply.msgName},${header.msgName} is not request packet")
             }
@@ -54,12 +54,12 @@ open class BaseSenderImpl(private val serviceId: String,
 
     override fun sendToClient(sessionEndpoint: String,sid:Int,packet: Packet){
         val routePacket = RoutePacket.clientOf(serviceId,sid,packet)
-        ICommunicateClient.send(sessionEndpoint, routePacket)
+        clientCommunicator.send(sessionEndpoint, routePacket)
     }
 
     fun sendToBaseSession(sessionEndpoint: String, sid: Int, packet: Packet){
         val routePacket = RoutePacket.sessionOf(sid,packet, isBase = true, isBackend = true)
-        ICommunicateClient.send(sessionEndpoint,routePacket)
+        clientCommunicator.send(sessionEndpoint,routePacket)
     }
 
     // 현재 session 은 request 를 사용할일이 없음
@@ -71,7 +71,7 @@ open class BaseSenderImpl(private val serviceId: String,
         val routePacket = RoutePacket.sessionOf(sid,packet,isBase = true, isBackend = true).apply {
             this.setMsgSeq(seq)
         }
-        ICommunicateClient.send(sessionEndpoint, routePacket)
+        clientCommunicator.send(sessionEndpoint, routePacket)
 
         return deferred.await()
     }
@@ -81,27 +81,27 @@ open class BaseSenderImpl(private val serviceId: String,
     }
     override fun sendToApi(apiEndpoint:String,sessionInfo: String,packet: Packet){
         val routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = true)
-        ICommunicateClient.send(apiEndpoint, routePacket)
+        clientCommunicator.send(apiEndpoint, routePacket)
     }
     fun relayToApi(apiEndpoint: String, sid: Int, sessionInfo: String, packet: Packet, msgSeq: Int){
         val routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = false).apply {
             this.routeHeader.sid = sid
             this.routeHeader.header.msgSeq = msgSeq
         }
-        ICommunicateClient.send(apiEndpoint, routePacket)
+        clientCommunicator.send(apiEndpoint, routePacket)
     }
     fun sendToBaseApi(apiEndpoint:String,sessionInfo: String,packet: Packet){
         val routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = true, isBackend = true)
-        ICommunicateClient.send(apiEndpoint, routePacket)
+        clientCommunicator.send(apiEndpoint, routePacket)
     }
 
     override fun sendToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet){
         val routePacket = RoutePacket.stageOf(stageId,accountId,packet,false, isBackend = true)
-        ICommunicateClient.send(playEndpoint, routePacket)
+        clientCommunicator.send(playEndpoint, routePacket)
     }
     fun sendToBaseStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet){
         val routePacket = RoutePacket.stageOf(stageId,accountId,packet,true, isBackend = true)
-        ICommunicateClient.send(playEndpoint, routePacket)
+        clientCommunicator.send(playEndpoint, routePacket)
     }
 
 //    override fun callToApi(apiEndpoint:String, packet: Packet, sessionInfo: String, replyCallback: ReplyCallback){
@@ -139,7 +139,7 @@ open class BaseSenderImpl(private val serviceId: String,
         var routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = true).apply {
             setMsgSeq(seq)
         }
-        ICommunicateClient.send(apiEndpoint, routePacket)
+        clientCommunicator.send(apiEndpoint, routePacket)
         return deferred
     }
 
@@ -172,7 +172,7 @@ open class BaseSenderImpl(private val serviceId: String,
         var routePacket = RoutePacket.stageOf(stageId,accountId,packet, isBase = true, isBackend = true).apply {
             setMsgSeq(seq)
         }
-        ICommunicateClient.send(playEndpoint,routePacket )
+        clientCommunicator.send(playEndpoint,routePacket )
 
         return future.get()
     }
@@ -190,7 +190,7 @@ open class BaseSenderImpl(private val serviceId: String,
         var routePacket = RoutePacket.stageOf(stageId,accountId,packet, isBase = false, isBackend = true).apply {
             setMsgSeq(seq)
         }
-        ICommunicateClient.send(playEndpoint,routePacket )
+        clientCommunicator.send(playEndpoint,routePacket )
         return deferred
     }
     override suspend fun requestToStage(
@@ -214,12 +214,12 @@ open class BaseSenderImpl(private val serviceId: String,
         var routePacket = RoutePacket.stageOf(stageId,accountId,packet, isBase = true, isBackend = true).apply {
             setMsgSeq(seq)
         }
-        ICommunicateClient.send(playEndpoint,routePacket )
+        clientCommunicator.send(playEndpoint,routePacket )
         return deferred.await()
     }
 
     override fun sendToSystem(endpoint: String, packet: Packet) {
-        ICommunicateClient.send(endpoint, RoutePacket.systemOf(packet,false))
+        clientCommunicator.send(endpoint, RoutePacket.systemOf(packet,false))
     }
 
     override suspend fun requestToSystem(endpoint: String, packet: Packet): ReplyPacket {
@@ -227,7 +227,7 @@ open class BaseSenderImpl(private val serviceId: String,
         val routePacket = RoutePacket.systemOf(packet,false).apply { routeHeader.header.msgSeq = msgSeq }
         val deferred = CompletableDeferred<ReplyPacket>()
         this.reqCache.put(msgSeq, ReplyObject(deferred = deferred))
-        ICommunicateClient.send(endpoint,routePacket)
+        clientCommunicator.send(endpoint,routePacket)
         return deferred.await()
     }
 
@@ -253,7 +253,7 @@ open class BaseSenderImpl(private val serviceId: String,
         val from = routeHeader.from
         if(msgSeq >0) {
           val reply =  RoutePacket.replyOf(this.serviceId, msgSeq, ReplyPacket(errorCode))
-          ICommunicateClient.send(from,reply)
+          clientCommunicator.send(from,reply)
         }
     }
 
@@ -272,7 +272,7 @@ open class BaseSenderImpl(private val serviceId: String,
             this.routeHeader.header.msgSeq = msgSeq
             this.routeHeader.sid = sid
         }
-        ICommunicateClient.send(playEndpoint, routePacket)
+        clientCommunicator.send(playEndpoint, routePacket)
     }
 
     ///////////

@@ -1,16 +1,16 @@
 package org.ulalax.playhouse.service.play.base
 
-import org.ulalax.playhouse.communicator.CommunicateClient
+import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.ulalax.playhouse.communicator.ServerInfoCenter
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.protocol.Packet
-import org.ulalax.playhouse.protocol.ReplyPacket
-import org.ulalax.playhouse.service.RequestCache
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.apache.logging.log4j.kotlin.logger
-import org.ulalax.playhouse.ErrorCode
+import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.communicator.RequestCache
+import org.ulalax.playhouse.communicator.message.Packet
+import org.ulalax.playhouse.communicator.message.ReplyPacket
+import org.ulalax.playhouse.protocol.Common.*
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.service.play.*
 import org.ulalax.playhouse.service.play.base.command.*
@@ -18,18 +18,19 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
 class BaseStage(
-    stageId:Long,
-    private val playService: PlayService,
-    communicateClient: CommunicateClient,
-    reqCache: RequestCache,
-    private val serverInfoCenter: ServerInfoCenter,
+        stageId:Long,
+        private val playService: PlayService,
+        clientCommunicator: ClientCommunicator,
+        reqCache: RequestCache,
+        private val serverInfoCenter: ServerInfoCenter,
+        private val log:Logger
     ) {
-    private val log = logger()
+
     private val msgHandler = BaseStageCmdHandler()
     private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
     private val baseStageCoroutineContext = ThreadPoolController.coroutineContext
     private var isUsing = AtomicBoolean(false)
-    val stageSenderImpl = StageSenderImpl(playService.serviceId, stageId,playService,communicateClient ,reqCache)
+    val stageSenderImpl = BaseStageSender(playService.serviceId, stageId,playService,clientCommunicator ,reqCache)
 
 
     lateinit var stage: Stage<Actor>
@@ -39,7 +40,7 @@ class BaseStage(
         msgHandler.register(CreateStageReq.getDescriptor().name, CreateStageCmd(playService))
         msgHandler.register(JoinStageReq.getDescriptor().name, JoinStageCmd(playService))
         msgHandler.register(CreateJoinStageReq.getDescriptor().name, CreateJoinStageCmd(playService))
-        msgHandler.register(StageTimer.getDescriptor().name, StageTimerCmd(playService))
+        msgHandler.register(StageTimer.getDescriptor().name, StageTimerCmd(playService,log))
         msgHandler.register(DisconnectNoticeMsg.getDescriptor().name, DisconnectNoticeCmd(playService))
         msgHandler.register(AsyncBlock.getDescriptor().name, AsyncBlockCmd<Any>(playService))
     }
@@ -57,8 +58,8 @@ class BaseStage(
                 }
             }
         }catch (e:Exception){
-            stageSenderImpl.errorReply(routePacket.routeHeader, ErrorCode.SYSTEM_ERROR)
-            log.error(ExceptionUtils.getStackTrace(e))
+            stageSenderImpl.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR.number)
+            log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
         }finally {
             stageSenderImpl.clearCurrentPacketHeader()
         }
@@ -77,8 +78,8 @@ class BaseStage(
                                 dispatch(item)
                             }
                         } catch (e: Exception) {
-                            stageSenderImpl.errorReply(routePacket.routeHeader, ErrorCode.UNCHECKED_CONTENTS_ERROR)
-                            log.error(ExceptionUtils.getStackTrace(e))
+                            stageSenderImpl.errorReply(routePacket.routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR.number)
+                            log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
                         }
                     }
                 }else{
@@ -93,7 +94,7 @@ class BaseStage(
     suspend fun create(StageType:String, packet: Packet): ReplyPacket {
 
         this.stage = playService.createContentRoom(StageType,stageSenderImpl)
-        this.stageSenderImpl.StageType = StageType
+        this.stageSenderImpl.stageType = StageType
         val outcome  = this.stage.onCreate(packet)
         this.isCreated = true
         return outcome
@@ -104,8 +105,8 @@ class BaseStage(
         var baseUser = playService.findUser(accountId)
 
         if (baseUser == null) {
-            val userSender = ActorSenderImpl(accountId, sessionEndpoint, sid,apiEndpoint,this,serverInfoCenter)
-            val user = playService.createContentUser(this.stageSenderImpl.StageType,userSender)
+            val userSender = BaseActorSender(accountId, sessionEndpoint, sid,apiEndpoint,this,serverInfoCenter)
+            val user = playService.createContentUser(this.stageSenderImpl.stageType,userSender)
             baseUser = BaseActor(user, userSender)
             baseUser.actor.onCreate()
             playService.addUser(baseUser)
@@ -154,7 +155,7 @@ class BaseStage(
         try{
             this.stage.onPostCreate()
         }catch (e:Exception){
-            log.error(ExceptionUtils.getStackTrace(e))
+            log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
         }
 
     }
@@ -163,17 +164,14 @@ class BaseStage(
         try{
             var baseUser = playService.findUser(accountId)
 
-            //baseUser?.let {
             if(baseUser!=null){
                 this.stage.onPostJoinStage(baseUser.actor)
             }else{
-                log.error("user is not exist : $accountId")
+                log.error("user is not exist : $accountId",this::class.simpleName)
             }
 
-            //} ?: log.error("user is not exist : $accountId")
-
         }catch (e:Exception){
-            log.error(ExceptionUtils.getStackTrace(e))
+            log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
         }
     }
 
@@ -184,7 +182,7 @@ class BaseStage(
         if(baseUser!=null){
             this.stage.onDisconnect(baseUser.actor)
         }else{
-            log.error("user is not exist : $accountId")
+            log.error("user is not exist : $accountId",this::class.simpleName)
         }
     }
 

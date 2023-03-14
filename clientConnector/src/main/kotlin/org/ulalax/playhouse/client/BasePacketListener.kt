@@ -1,9 +1,9 @@
 package org.ulalax.playhouse.client
 
 import org.ulalax.playhouse.client.network.BasePacketListener
-import org.ulalax.playhouse.protocol.ClientPacket
 import io.netty.channel.Channel
 import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.client.network.message.ClientPacket
 
 class BasePacketListener(private val requestCache: RequestCache,
                          private val clientPacketListener: ClientPacketListener

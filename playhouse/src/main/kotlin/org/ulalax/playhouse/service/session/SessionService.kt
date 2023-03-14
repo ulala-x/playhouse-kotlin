@@ -2,10 +2,9 @@ package org.ulalax.playhouse.service.session
 
 import io.netty.channel.Channel
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.protocol.ClientPacket
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.communicator.*
-import org.ulalax.playhouse.service.RequestCache
+import org.ulalax.playhouse.communicator.message.ClientPacket
 import org.ulalax.playhouse.service.session.network.netty.SessionNetwork
 import org.ulalax.playhouse.service.session.network.netty.SessionPacketListener
 import java.util.concurrent.ConcurrentHashMap
@@ -15,19 +14,18 @@ import java.util.concurrent.atomic.AtomicReference
 
 class SessionService(private val serviceId:String,
                      private val sessionOption: SessionOption,
-                     private val serverInfoCenter: ServerInfoCenterImpl,
-                     private val communicateClient: CommunicateClient,
+                     private val serverInfoCenter: XServerInfoCenter,
+                     private val clientCommunicator: ClientCommunicator,
                      private val requestCache: RequestCache,
                      private val sessionPort:Int,
                      private val showQps:Boolean,
+                     private val log:Logger
                      ) : Service, SessionPacketListener {
 
-
-    private val log = logger()
     private val clients = ConcurrentHashMap<Int, SessionClient>()
     private var state = AtomicReference(ServerState.DISABLE)
-    private val sessionNetwork = SessionNetwork(sessionOption,this);
-    private val performanceTester = PerformanceTester(showQps,"client")
+    private val sessionNetwork = SessionNetwork(sessionOption,this,log);
+    private val performanceTester = PerformanceTester(showQps,log,"client")
     private val clientQueue = ConcurrentLinkedQueue<Pair<Int, ClientPacket>>()
     private val serverQueue = ConcurrentLinkedQueue<RoutePacket>()
     private lateinit var clientMessageLoopThread:Thread
@@ -56,10 +54,10 @@ class SessionService(private val serviceId:String,
                 val clientPacket = message.second
 
                 clientPacket.use {
-                    log.debug("SessionService:onReceive ${clientPacket.header.msgName} : from client")
+                    log.debug("SessionService:onReceive ${clientPacket.header.msgName} : from client",this::class.simpleName)
                     val sessionClient = clients[sessionId]
                     if (sessionClient == null) {
-                        log.error("sessionId is not exist $sessionId,${clientPacket.msgName()}")
+                        log.error("sessionId is not exist $sessionId,${clientPacket.msgName()}",this::class.simpleName)
                     }else{
                         sessionClient.onReceive(clientPacket)
                     }
@@ -82,7 +80,7 @@ class SessionService(private val serviceId:String,
                     val packetName = routePacket.msgName()
                     val sessionClient = clients[sessionId]
                     if(sessionClient == null) {
-                        log.error("sessionId is already disconnected  $sessionId,$packetName")
+                        log.error("sessionId is already disconnected  $sessionId,$packetName",this::class.simpleName)
                     }else{
                         sessionClient.onReceive(routePacket)
                     }
@@ -96,9 +94,7 @@ class SessionService(private val serviceId:String,
     }
 
     override fun onReceive(routePacket: RoutePacket) {
-
         serverQueue.add(routePacket)
-
     }
 
     override fun onStop() {
@@ -139,11 +135,11 @@ class SessionService(private val serviceId:String,
                 sessionId,
                 channel,
                 serverInfoCenter,
-                communicateClient,
+                clientCommunicator,
                 sessionOption.urls,
                 requestCache)
         }else{
-            log.error("sessionId is exist $sessionId")
+            log.error("sessionId is exist $sessionId",this::class.simpleName)
         }
     }
 
@@ -156,7 +152,7 @@ class SessionService(private val serviceId:String,
         val sid = getSessionId(channel)
         val sessionClient = clients[sid]
         if(sessionClient == null) {
-            log.error("sessionId is not exist $sid")
+            log.error("sessionId is not exist $sid",this::class.simpleName)
             return
         }
 

@@ -2,28 +2,28 @@ package org.ulalax.playhouse.service.session
 
 import io.netty.channel.Channel
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.protocol.ClientPacket
-import org.ulalax.playhouse.protocol.Packet
-import org.ulalax.playhouse.service.RequestCache
 import org.apache.logging.log4j.kotlin.logger
 import org.ulalax.playhouse.protocol.Server.*
-import org.ulalax.playhouse.communicator.CommunicateClient
+import org.ulalax.playhouse.communicator.ClientCommunicator
+import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.communicator.ServerInfoCenter
 import org.ulalax.playhouse.communicator.ServiceType
+import org.ulalax.playhouse.communicator.message.ClientPacket
+import org.ulalax.playhouse.communicator.message.Packet
 
 class SessionClient(
-    serviceId: String,
-    private val sid: Int,
-    private val channel: Channel,
-    serviceInfoCenter: ServerInfoCenter,
-    communicateClient: CommunicateClient,
-    urls: ArrayList<String>,
-    reqCache: RequestCache,
+        serviceId: String,
+        private val sid: Int,
+        private val channel: Channel,
+        serviceInfoCenter: ServerInfoCenter,
+        clientCommunicator: ClientCommunicator,
+        urls: ArrayList<String>,
+        reqCache: RequestCache,
 ) {
 
     private val log = logger()
 
-    private val sessionSender = SessionSenderImpl(serviceId,communicateClient,reqCache)
+    private val sessionSender = XSessionSender(serviceId,clientCommunicator,reqCache)
     private val targetServiceCache = TargetServiceCache(serviceInfoCenter)
 
     var isAuthenticated = false
@@ -84,6 +84,7 @@ class SessionClient(
                 relayTo(serviceId, clientPacket)
             }else{
                 log.warn("client is not authenticated :${msgName}")
+
 
             }
         }

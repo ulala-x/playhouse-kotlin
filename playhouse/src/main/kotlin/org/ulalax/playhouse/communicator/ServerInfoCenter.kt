@@ -1,8 +1,8 @@
 package org.ulalax.playhouse.communicator
 
-interface IServerInfoCenter {
-    fun update(serverList: List<ServerInfo>): List<ServerInfo>
-    fun findServer(endpoint: String): ServerInfo
-    fun findRoundRobinServer(serviceId:String): ServerInfo
-    fun getServerList(): List<ServerInfo>
+interface ServerInfoCenter {
+    fun update(serverList: List<XServerInfo>): List<XServerInfo>
+    fun findServer(endpoint: String): XServerInfo
+    fun findRoundRobinServer(serviceId:String): XServerInfo
+    fun getServerList(): List<XServerInfo>
 }

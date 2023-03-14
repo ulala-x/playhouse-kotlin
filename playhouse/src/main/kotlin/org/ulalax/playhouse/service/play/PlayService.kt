@@ -2,14 +2,13 @@ package org.ulalax.playhouse.service.play
 
 import org.ulalax.playhouse.communicator.message.RouteHeader
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.protocol.ProtoPayload
 import kotlinx.coroutines.runBlocking
-import org.apache.logging.log4j.kotlin.logger
-import org.ulalax.playhouse.ErrorCode
+import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.communicator.*
-import org.ulalax.playhouse.service.BaseSenderImpl
-import org.ulalax.playhouse.service.RequestCache
+import org.ulalax.playhouse.communicator.message.XPayload
+import org.ulalax.playhouse.protocol.Common.BaseErrorCode
+import org.ulalax.playhouse.service.BaseSender
 import org.ulalax.playhouse.service.play.base.BaseStage
 import org.ulalax.playhouse.service.play.base.BaseActor
 import org.ulalax.playhouse.service.play.base.TimerCallback
@@ -22,11 +21,11 @@ import java.util.concurrent.atomic.AtomicReference
 class PlayService(val serviceId:String,
                   val publicEndpoint:String,
                   val playOption: PlayOption,
-                  val communicateClient: CommunicateClient,
+                  val clientCommunicator: ClientCommunicator,
                   val requestCache: RequestCache,
                   val serverInfoCenter: ServerInfoCenter,
+                  private val log:Logger
                   ) : Service {
-    private val log = logger()
 
     private var state = AtomicReference(ServerState.DISABLE)
     private val baseUsers:MutableMap<Long, BaseActor> = ConcurrentHashMap()
@@ -34,7 +33,7 @@ class PlayService(val serviceId:String,
     private lateinit var threadForCoroutine:Thread
     private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
     private val timerManager = TimerManager(this)
-    private val baseSender = BaseSenderImpl(serviceId, communicateClient ,requestCache)
+    private val baseSender = BaseSender(serviceId, clientCommunicator ,requestCache)
 
     override fun onStart() {
         state.set(ServerState.RUNNING)
@@ -68,7 +67,7 @@ class PlayService(val serviceId:String,
                         doBaseRoomPacket(msgName, roomPacket, stageId)
                     }else{
                         baseRooms[stageId]?.run { this.send(roomPacket) }
-                            ?: log.error("stageId:$stageId is not exist, msgName:$msgName")
+                            ?: log.error("stageId:$stageId is not exist, msgName:$msgName",this::class.simpleName)
                     }
                 }
                 routePacket = msgQueue.poll()
@@ -94,7 +93,7 @@ class PlayService(val serviceId:String,
 
             TimerMsg.getDescriptor().name -> {
                 val timerId = routePacket.timerId
-                val protoPayload = routePacket.getPayload() as ProtoPayload
+                val protoPayload = routePacket.getPayload() as XPayload
                 timerProcess(stageId, timerId, protoPayload.proto() as TimerMsg, routePacket.timerCallback)
             }
 
@@ -103,11 +102,10 @@ class PlayService(val serviceId:String,
             }
 
             else -> {
-
                 var room = baseRooms[stageId]
                 if (room == null) {
-                    log.error(" room is not exist :$stageId,$msgName ")
-                    errorReply(routePacket.routeHeader, ErrorCode.STAGE_IS_NOT_EXIST)
+                    log.error(" room is not exist :$stageId,$msgName",this::class.simpleName)
+                    errorReply(routePacket.routeHeader, BaseErrorCode.STAGE_IS_NOT_EXIST.number)
                     return
                 }
 
@@ -121,7 +119,7 @@ class PlayService(val serviceId:String,
                     }
 
                     else -> {
-                        log.error("$msgName is not base packet")
+                        log.error("$msgName is not base packet",this::class.simpleName)
                     }
                 }
             }
@@ -155,9 +153,9 @@ class PlayService(val serviceId:String,
                     timerManager.cancelTimer(timerId)
 
                 }
-                else -> {log.error("Invalid timer type ${type}")}
+                else -> {log.error("Invalid timer type $type",this::class.simpleName)}
             }
-        }?:log.error("room for timer is not exist:$stageId, ${timerMsg.type}")
+        }?:log.error("room for timer is not exist:$stageId, ${timerMsg.type}",this::class.simpleName)
     }
 
     override fun onReceive(routePacket: RoutePacket) {
@@ -165,7 +163,7 @@ class PlayService(val serviceId:String,
     }
 
     private fun makeBaseRoom(stageId: Long): BaseStage {
-        val baseStage = BaseStage(stageId,this,communicateClient,requestCache,serverInfoCenter)
+        val baseStage = BaseStage(stageId,this,clientCommunicator,requestCache,serverInfoCenter,log)
         baseRooms[stageId] = baseStage
         return baseStage
     }
@@ -219,20 +217,17 @@ class PlayService(val serviceId:String,
         baseRooms[stageId]?.cancelTimer(timerId)
     }
 
-    fun createContentRoom(StageType:String, roomSender: StageSenderImpl): Stage<Actor> {
-        return  playOption.elementConfigurator.rooms[StageType]!!.invoke(roomSender)
-        //clazz.getDeclaredConstructor().newInstance()
-        //return roomOption.elementConfigurator.rooms[StageType]!!.constructors.first{it.parameters.size == 1}.call(roomSender) as Room<User>
+    fun createContentRoom(stageType:String, roomSender: BaseStageSender): Stage<Actor> {
+        return  playOption.elementConfigurator.rooms[stageType]!!.invoke(roomSender)
     }
 
 
-    fun createContentUser(StageType: String, userSender: ActorSenderImpl): Actor {
-        return playOption.elementConfigurator.users[StageType]!!.invoke(userSender)
-        //return roomOption.elementConfigurator.users[StageType]!!.constructors.first{it.parameters.size ==1}.call(userSender)
+    fun createContentUser(stageType: String, userSender: BaseActorSender): Actor {
+        return playOption.elementConfigurator.users[stageType]!!.invoke(userSender)
     }
 
-    fun isValidType(StageType: String): Boolean {
-        return playOption.elementConfigurator.rooms.contains(StageType)
+    fun isValidType(stageType: String): Boolean {
+        return playOption.elementConfigurator.rooms.contains(stageType)
     }
 
 

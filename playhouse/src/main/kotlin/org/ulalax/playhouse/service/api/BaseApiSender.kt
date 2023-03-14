@@ -1,7 +1,7 @@
 package org.ulalax.playhouse.service.api
 
 import com.google.protobuf.ByteString
-import org.ulalax.playhouse.communicator.CommunicateClient
+import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.apache.logging.log4j.kotlin.logger
 import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.communicator.message.Packet
@@ -9,9 +9,9 @@ import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.service.*
 
 open class ApiBaseSender(serviceId:String,
-                         communicateClient: CommunicateClient,
+                         clientCommunicator: ClientCommunicator,
                          reqCache: RequestCache
-): BaseSender(serviceId,communicateClient,reqCache), ApiCommonSender {
+): BaseSender(serviceId,clientCommunicator,reqCache), ApiCommonSender {
     override fun updateSession(sessionEndpoint: String,sid:Int,serviceId: String,sessionInfo:String){
         val message = UpdateSessionInfoMsg.newBuilder()
             .setServiceId(serviceId)
@@ -74,10 +74,10 @@ open class ApiBaseSender(serviceId:String,
     }
 }
 
-class ApiSenderImpl (private val serviceId:String,
-                     private val communicateClient: CommunicateClient,
+class BaseApiSender (private val serviceId:String,
+                     private val clientCommunicator: ClientCommunicator,
                      private val reqCache: RequestCache
-) : ApiBaseSender(serviceId,communicateClient,reqCache),
+) : ApiBaseSender(serviceId,clientCommunicator,reqCache),
     ApiSender, ApiBackendSender {
     private val log = logger()
 
@@ -110,8 +110,8 @@ class ApiSenderImpl (private val serviceId:String,
     }
 
 
-    fun clone(): ApiSenderImpl {
-        return ApiSenderImpl(this.serviceId,this.communicateClient,this.reqCache)
+    fun clone(): BaseApiSender {
+        return BaseApiSender(this.serviceId,this.clientCommunicator,this.reqCache)
     }
 
 }

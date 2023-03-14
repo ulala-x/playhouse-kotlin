@@ -8,11 +8,13 @@ import io.netty.handler.codec.http.HttpServerCodec
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler
 import io.netty.handler.timeout.IdleStateHandler
+import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.service.session.network.netty.SessionPacketListener
 import java.util.concurrent.TimeUnit
 
 class WebSocketServerInitializer(private val sessionOption: SessionOption,
-                                 private val sessionPacketListener: SessionPacketListener
+                                 private val sessionPacketListener: SessionPacketListener,
+                                 private val log: Logger
 ) : ChannelInitializer<SocketChannel>() {
     private val webSocketPath = "/websocket"
 
@@ -26,6 +28,6 @@ class WebSocketServerInitializer(private val sessionOption: SessionOption,
             pipeline.addLast(IdleStateHandler(sessionOption.clientSessionIdleTimeout,
                 sessionOption.clientSessionIdleTimeout,0,TimeUnit.SECONDS))
         }
-        pipeline.addLast(WebSocketBinaryHandler(sessionPacketListener))
+        pipeline.addLast(WebSocketBinaryHandler(sessionPacketListener,log))
     }
 }

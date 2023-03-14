@@ -1,14 +1,13 @@
 package org.ulalax.playhouse.service.session
 
-import org.ulalax.playhouse.communicator.zmq.ZmqCommunicateServer
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.communicator.XServerCommunicator
+import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.communicator.*
+import org.ulalax.playhouse.communicator.socket.ZmqJPlaySocket
 import org.ulalax.playhouse.service.*
 
-class SessionServer constructor(private val commonOption: CommonOption, private  val sessionOption: SessionOption) :
-    Server {
+class SessionServer constructor(private val commonOption: CommonOption, private  val sessionOption: SessionOption,private val log: Logger) : Server {
 
-    private val log = logger()
     private lateinit var communicator: Communicator
 
 
@@ -22,16 +21,16 @@ class SessionServer constructor(private val commonOption: CommonOption, private 
         val bindEndpoint = communicatorOption.bindEndpoint
         val serviceId = commonOption.serviceId
 
-        val communicateServer = ZmqCommunicateServer(bindEndpoint)
-        val communicateClient = communicateServer.getClient()
+        val communicateServer = XServerCommunicator(ZmqJPlaySocket(bindEndpoint),log)
+        val communicateClient = XClientCommunicator(ZmqJPlaySocket(bindEndpoint),log)
 
-        val requestCache = RequestCache(commonOption.requestTimeoutSec)
+        val requestCache = RequestCache(commonOption.requestTimeoutSec,log)
 
         val storageClient = LettuceRedisClient(commonOption.redisIp,commonOption.redisPort).apply { this.connect() }
-        val serverInfoCenter = ServerInfoCenterImpl()
+        val serverInfoCenter = XServerInfoCenter()
 
-        val baseSenderImpl = BaseSenderImpl(serviceId, communicateClient,requestCache)
-        val systemPanelImpl = SystemPanelImpl(serverInfoCenter,communicateClient)
+        val baseSenderImpl = BaseSender(serviceId, communicateClient,requestCache)
+        val systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicateClient)
 
         ControlContext.baseSender = baseSenderImpl
         ControlContext.systemPanel = systemPanelImpl
@@ -44,7 +43,8 @@ class SessionServer constructor(private val commonOption: CommonOption, private 
                 communicateClient,
                 requestCache,
                 sessionOption.sessionPort,
-                commonOption.showQps
+                commonOption.showQps,
+                log
         )
 
         communicator = Communicator(
@@ -56,6 +56,8 @@ class SessionServer constructor(private val commonOption: CommonOption, private 
             baseSenderImpl,
             systemPanelImpl,
             communicateServer,
+            communicateClient,
+            log
         )
         communicator.start()
 

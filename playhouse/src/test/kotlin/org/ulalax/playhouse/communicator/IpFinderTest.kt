@@ -1,20 +1,19 @@
 package org.ulalax.playhouse.communicator
 
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.booleans.shouldBeTrue
 import org.apache.commons.validator.routines.InetAddressValidator
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
-import org.ulalax.playhouse.communicator.IpFinder
 
 
-internal class IpFinderTest {
+class IpFinderTest : FunSpec() {
 
-    @Test
-    fun findLocalIp() {
-        assertThat(InetAddressValidator.getInstance().isValidInet4Address(IpFinder.findLocalIp())).isTrue
-    }
+    init {
+        test("findLocalIp should be valid") {
+            InetAddressValidator.getInstance().isValidInet4Address(IpFinder.findLocalIp()).shouldBeTrue()
+        }
 
-    @Test
-    fun findPublicIp() {
-        assertThat(InetAddressValidator.getInstance().isValidInet4Address(IpFinder.findPublicIp())).isTrue
+        test("findPublicIp should be valid") {
+            InetAddressValidator.getInstance().isValidInet4Address(IpFinder.findPublicIp()).shouldBeTrue()
+        }
     }
 }

@@ -1,7 +1,7 @@
 package org.ulalax.playhouse.service.play
 
-import org.ulalax.playhouse.protocol.Packet
-import org.ulalax.playhouse.protocol.ReplyPacket
+import org.ulalax.playhouse.communicator.message.Packet
+import org.ulalax.playhouse.communicator.message.ReplyPacket
 import org.ulalax.playhouse.service.StageSender
 
 class ActorStub(override val actorSender: ActorSender) : Actor {

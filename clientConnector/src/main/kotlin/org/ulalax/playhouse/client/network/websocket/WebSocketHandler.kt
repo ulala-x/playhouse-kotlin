@@ -1,12 +1,12 @@
 package org.ulalax.playhouse.client.network.websocket
 
-import org.ulalax.playhouse.protocol.ClientPacket
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.handler.timeout.IdleState
 import io.netty.handler.timeout.IdleStateEvent
 import org.apache.logging.log4j.kotlin.logger
 import org.ulalax.playhouse.client.network.BasePacketListener
+import org.ulalax.playhouse.client.network.message.ClientPacket
 
 class WebSocketHandler(private val basePacketListener: BasePacketListener) : ChannelInboundHandlerAdapter() {
 

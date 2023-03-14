@@ -1,30 +1,19 @@
 package org.ulalax.playhouse.communicator
 
-import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.apache.logging.log4j.kotlin.logger
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
 
-typealias Action 
-open class PacketBucket {
-    val log = logger()
-    private val queue: MutableMap<String,Queue<RoutePacket>> = ConcurrentHashMap();
+typealias Action  = ()->Unit
+open class JobBucket {
 
-    fun add(target: String, routePacket: RoutePacket){
-        var packets = queue[target]
-        if(packets==null){
-            packets = ConcurrentLinkedQueue()
-            this.queue[target] = packets
-        }
-        packets.add(routePacket)
+    private val queue: Queue<Action> = ConcurrentLinkedQueue()
+
+    fun add(job:Action){
+        queue.add(job)
     }
-
-    fun get(): MutableMap<String, Queue<RoutePacket>> {
-        return queue
+    fun get(): Action? {
+        return queue.poll()
     }
 }
 
-class SendBucket : PacketBucket()
-class ReceiveBucket : PacketBucket()

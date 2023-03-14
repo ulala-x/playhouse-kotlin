@@ -2,14 +2,14 @@ package org.ulalax.playhouse.service
 
 import kotlinx.coroutines.runBlocking
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.protocol.Packet
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.protocol.Common.*
 import java.lang.Thread.sleep
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class BaseSystem(private val serverSystem: ServerSystem, private val baseSender: BaseSenderImpl) {
+class BaseSystem(private val serverSystem: ServerSystem, private val baseSender: BaseSender) {
 
     private val log = logger()
     private val thread = Thread({ messingLoop() },"system:message-loop")

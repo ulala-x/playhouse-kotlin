@@ -1,14 +1,13 @@
 package org.ulalax.playhouse.communicator
 
 import org.apache.commons.lang3.time.StopWatch
-import org.apache.logging.log4j.kotlin.logger
-import java.time.LocalDateTime
+import org.ulalax.playhouse.Logger
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-class PerformanceTester(private val showQps: Boolean,private val from: String = "Server") {
-    private val log = logger()
+class PerformanceTester(private val showQps: Boolean, private val log: Logger, private val from: String = "Server") {
+
     private val stopWatch = StopWatch()
     private val counter = AtomicInteger()
     private val timer = Timer("PerformanceTimer",true)
@@ -17,7 +16,6 @@ class PerformanceTester(private val showQps: Boolean,private val from: String = 
         if(showQps){
             counter.incrementAndGet()
         }
-
     }
 
     fun stop(){
@@ -25,7 +23,6 @@ class PerformanceTester(private val showQps: Boolean,private val from: String = 
             timer.cancel()
         }
     }
-
 
     fun start(){
         if (showQps){
@@ -47,7 +44,7 @@ class PerformanceTester(private val showQps: Boolean,private val from: String = 
             val qps =  if(messageCount == 0 || seconds == 0L)  0 else messageCount / seconds
 
 //            log.info("$from, $messageCount, 수행시간: ${stopWatch.getTime(TimeUnit.MILLISECONDS)} ms", )
-            log.info("$from, $messageCount, qps: $qps")
+            log.info("$from, $messageCount, qps: $qps",this::class.simpleName)
 //            log.info("$from, The time is now ${LocalDateTime.now()}")
         }finally {
             stopWatch.reset()

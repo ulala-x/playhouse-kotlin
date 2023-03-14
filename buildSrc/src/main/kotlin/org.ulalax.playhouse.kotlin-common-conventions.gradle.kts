@@ -54,10 +54,15 @@ dependencies {
     implementation(Depend.nettyBuffer)
     implementation(Depend.commonLang3)
 
+    testImplementation("io.kotest:kotest-runner-junit5:5.5.5")
+    testImplementation ("io.kotest:kotest-assertions-core:5.5.5")
+    testImplementation ("io.kotest:kotest-property:5.5.5")
+
+
     // Use JUnit Jupiter for testing.
-    testImplementation(Depend.junitJupiter)
-    // https://mvnrepository.com/artifact/org.assertj/assertj-core
-    testImplementation("org.assertj:assertj-core:3.23.1")
+//    testImplementation(Depend.junitJupiter)
+//    // https://mvnrepository.com/artifact/org.assertj/assertj-core
+//    testImplementation("org.assertj:assertj-core:3.23.1")
 //    // https://mvnrepository.com/artifact/org.mockito.kotlin/mockito-kotlin
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("org.mockito:mockito-inline:5.1.1")

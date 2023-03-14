@@ -6,11 +6,11 @@ import org.apache.logging.log4j.kotlin.logger
 import org.zeromq.ZFrame
 
 
-interface IPayload : AutoCloseable{
+interface Payload : AutoCloseable{
     fun frame(): ZFrame
 }
 
-class Payload constructor() : IPayload {
+class XPayload constructor() : Payload {
     private val log = logger()
     constructor(message: GeneratedMessageV3) : this() {
         this.proto = message

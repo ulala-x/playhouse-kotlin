@@ -1,11 +1,11 @@
 package org.ulalax.playhouse.service.play.base.command
 
 import com.google.protobuf.ByteString
-import org.ulalax.playhouse.ErrorCode
+import org.ulalax.playhouse.communicator.message.Packet
+import org.ulalax.playhouse.communicator.message.ReplyPacket
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.protocol.Packet
-import org.ulalax.playhouse.protocol.ReplyPacket
+import org.ulalax.playhouse.protocol.Common.BaseErrorCode
 import org.ulalax.playhouse.service.play.PlayService
 import org.ulalax.playhouse.service.play.base.BaseStage
 import org.ulalax.playhouse.service.play.base.BaseStageCmd
@@ -26,7 +26,7 @@ class CreateJoinStageCmd(override val playService: PlayService) : BaseStageCmd {
         val responseBuilder = CreateJoinStageRes.newBuilder()
 
         if(!playService.isValidType(stageType)){
-            playService.errorReply(routePacket.routeHeader, ErrorCode.STAGE_TYPE_IS_INVALID)
+            playService.errorReply(routePacket.routeHeader, BaseErrorCode.STAGE_TYPE_IS_INVALID.number)
             return
         }
 
@@ -50,8 +50,6 @@ class CreateJoinStageCmd(override val playService: PlayService) : BaseStageCmd {
             }
 
         }
-
-
 
         val joinReply = baseStage.join(accountId,sessionEndpoint,sid,apiEndpoint,joinStagePacket)
         val response = responseBuilder

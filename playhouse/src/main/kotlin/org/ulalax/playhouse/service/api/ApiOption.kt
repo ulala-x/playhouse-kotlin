@@ -8,6 +8,6 @@ class ApiOption {
     var executorService: ExecutorService = Executors.newFixedThreadPool(200)
     lateinit var apiPath:String
     lateinit var applicationContext: ApplicationContext
-    lateinit var apiCallBackHandler: ApiCallBackHandler
+    lateinit var apiCallBackHandler: ApiCallBack
 
 }

@@ -1,28 +1,28 @@
 package org.ulalax.playhouse.communicator
 
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.Logger
 import java.util.*
 import kotlin.concurrent.timer
 
 class ServerAddressResolver (
-    private val bindEndpoint:String,
-    private val serverInfoCenter: ServerInfoCenter,
-    private val communicateClient: CommunicateClient,
-    private val service: Service,
-    private val storageClient: StorageClient
+        private val bindEndpoint:String,
+        private val serverInfoCenter: ServerInfoCenter,
+        private val clientCommunicator: ClientCommunicator,
+        private val service: Service,
+        private val storageClient: StorageClient,
+        private val log:Logger
 ){
-    private val log = logger()
     private lateinit var timer: Timer
-
     fun start(){
-        log.info("Server address resolver start")
-        timer = timer(period = 1000, initialDelay = 3000) {
+        log.info("Server address resolver start",this::class.simpleName)
+
+        timer = timer(name = "ServerAddressResolverTimer", period = ConstOption.ADDRESS_RESOLVER_PERIOD,
+                initialDelay = ConstOption.ADDRESS_RESOLVER_INITIAL_DELAY) {
 
             try{
-
                 storageClient.updateServerInfo(
-                    ServerInfoImpl.of(
+                    XServerInfo.of(
                         bindEndpoint,
                         service.serviceType(),
                         service.serviceId(),
@@ -37,18 +37,16 @@ class ServerAddressResolver (
 
                 updateList.forEach { serverInfo->
                     when(serverInfo.state){
-                        ServerState.RUNNING -> communicateClient.connect(serverInfo.bindEndpoint)
-                        ServerState.DISABLE -> communicateClient.disconnect(serverInfo.bindEndpoint)
+                        ServerState.RUNNING -> clientCommunicator.connect(serverInfo.bindEndpoint)
+                        ServerState.DISABLE -> clientCommunicator.disconnect(serverInfo.bindEndpoint)
                         else -> {}
                     }
                 }
             }catch (e:Exception){
-                log.error(ExceptionUtils.getStackTrace(e))
+                log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
             }
         }
-
     }
-
     fun stop(){
         timer.cancel()
     }

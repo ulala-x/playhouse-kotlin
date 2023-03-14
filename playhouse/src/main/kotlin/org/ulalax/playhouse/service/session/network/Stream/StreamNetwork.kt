@@ -2,11 +2,9 @@ package org.ulalax.playhouse.service.session.network.Stream
 
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import org.apache.logging.log4j.kotlin.logger
-import org.ulalax.playhouse.base.PacketParser
-import org.ulalax.playhouse.base.TcpPacketParser
-import org.ulalax.playhouse.base.WsPacketParser
-import org.ulalax.playhouse.protocol.*
+import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.communicator.message.ClientPacket
+import org.ulalax.playhouse.service.session.network.PacketParser
 import org.zeromq.SendFlag
 import org.zeromq.SocketType
 import org.zeromq.ZSocket
@@ -15,14 +13,12 @@ import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.collections.HashMap
 
-class StreamNetwork(private val sessionPacketListener: SessionPacketListener)  {
+class StreamNetwork(private val sessionPacketListener: SessionPacketListener,private val log: Logger)  {
 
-    val log = logger()
-
-    var socket = ZSocket(SocketType.STREAM)
+    var socket: ZSocket = ZSocket(SocketType.STREAM)
     var clients = HashMap<Int,ByteArray>()
-    var clientParsers = HashMap<Int,PacketParser>()
-    private val sendQueue:Queue<Pair<Int,ClientPacket?>> = ConcurrentLinkedQueue()
+    var clientParsers = HashMap<Int, PacketParser>()
+    private val sendQueue:Queue<Pair<Int, ClientPacket?>> = ConcurrentLinkedQueue()
     var isShutdown = false;
     var isTcp = true;
 
@@ -73,11 +69,7 @@ class StreamNetwork(private val sessionPacketListener: SessionPacketListener)  {
     }
 
     private fun getParsers(): PacketParser {
-        return if(isTcp){
-            TcpPacketParser()
-        }else{
-            WsPacketParser()
-        }
+        return PacketParser(log)
     }
 
     private fun sendLoop(){
@@ -88,7 +80,7 @@ class StreamNetwork(private val sessionPacketListener: SessionPacketListener)  {
             val identity = this.clients[sid]
 
             if(identity == null){
-                log.debug("$sid already disconnected")
+                log.debug("$sid already disconnected",this::class.simpleName)
                 continue
             }
             if(packet == null){

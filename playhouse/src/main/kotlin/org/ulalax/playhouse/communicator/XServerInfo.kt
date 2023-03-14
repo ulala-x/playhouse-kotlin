@@ -2,17 +2,17 @@ package org.ulalax.playhouse.communicator
 import org.ulalax.playhouse.protocol.Server
 
 
-class BaseServerInfo private constructor(val bindEndpoint: String,
-                                         val serviceType: ServiceType,
-                                         val serviceId:String,
-                                         var state: ServerState,
-                                         var weightingPoint:Int,
-                                         var lastUpdate:Long,
+class XServerInfo private constructor(val bindEndpoint: String,
+                                      val serviceType: ServiceType,
+                                      val serviceId:String,
+                                      var state: ServerState,
+                                      var weightingPoint:Int,
+                                      var lastUpdate:Long,
                                         ) : ServerInfo {
 
     companion object{
-        fun of(bindEndpoint: String, service: Service): BaseServerInfo {
-            return BaseServerInfo(
+        fun of(bindEndpoint: String, service: Service): XServerInfo {
+            return XServerInfo(
                 bindEndpoint,
                 service.serviceType(),
                 service.serviceId(),
@@ -21,8 +21,8 @@ class BaseServerInfo private constructor(val bindEndpoint: String,
                 System.currentTimeMillis()
             )
         }
-        fun of(infoMsg: Server.ServerInfoMsg): BaseServerInfo {
-            return BaseServerInfo(
+        fun of(infoMsg: Server.ServerInfoMsg): XServerInfo {
+            return XServerInfo(
                 infoMsg.endpoint,
                 ServiceType.valueOf(infoMsg.serviceType),
                 infoMsg.serviceId,
@@ -39,8 +39,8 @@ class BaseServerInfo private constructor(val bindEndpoint: String,
             state: ServerState,
             weightingPoint:Int,
             timeStamp:Long,
-        ): BaseServerInfo {
-            return BaseServerInfo(bindEndpoint,serviceType,serviceId,state,weightingPoint,timeStamp)
+        ): XServerInfo {
+            return XServerInfo(bindEndpoint,serviceType,serviceId,state,weightingPoint,timeStamp)
         }
     }
 
@@ -60,7 +60,7 @@ class BaseServerInfo private constructor(val bindEndpoint: String,
         return  System.currentTimeMillis() - this.lastUpdate > 60000
     }
 
-    fun update(serverInfo: BaseServerInfo):Boolean{
+    fun update(serverInfo: XServerInfo):Boolean{
         var stateChanged = false;
 
         if(this.state!=serverInfo.state){

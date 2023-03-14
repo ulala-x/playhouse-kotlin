@@ -1,7 +1,7 @@
 package org.ulalax.playhouse.client.network
 
-import org.ulalax.playhouse.protocol.ClientPacket
 import io.netty.channel.Channel
+import org.ulalax.playhouse.client.network.message.ClientPacket
 
 interface BasePacketListener {
     fun onConnect(channel: Channel)

@@ -1,7 +1,7 @@
 package org.ulalax.playhouse.service.api
 
+import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.protocol.Common.BaseErrorCode
-import org.ulalax.playhouse.protocol.Packet
 
 open class StageResult(open val errorCode: Int){
     fun isSuccess() = errorCode == BaseErrorCode.SUCCESS_VALUE

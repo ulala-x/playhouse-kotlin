@@ -1,13 +1,14 @@
 package org.ulalax.playhouse.client
 
-import org.ulalax.playhouse.protocol.ReplyPacket
+import io.kotest.core.spec.style.AnnotationSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import org.ulalax.playhouse.client.network.message.ReplyPacket
+import org.ulalax.playhouse.protocol.Common
 
-internal class RequestCacheTest{
+internal class RequestCacheTest : AnnotationSpec(){
 
     @Test
     fun evictListenerExceptionTest():Unit = runBlocking  {
@@ -15,9 +16,8 @@ internal class RequestCacheTest{
         val cache = RequestCache(2)
         cache.put(1, ReplyObject(deferred = deferred))
 
-        assertThrows<ConnectorException> {
-            deferred.await()
-        }
+        val result:ReplyPacket = deferred.await()
+        result.errorCode.shouldBe(Common.BaseErrorCode.REQUEST_TIMEOUT_VALUE)
     }
 
     @Test
@@ -26,8 +26,6 @@ internal class RequestCacheTest{
         val cache = RequestCache(2)
 
         cache.put(1, ReplyObject(deferred = deferred))
-
-        assertThat(cache.get(1)).isNotNull
-
+        cache.get(1).shouldNotBe(null)
     }
 }

@@ -1,6 +1,6 @@
 package org.ulalax.playhouse.service.play
 
-import org.ulalax.playhouse.communicator.CommunicateClient
+import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.ulalax.playhouse.communicator.message.AsyncBlockPacket
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.service.play.base.TimerCallback
@@ -13,24 +13,23 @@ import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.service.*
 import java.time.Duration
 
-class StageSenderImpl(
+class BaseStageSender(
         private val serviceId:String,
         private val stageId:Long,
         private val playService: PlayService,
-        private val ICommunicateClient: CommunicateClient,
+        private val clientCommunicator: ClientCommunicator,
         reqCache: RequestCache,
-) : BaseSenderImpl(serviceId, ICommunicateClient,reqCache), StageSender {
+) : BaseSender(serviceId, clientCommunicator,reqCache), StageSender {
 
     private val timerIds = HashSet<Long>()
-
-    var StageType:String = ""
+    var stageType:String = ""
 
     override fun stageId(): Long {
         return stageId
     }
 
     override fun stageType(): String {
-        return StageType
+        return stageType
     }
     private fun makeTimerId(): Long {
         return TimerIdMaker.makeId()

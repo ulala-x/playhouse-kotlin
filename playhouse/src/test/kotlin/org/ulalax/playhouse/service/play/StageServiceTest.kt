@@ -1,56 +1,226 @@
 package org.ulalax.playhouse.service.play
 
 import com.google.protobuf.ByteString
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldBeEmpty
 import org.ulalax.playhouse.communicator.ServerInfoCenter
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.protocol.Packet
-import org.ulalax.playhouse.service.RequestCache
-import org.ulalax.playhouse.service.SpyCommunicateClient
+import org.ulalax.playhouse.service.SpyClientCommunicator
 import org.ulalax.playhouse.service.play.base.TimerCallback
-import kotlinx.coroutines.runBlocking
-import org.apache.logging.log4j.kotlin.logger
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
-import org.ulalax.playhouse.ErrorCode
+import org.ulalax.playhouse.ConsoleLogger
+import org.ulalax.playhouse.communicator.RequestCache
+import org.ulalax.playhouse.communicator.message.Packet
+import org.ulalax.playhouse.protocol.Common.BaseErrorCode
 import org.ulalax.playhouse.protocol.Server.*
 import java.time.Duration
 
-class StageServiceTest {
+class StageServiceTest : FunSpec() {
 
-    val bindEndpoint = "tcp://127.0.0.1:8777"
-    val resultList = mutableListOf<RoutePacket>()
-    val StageType = "dungeon"
-    lateinit var playService: PlayService
-    val teststageId = 10000L
-    private val log = logger()
+    private val bindEndpoint = "tcp://127.0.0.1:8777"
+    private val resultList = mutableListOf<RoutePacket>()
+    private val StageType = "dungeon"
+    private lateinit var playService: PlayService
+    private val teststageId = 10000L
 
-    @BeforeEach
-    fun setUp() {
-        ThreadPoolController.coroutineContext
+    init {
 
-        val communicateClient = SpyCommunicateClient(resultList)
-        val reqCache = RequestCache(5)
+        beforeTest {
+            ThreadPoolController.coroutineContext
 
-        val playOption = PlayOption().apply {
-            this.elementConfigurator.register(StageType,
-                { stageSender -> StageStub(stageSender) },
-                { actorSender -> ActorStub(actorSender) })
+            val communicateClient = SpyClientCommunicator(resultList)
+            val reqCache = RequestCache(5,ConsoleLogger())
+
+            val playOption = PlayOption().apply {
+                this.elementConfigurator.register(StageType,
+                        { stageSender -> StageStub(stageSender) },
+                        { actorSender -> ActorStub(actorSender) })
+            }
+
+            val serverInfoCenter: ServerInfoCenter = mock()
+
+            playService = PlayService("play", bindEndpoint, playOption, communicateClient, reqCache,serverInfoCenter, ConsoleLogger())
+            playService.onStart()
         }
-//        val roomOption = RoomOption().apply {
-//            this.elementConfigurator.register(StageType,RoomStub::class,UserStub::class)
-//        }
 
-        val serverInfoCenter: ServerInfoCenter = mock()
+        afterTest{
+            resultList.clear()
+        }
 
-        playService = PlayService("play", bindEndpoint, playOption, communicateClient, reqCache,serverInfoCenter)
-        playService.onStart()
-    }
-    @AfterEach
-    fun tearDown() {
-        resultList.clear()
+        test("create room should be success") {
+            // given
+            val routePacket = createRoomPacket(StageType)
+
+            // when
+            playService.onReceive(routePacket)
+            Thread.sleep(200)
+
+            // then
+            val response = resultList[0]
+            response.routeHeader.header.errorCode.shouldBe(BaseErrorCode.SUCCESS.number)
+
+            val createStageRes = CreateStageRes.parseFrom(response.data())
+            createStageRes.payloadName.shouldBe("contentCreateRoom")
+        }
+
+        test("create room should have valid data format") {
+            // given
+            val routePacket = createRoomPacket(StageType)
+
+            // when
+            playService.onReceive(routePacket)
+            Thread.sleep(200)
+
+            // then
+            val response = resultList[0]
+            val createStageRes = CreateStageRes.parseFrom(response.data())
+
+            createStageRes.payload.isEmpty.shouldBeTrue()
+            createStageRes.payloadName.shouldBe("contentCreateRoom")
+        }
+
+        test("create room with Invalid Type should be get invalid error") {
+            val routePacket = createRoomPacket("invalid type")
+            playService.onReceive(routePacket)
+            Thread.sleep(200)
+
+            resultList[0].routeHeader.header.errorCode.shouldBe(BaseErrorCode.STAGE_TYPE_IS_INVALID.number)
+        }
+
+        test(" join room should be success"){
+            //given
+            val stageId = create_room_with_success()
+            val joinRoom  = joinRoomPacket(stageId,100)
+
+            //when
+            playService.onReceive(joinRoom)
+            Thread.sleep(200)
+
+            //then
+            resultList.shouldHaveSize(3)
+            JoinStageRes.parseFrom(resultList[2].data()).payloadName.shouldBe("contentJoinRoom")
+        }
+
+        //    @Test
+        test("join room with invalid id ,should get stage is not exist error"){
+
+            val joinRoom  = joinRoomPacket(99,100)
+            playService.onReceive(joinRoom)
+            Thread.sleep(200)
+
+            resultList.shouldHaveSize(1)
+            resultList[0].routeHeader.header.errorCode.shouldBe(BaseErrorCode.STAGE_IS_NOT_EXIST.number)
+
+        }
+
+
+        test("create join room in create state should be success"){
+            val createJoinRoom = createJoinRoomPacket(StageType,teststageId,1000)
+            playService.onReceive(createJoinRoom)
+
+            Thread.sleep(200)
+
+            resultList.shouldHaveSize(2)
+
+            val createJoinStageRes = CreateJoinStageRes.parseFrom(resultList[1].data())
+            resultList[1].msgName().shouldBe(CreateJoinStageRes.getDescriptor().name)
+
+            createJoinStageRes.isCreated.shouldBeTrue()
+            createJoinStageRes.createPayloadName.shouldBe("contentCreateRoom")
+            createJoinStageRes.joinPayloadName.shouldBe("contentJoinRoom")
+
+        }
+
+
+        test("create join room in join state should be success") {
+            val stageId = create_room_with_success()
+
+            val createJoinRoom = createJoinRoomPacket(StageType, stageId, 1000)
+            playService.onReceive(createJoinRoom)
+            Thread.sleep(100)
+
+            resultList.shouldHaveSize(3)
+            val createJoinStageRes = CreateJoinStageRes.parseFrom(resultList[2].data())
+
+            resultList[2].msgName().shouldBe(CreateJoinStageRes.getDescriptor().name)
+            createJoinStageRes.isCreated.shouldBeFalse()
+            createJoinStageRes.createPayloadName.shouldBeEmpty()
+            createJoinStageRes.joinPayloadName.shouldBe("contentJoinRoom")
+        }
+
+
+        test("add_repeat_timer"){
+            create_join_room_with_create_room()
+            Thread.sleep(100)
+            val room = playService.findRoom(teststageId)!!
+
+            var resultCount = 0
+            room.stageSenderImpl.addRepeatTimer(Duration.ZERO, Duration.ofMillis(100),object: TimerCallback {
+                override suspend fun invoke() {
+                    resultCount++
+                }
+            })
+
+            Thread.sleep(510)
+            resultCount.shouldBe(5)
+        }
+
+        test("add_count_timer"){
+            create_join_room_with_create_room()
+            Thread.sleep(100)
+            val room = playService.findRoom(teststageId)!!
+
+            var resultCount = 0
+            val timerId =
+                room.stageSenderImpl.addCountTimer(Duration.ZERO, 3, Duration.ofMillis(10), object : TimerCallback {
+                    override suspend fun invoke() {
+                        resultCount++
+                    }
+                })
+
+            Thread.sleep(100)
+            resultCount.shouldBe(3)
+        }
+
+
+        test("cancel_timer"){
+            create_join_room_with_create_room()
+            Thread.sleep(100)
+            val room = playService.findRoom(teststageId)!!
+
+            var resultCount = 0
+            val timerId = room.stageSenderImpl.addRepeatTimer(Duration.ZERO, Duration.ofMillis(100),object: TimerCallback {
+                override suspend fun invoke() {
+                    resultCount++
+                }
+            })
+
+            Thread.sleep(50)
+            room.stageSenderImpl.cancelTimer(timerId)
+            Thread.sleep(200)
+            resultCount.shouldBe(1)
+        }
+
+
+        test("fun asyncBlock():Unit = runBlocking"){
+            create_join_room_with_create_room()
+            Thread.sleep(100)
+            val room = playService.findRoom(teststageId)!!
+            var result = ""
+
+            room.stageSenderImpl.asyncBlock({"test async block"},
+                {pass -> result = pass}
+            )
+
+            Thread.sleep(50)
+            result.shouldBe("test async block")
+
+        }
+
     }
 
     private fun createRoomPacket(StageType: String): RoutePacket {
@@ -92,211 +262,20 @@ class StageServiceTest {
             .apply { setMsgSeq(3) }
     }
 
-    @Test
-    fun create_room_with_success(): Long {
+    private fun create_room_with_success(): Long {
         var routePacket = createRoomPacket(StageType)
 
         playService.onReceive(routePacket)
-        Thread.sleep(100)
-        assertThat(resultList.size).isEqualTo(1)
+        Thread.sleep(200)
+
         val createStageRes = CreateStageRes.parseFrom(resultList[0].data())
-        assertThat(createStageRes.payloadName).isEqualTo("contentCreateRoom")
         return createStageRes.stageId
-
     }
 
-    @Test
-    fun create_room_with_invalid_type(){
-        val routePacket = createRoomPacket("invalid type")
-        playService.onReceive(routePacket)
-        Thread.sleep(100)
-        assertThat(resultList.size).isEqualTo(1)
-        assertThat(resultList[0].routeHeader.header.baseErrorCode).isEqualTo(ErrorCode.STAGE_TYPE_IS_INVALID)
-    }
-
-    @Test
-    fun join_room_test_with_success(){
-        val stageId = create_room_with_success()
-        val joinRoom  = joinRoomPacket(stageId,100)
-        playService.onReceive(joinRoom)
-        Thread.sleep(100)
-        assertThat(resultList.size).isEqualTo(3)
-        assertThat(JoinStageRes.parseFrom(resultList[2].data()).payloadName).isEqualTo("contentJoinRoom")
-    }
-
-    @Test
-    fun join_room_test_with_invalid_stageId(){
-
-        val joinRoom  = joinRoomPacket(99,100)
-        playService.onReceive(joinRoom)
-        Thread.sleep(100)
-        assertThat(resultList.size).isEqualTo(1)
-        assertThat(resultList[0].routeHeader.header.baseErrorCode).isEqualTo(ErrorCode.STAGE_IS_NOT_EXIST)
-    }
-
-    @Test
-    fun create_join_room_with_create_room(){
+    private fun create_join_room_with_create_room(){
         val createJoinRoom = createJoinRoomPacket(StageType,teststageId,1000)
         playService.onReceive(createJoinRoom)
+
         Thread.sleep(200)
-        assertThat(resultList.size).isEqualTo(2)
-        val createJoinStageRes = CreateJoinStageRes.parseFrom(resultList[1].data())
-        assertThat(resultList[1].msgName()).isEqualTo(CreateJoinStageRes.getDescriptor().name)
-        assertThat(createJoinStageRes.isCreated).isTrue
-        assertThat(createJoinStageRes.createPayloadName).isEqualTo("contentCreateRoom")
-        assertThat(createJoinStageRes.joinPayloadName).isEqualTo("contentJoinRoom")
-
     }
-
-    @Test
-    fun create_join_room_with_join_room() {
-        val stageId = create_room_with_success()
-
-        val createJoinRoom = createJoinRoomPacket(StageType, stageId, 1000)
-        playService.onReceive(createJoinRoom)
-        Thread.sleep(100)
-
-        assertThat(resultList.size).isEqualTo(3)
-        val createJoinStageRes = CreateJoinStageRes.parseFrom(resultList[2].data())
-
-        assertThat(resultList[2].msgName()).isEqualTo(CreateJoinStageRes.getDescriptor().name)
-        assertThat(createJoinStageRes.isCreated).isFalse
-        assertThat(createJoinStageRes.createPayloadName).isEqualTo("")
-        assertThat(createJoinStageRes.joinPayloadName).isEqualTo("contentJoinRoom")
-    }
-
-    @Test
-    fun add_repeat_timer(){
-        create_join_room_with_create_room()
-        Thread.sleep(100)
-        val room = playService.findRoom(teststageId)!!
-
-        var resultCount = 0
-        room.stageSenderImpl.addRepeatTimer(Duration.ZERO, Duration.ofMillis(100),object: TimerCallback {
-            override suspend fun invoke() {
-                resultCount++
-            }
-        })
-
-        Thread.sleep(510)
-        assertThat(resultCount).isEqualTo(5)
-    }
-
-    @Test
-    fun add_count_timer(){
-        create_join_room_with_create_room()
-        Thread.sleep(100)
-        val room = playService.findRoom(teststageId)!!
-
-        var resultCount = 0
-        val timerId =
-            room.stageSenderImpl.addCountTimer(Duration.ZERO, 3, Duration.ofMillis(10), object : TimerCallback {
-                override suspend fun invoke() {
-                    resultCount++
-                }
-            })
-
-        //Thread.sleep(50)
-        //room.roomSender.cancelTimer(timerId)
-
-        Thread.sleep(100)
-        assertThat(resultCount).isEqualTo(3)
-    }
-
-    @Test
-    fun cancel_timer(){
-        create_join_room_with_create_room()
-        Thread.sleep(100)
-        val room = playService.findRoom(teststageId)!!
-
-        var resultCount = 0
-        val timerId = room.stageSenderImpl.addRepeatTimer(Duration.ZERO, Duration.ofMillis(100),object: TimerCallback {
-            override suspend fun invoke() {
-                resultCount++
-            }
-        })
-
-        Thread.sleep(50)
-        room.stageSenderImpl.cancelTimer(timerId)
-        Thread.sleep(200)
-        assertThat(resultCount).isEqualTo(1)
-    }
-
-    @Test
-    fun asyncBlock():Unit = runBlocking{
-        create_join_room_with_create_room()
-        Thread.sleep(100)
-        val room = playService.findRoom(teststageId)!!
-        var result = ""
-
-        room.stageSenderImpl.asyncBlock({"test async block"},
-            {pass -> result = pass}
-        )
-
-        Thread.sleep(50)
-        assertThat(result).isEqualTo("test async block")
-
-    }
-
-    @Test
-    fun onStart() {
-
-//        val roomCommonOption = CommonOption().apply {
-//            this.port = 7777
-//            this.serviceId = "play"
-//            this.redisPort = redisPort
-//            this.serverSystem = object : ServerSystem {
-//                override fun onDispatch(packet: Packet) {
-//                    TODO("Not yet implemented")
-//                }
-//            }
-//            this.requestTimeoutSec = 5
-//        }
-//
-//        val roomOption = RoomOption().apply {
-//            this.elementConfigurator.register("dungeon",
-//                { roomSender -> RoomStub(roomSender) },
-//                { userSender -> UserStub(userSender) })
-//        }
-//
-//        val roomSever = RoomServer(roomCommonOption, roomOption)
-//
-//        val roomThead = Thread{
-//            roomSever.start()
-//            roomSever.awaitTermination()
-//        }
-//
-//        roomThead.start()
-
-//        val apiCommonOption = CommonOption().apply {
-//            this.serviceId = "api"
-//            this.port = 8888
-//            this.serverSystem = object:ServerSystem{
-//                override fun onDispatch(packet: Packet) {
-//                    TODO("Not yet implemented")
-//                }
-//            }
-//            this.redisPort = redisPort
-//            this.requestTimeoutSec = 5
-//        }
-//
-//        val apiOption = ApiOption().apply {
-//            this.apiPath = RoomServiceTest::class.java.packageName
-//            this.apiCallBackHandler = object :ApiCallBackHandler{
-//                override fun onDisconnect(accountId: Long, sessionInfo: String) {
-//                    TODO("Not yet implemented")
-//                }
-//            }
-//            this.executorService = Executors.newFixedThreadPool(1)
-//        }
-//
-//        val apiServer = ApiServer(apiCommonOption,apiOption)
-//        val apiThread = Thread{
-//            apiServer.start()
-//            apiServer.awaitTermination()
-//        }
-//        apiThread.start()
-
-    }
-
 }

@@ -1,17 +1,16 @@
-package org.ulalax.playhouse.client.network
+package org.ulalax.playhouse.service.session.network
 
-import org.ulalax.playhouse.protocol.ClientPacket
-import org.ulalax.playhouse.protocol.ProtoPayload
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.communicator.message.ClientPacket
+import org.ulalax.playhouse.communicator.message.XPayload
 import org.ulalax.playhouse.protocol.Common
 import org.zeromq.ZFrame
 import java.io.InputStream
 
-open class PacketParser {
-    private val log = logger()
+open class PacketParser(private val log:Logger) {
 
     companion object {
         const val MAX_PACKET_SIZE = 65535
@@ -25,20 +24,18 @@ open class PacketParser {
         while (buf.isReadable) {
             try {
                 if (buf.readableBytes() < LENGTH_FIELD_SIZE) {
-//                    throw IndexOutOfBoundsException("packet size is too small")
                     break
                 }
                 val headerSize = buf.getUnsignedByte(buf.readerIndex()).toInt()
 
                 if (headerSize > HEADER_SIZE) {
-                    log.error("Header size over : $headerSize")
+                    log.error("Header size over : $headerSize",this::class.simpleName)
                     throw IndexOutOfBoundsException("HeaderSizeOver")
                 }
-                //buf.readerIndex(buf.readerIndex() + 1)
 
                 val bodySize = buf.getUnsignedShort(buf.readerIndex()+1);
                 if (bodySize > MAX_PACKET_SIZE) {
-                    log.error("body size over : $headerSize")
+                    log.error("body size over : $headerSize",this::class.simpleName)
                     throw IndexOutOfBoundsException("BodySizeOver")
                 }
 
@@ -55,10 +52,10 @@ open class PacketParser {
                 val bodyInputStream = ByteBufInputStream(buf, bodySize)
                 val body = bodyInputStream.readAllBytes()
 
-                val clientPacket = ClientPacket.of(header, ProtoPayload(ZFrame(body)))
+                val clientPacket = ClientPacket.of(header, XPayload(ZFrame(body)))
                 packets.add(clientPacket)
             }catch (e:Exception){
-                log.error(ExceptionUtils.getStackTrace(e))
+                log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
             }
         }
         return packets

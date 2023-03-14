@@ -1,15 +1,15 @@
 package org.ulalax.playhouse.service.api
 
-import org.ulalax.playhouse.communicator.zmq.ZmqCommunicateServer
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.communicator.XServerCommunicator
+import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.communicator.*
+import org.ulalax.playhouse.communicator.socket.ZmqJPlaySocket
 import org.ulalax.playhouse.service.ControlContext
-import org.ulalax.playhouse.service.RequestCache
 import org.ulalax.playhouse.service.Server
-import org.ulalax.playhouse.service.SystemPanelImpl
+import org.ulalax.playhouse.service.BaseSystemPanel
 
-class ApiServer(private val commonOption: CommonOption, private val apiOption: ApiOption): Server {
-    private val log = logger()
+class ApiServer(private val commonOption: CommonOption, private val apiOption: ApiOption,private val log:Logger): Server {
+
     private lateinit var communicator: Communicator
 
     override fun start() {
@@ -24,19 +24,19 @@ class ApiServer(private val commonOption: CommonOption, private val apiOption: A
         val serviceId = commonOption.serviceId
 
 
-        val requestCache = RequestCache(commonOption.requestTimeoutSec)
+        val requestCache = RequestCache(commonOption.requestTimeoutSec,log)
         val storageClient = LettuceRedisClient(commonOption.redisIp,commonOption.redisPort).apply { this.connect() }
-        val serverInfoCenter = ServerInfoCenterImpl()
+        val serverInfoCenter = XServerInfoCenter()
 
-        val communicateServer = ZmqCommunicateServer(bindEndpoint)
-        val communicateClient = communicateServer.getClient()
+        val communicateServer = XServerCommunicator(ZmqJPlaySocket(bindEndpoint),log)
+        val communicateClient = XClientCommunicator(ZmqJPlaySocket(bindEndpoint),log)
 
-        val apiBaseSenderImpl = ApiBaseSenderImpl(serviceId, communicateClient,requestCache)
-        val systemPanelImpl = SystemPanelImpl(serverInfoCenter,communicateClient)
+        val apiBaseSenderImpl = ApiBaseSender(serviceId, communicateClient,requestCache)
+        val systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicateClient)
         ControlContext.baseSender = apiBaseSenderImpl
         ControlContext.systemPanel = systemPanelImpl
 
-        val service = ApiService(serviceId, apiOption, requestCache, communicateClient,apiBaseSenderImpl,systemPanelImpl)
+        val service = ApiService(serviceId, apiOption, requestCache, communicateClient,apiBaseSenderImpl,systemPanelImpl,log)
         communicator = Communicator(
             communicatorOption,
             requestCache,
@@ -46,6 +46,8 @@ class ApiServer(private val commonOption: CommonOption, private val apiOption: A
             apiBaseSenderImpl,
             systemPanelImpl,
             communicateServer,
+            communicateClient,
+            log
         )
 
 

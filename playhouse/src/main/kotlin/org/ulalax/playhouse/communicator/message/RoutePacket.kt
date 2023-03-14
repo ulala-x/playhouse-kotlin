@@ -3,7 +3,6 @@ package org.ulalax.playhouse.communicator.message
 import com.google.protobuf.GeneratedMessageV3
 import org.ulalax.playhouse.protocol.Common.HeaderMsg
 import org.ulalax.playhouse.protocol.Server.*
-import org.ulalax.playhouse.protocol.*
 import org.ulalax.playhouse.service.AsyncPostCallback
 import org.ulalax.playhouse.service.play.base.TimerCallback
 import org.zeromq.ZFrame
@@ -97,6 +96,10 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         return ReplyPacket(routeHeader.header.errorCode,routeHeader.msgName(),movePayload())
     }
 
+    fun header(): Header {
+        return routeHeader.header
+    }
+
     fun toClientPacket(): ClientPacket {
 //        val packetMsg = PacketMsg.newBuilder()
 //            .setHeaderMsg(routeHeader.header.toMsg())
@@ -149,7 +152,7 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         }
 
         fun of(routePacketMsg: RoutePacketMsg): RoutePacket {
-            return RoutePacket(RouteHeader.of(routePacketMsg.routeHeaderMsg), ProtoPayload(routePacketMsg.message))
+            return RoutePacket(RouteHeader.of(routePacketMsg.routeHeaderMsg), XPayload(routePacketMsg.message))
         }
 //        fun of(routeHeader: RouteHeader, message: ByteBuf): RoutePacket {
 //            return RoutePacket(routeHeader,ProtoPayload(message))
@@ -159,7 +162,7 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         }
 
         fun of(routeHeader: RouteHeader, message: GeneratedMessageV3): RoutePacket {
-            return RoutePacket(routeHeader, ProtoPayload(message))
+            return RoutePacket(routeHeader, XPayload(message))
         }
 
         fun systemOf(packet: Packet, isBase: Boolean): RoutePacket {
@@ -212,20 +215,20 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
                 .setInitialDelay(initialDelay.toMillis())
                 .setPeriod(period.toMillis())
                 .build()
-            return RoutePacket(routeHeader, ProtoPayload(message)).apply {
+            return RoutePacket(routeHeader, XPayload(message)).apply {
                 this.timerCallback = timerCallback
                 this.timerId = timerId
             }
         }
 
-        fun StageTimerOf(
+        fun stageTimerOf(
             stageId: Long,
             timerId: Long,
             timerCallback: TimerCallback
         ): RoutePacket {
             val header = Header(StageTimer.getDescriptor().name)
             val routeHeader = RouteHeader.of(header)
-            return RoutePacket(routeHeader, ProtoPayload()).apply {
+            return RoutePacket(routeHeader, XPayload()).apply {
                 this.routeHeader.stageId = stageId
                 this.timerId = timerId
                 this.timerCallback = timerCallback
@@ -277,7 +280,7 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
 
     override fun movePayload(): Payload {
         val temp = payload
-        payload = ProtoPayload()
+        payload = XPayload()
         return temp;
     }
 
@@ -295,7 +298,7 @@ class AsyncBlockPacket<T> private constructor(
     val asyncPostCallback: AsyncPostCallback<T>,
     val result:T,
     routeHeader: RouteHeader
-) : RoutePacket(routeHeader, ProtoPayload()) {
+) : RoutePacket(routeHeader, XPayload()) {
 
     companion object {
         fun<T> of(
@@ -314,6 +317,5 @@ class AsyncBlockPacket<T> private constructor(
             }
         }
     }
-
 
 }

@@ -1,18 +1,18 @@
 package org.ulalax.playhouse.service.play
 
-import org.ulalax.playhouse.communicator.IServerInfoCenter
+import org.ulalax.playhouse.communicator.ServerInfoCenter
 import org.ulalax.playhouse.service.play.base.BaseStage
 import kotlinx.coroutines.CompletableDeferred
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.communicator.message.ReplyPacket
 
-class ActorSender(val accountId:Long,
-                  var sessionEndpoint:String,
-                  var sid:Int,
-                  var apiEndpoint:String,
-                  private val baseStage: BaseStage,
-                  private val serverInfoCenter: IServerInfoCenter,
-) : IActorSender {
+class BaseActorSender(val accountId:Long,
+                      var sessionEndpoint:String,
+                      var sid:Int,
+                      var apiEndpoint:String,
+                      private val baseStage: BaseStage,
+                      private val serverInfoCenter: ServerInfoCenter,
+) : ActorSender {
     override fun sessionEndpoint(): String {
         return this.sessionEndpoint
     }

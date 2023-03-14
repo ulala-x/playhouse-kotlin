@@ -1,32 +1,33 @@
 package org.ulalax.playhouse.communicator;
 
 import org.apache.logging.log4j.kotlin.logger
-import java.lang.Thread.sleep
 
-class MessageLoop(private val server: CommunicateServer)  {
+class MessageLoop(private val server: CommunicateServer, private val client: ClientCommunicator)  {
     private val logger = logger()
-    private lateinit var thread:Thread
 
-    private var running = true;
+    private var serverThread:Thread = Thread({
+        logger.info("start Server Communicator")
+        server.communicate()
+    },"server:Communicator")
+
+    private var clientThread:Thread = Thread({
+        logger.info("start client Communicator")
+        client.communicate()
+    },"client:Communicator")
 
     fun start() {
-        val client = server.getClient()
-        this.thread = Thread({
-            logger.info("start system loop")
-            while(running){
-                client.communicate()
-                server.communicate()
-                sleep(10)
-            }
-        },"communicator:system-message-loop").apply { this.start() }
+        serverThread.start()
+        clientThread.start()
     }
 
     fun stop(){
-        running = false
+        server.stop()
+        client.stop()
     }
 
     fun awaitTermination(){
-        this.thread.join()
+        this.clientThread.join()
+        this.serverThread.join()
     }
 
 }

@@ -6,7 +6,7 @@ import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.communicator.socket.PlaySocket
 import java.util.concurrent.CopyOnWriteArraySet
 
-class CommunicatorClient(private val playSocket: PlaySocket, private val log: Logger) : CommunicateClient {
+class XClientCommunicator(private val playSocket: PlaySocket, private val log: Logger) : ClientCommunicator {
 
     private val connected:MutableSet<String> = CopyOnWriteArraySet()
     private val disconnected:MutableSet<String> = CopyOnWriteArraySet()

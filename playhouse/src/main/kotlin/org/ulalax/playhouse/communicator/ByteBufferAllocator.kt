@@ -1,9 +1,9 @@
-package org.ulalax.playhouse.client.network
+package org.ulalax.playhouse.communicator
 
 import io.netty.buffer.*
 
 object ByteBufferAllocator {
-    private val allocator = UnpooledByteBufAllocator(false)
+    private val allocator = PooledByteBufAllocator(true)
 //    val allocator = PooledByteBufAllocator(true)
 
     private fun getBuf(defaultBufSize:Int, maxBufSize:Int):ByteBuf  {

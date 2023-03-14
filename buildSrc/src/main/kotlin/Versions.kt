@@ -6,7 +6,7 @@ object Versions {
     val protobuf = "3.21.1"
     val protocVersion = protobuf
     val netty = "4.1.79.Final"
-    val junit_jupiter="5.8.2"
+    val junit_jupiter="5.9.2"
     val log4j2 = "2.17.2"
     val log4j2kotlin="1.1.0"
     val commons_math3 = "3.6.1"

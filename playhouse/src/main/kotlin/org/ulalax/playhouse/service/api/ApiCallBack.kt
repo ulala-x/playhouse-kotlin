@@ -1,5 +1,5 @@
 package org.ulalax.playhouse.service.api
 
-interface ApiCallBackHandler {
+interface ApiCallBack {
     fun onDisconnect(accountId:Long,sessionInfo:String)
 }

@@ -64,9 +64,22 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
 
-    testImplementation("it.ozimov:embedded-redis:0.7.3")
+//    testImplementation("it.ozimov:embedded-redis:0.7.3")
     testApi(project(":clientConnector"))
     implementation(kotlin("reflect"))
+    // https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter
+    // https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter
+    testImplementation("org.testcontainers:junit-jupiter:1.17.6")
+    // https://mvnrepository.com/artifact/io.kotest/kotest-assertions-core-jvm
+    // https://mvnrepository.com/artifact/io.kotest/kotest-runner-junit5
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    testImplementation("org.slf4j:slf4j-simple:2.0.6")
+
+
+
+
+
 }
 
 

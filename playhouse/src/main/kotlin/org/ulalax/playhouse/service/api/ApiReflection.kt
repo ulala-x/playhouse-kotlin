@@ -1,14 +1,11 @@
 package org.ulalax.playhouse.service.api
 
-import org.ulalax.playhouse.ErrorCode
 import org.ulalax.playhouse.communicator.message.RouteHeader
-import org.ulalax.playhouse.protocol.Packet
 import org.ulalax.playhouse.service.api.annotation.Api
 import org.ulalax.playhouse.service.api.annotation.ApiBackendHandler
 import org.ulalax.playhouse.service.api.annotation.ApiHandler
 import org.ulalax.playhouse.service.api.annotation.Init
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.apache.logging.log4j.kotlin.logger
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners
 import org.springframework.context.ApplicationContext
@@ -16,8 +13,11 @@ import org.springframework.stereotype.Component
 import org.springframework.stereotype.Controller
 import org.springframework.stereotype.Repository
 import org.springframework.stereotype.Service
+import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.communicator.message.Packet
+import org.ulalax.playhouse.protocol.Common.BaseErrorCode
 import org.ulalax.playhouse.service.ApiBackendSender
-import org.ulalax.playhouse.service.ApiBaseSender
+import org.ulalax.playhouse.service.ApiCommonSender
 import org.ulalax.playhouse.service.ApiSender
 import org.ulalax.playhouse.service.SystemPanel
 import java.lang.reflect.Method
@@ -28,8 +28,8 @@ data class ApiMethod(val msgName:String,val className: String,val method: Method
 data class ApiInstance(val instance:Any)
 
 
-class ApiReflection(packageName: String, private val applicationContext: ApplicationContext) {
-    val log = logger()
+class ApiReflection(packageName: String, private val applicationContext: ApplicationContext,val log:Logger) {
+
     val instances: MutableMap<String, ApiInstance> = HashMap()
     val initMethods:MutableList<ApiMethod> = mutableListOf()
     val methods:MutableMap<String, ApiMethod> = HashMap()
@@ -41,7 +41,7 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
         extractHandlerMethod(reflections)
     }
 
-    fun callInitMethod(systemPanel: SystemPanel, apiBaseSender: ApiBaseSender){
+    fun callInitMethod(systemPanel: SystemPanel, apiBaseSender: ApiCommonSender){
         initMethods.forEach{targetMethod->
 
             try{
@@ -51,12 +51,12 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
                 val targetInstance = instances[targetMethod.className]!!
                 targetMethod.method.invoke(targetInstance.instance,systemPanel,apiBaseSender)
             }catch (e:Exception){
-                log.error(ExceptionUtils.getStackTrace(e))
+                log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
                 exitProcess(1)
             }
         }
     }
-    fun callMethod(routeHeader: RouteHeader, packet: Packet, isBackend :Boolean, apiSender: ApiSenderImpl) = packet.use{
+    fun callMethod(routeHeader: RouteHeader, packet: Packet, isBackend :Boolean, apiSender: BaseApiSender) = packet.use{
         val msgName = routeHeader.msgName()
         val sessionInfo = routeHeader.sessionInfo
         //val packet = Packet(msgName,routePacket.movePayload())
@@ -80,8 +80,8 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
                 targetMethod.method.invoke(targetInstance.instance,sessionInfo,packet,apiSender as ApiSender)
             }
         }catch (e:Exception){
-            apiSender.errorReply(routeHeader, ErrorCode.UNCHECKED_CONTENTS_ERROR)
-            log.error(ExceptionUtils.getStackTrace(e))
+            apiSender.errorReply(routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR.number)
+            log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
         }
     }
 
@@ -103,7 +103,7 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
             if (method.parameterCount != 2) throw InvalidParameterException("${method.declaringClass.name} : invalid Api init Handler method parameter count ${method.parameterCount}, init method has 2 parameter")
             val parameterTypes = method.parameterTypes
             if (parameterTypes[0] != SystemPanel::class.java) throw InvalidParameterException("${method.declaringClass.name} : 1st parameter type is not SystemPanel but ${parameterTypes[0]}")
-            if (parameterTypes[1] != ApiBaseSender::class.java) throw InvalidParameterException("${method.declaringClass.name} : 2st parameter type is not ApiBaseSender but ${parameterTypes[1]}")
+            if (parameterTypes[1] != ApiCommonSender::class.java) throw InvalidParameterException("${method.declaringClass.name} : 2st parameter type is not ApiBaseSender but ${parameterTypes[1]}")
 
 //            if (parameterTypes[2] != ApiSender::class.java) throw InvalidParameterException("3nd parameter type is not ApiSender but ${parameterTypes[2]}")
 //            val apiHandler = method.getAnnotation(Init::class.java) as Init

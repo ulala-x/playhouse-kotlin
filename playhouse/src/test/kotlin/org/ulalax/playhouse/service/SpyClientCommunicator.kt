@@ -3,7 +3,7 @@ package org.ulalax.playhouse.service
 import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.ulalax.playhouse.communicator.message.RoutePacket
 
-class SpyCommunicateClient(private val resultCollector:MutableList<RoutePacket> ) : ClientCommunicator {
+class SpyClientCommunicator(private val resultCollector:MutableList<RoutePacket> ) : ClientCommunicator {
     override fun connect(endpoint: String) {
     }
 

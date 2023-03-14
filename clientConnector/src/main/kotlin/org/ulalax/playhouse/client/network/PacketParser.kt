@@ -1,13 +1,12 @@
-package org.ulalax.playhouse.base
+package org.ulalax.playhouse.client.network
 
-import org.ulalax.playhouse.protocol.ClientPacket
-import org.ulalax.playhouse.protocol.ProtoPayload
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.client.network.message.BytePayload
+import org.ulalax.playhouse.client.network.message.ClientPacket
 import org.ulalax.playhouse.protocol.Common
-import org.zeromq.ZFrame
 import java.io.InputStream
 
 open class PacketParser {
@@ -55,7 +54,7 @@ open class PacketParser {
                 val bodyInputStream = ByteBufInputStream(buf, bodySize)
                 val body = bodyInputStream.readAllBytes()
 
-                val clientPacket = ClientPacket.of(header, ProtoPayload(ZFrame(body)))
+                val clientPacket = ClientPacket.of(header, BytePayload(body))
                 packets.add(clientPacket)
             }catch (e:Exception){
                 log.error(ExceptionUtils.getStackTrace(e))

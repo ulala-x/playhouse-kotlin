@@ -8,7 +8,7 @@ enum class ServiceType {
     Play
 }
 
-interface IService {
+interface Service {
     fun onStart()
     fun onReceive(routePacket: RoutePacket)
     fun onStop()

@@ -3,7 +3,7 @@ package org.ulalax.playhouse.communicator
 enum class ServerState {
     RUNNING,PAUSE,DISABLE
 }
-interface IServerInfo {
+interface ServerInfo {
     fun  bindEndpoint():String
     fun serviceType(): ServiceType
     fun serviceId():String

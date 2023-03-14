@@ -4,9 +4,12 @@ import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.websocketx.*
+import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.service.session.network.netty.SessionPacketListener
 
-class WebSocketBinaryHandler(private val sessionPacketListener: SessionPacketListener) : SimpleChannelInboundHandler<WebSocketFrame>() {
+class WebSocketBinaryHandler(private val sessionPacketListener: SessionPacketListener,
+                             private val log: Logger
+) : SimpleChannelInboundHandler<WebSocketFrame>() {
     override fun channelRead0(ctx: ChannelHandlerContext, msg: WebSocketFrame) {
         if (msg is CloseWebSocketFrame) {
             ctx.channel().writeAndFlush(msg)
@@ -24,7 +27,6 @@ class WebSocketBinaryHandler(private val sessionPacketListener: SessionPacketLis
     }
 
     override fun handlerAdded(ctx: ChannelHandlerContext) {
-        ctx.pipeline().addLast(WebSocketPacketCodec()).addLast(WebSocketHandler(sessionPacketListener))
-        //ctx.pipeline().addLast(WebSocketHandler(sessionPacketListener))
+        ctx.pipeline().addLast(WebSocketPacketCodec(log)).addLast(WebSocketHandler(sessionPacketListener))
     }
 }

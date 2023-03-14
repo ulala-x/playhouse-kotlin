@@ -17,18 +17,18 @@ class RedisCache(private val redisClient: RedisClient) {
 
     private val redisKey = "playhouse_serverinfos".toByteArray(StandardCharsets.UTF_8)
 
-    fun updateServerInfo(serverInfo: BaseServerInfo) {
+    fun updateServerInfo(serverInfo: XServerInfo) {
         val key = serverInfo.bindEndpoint().toByteArray(StandardCharsets.UTF_8)
         val value = serverInfo.toByteArray()
         redisCommands.hset(redisKey, key, value)
     }
 
-    fun getServerList(endpoint: String): List<BaseServerInfo> {
+    fun getServerList(endpoint: String): List<XServerInfo> {
         val hashEntries = redisCommands.hgetall(redisKey)
         return hashEntries.mapNotNull { (key, value) ->
             try {
                 val serverInfoMsg = Server.ServerInfoMsg.parseFrom(value)
-                val serverInfo = BaseServerInfo.of(serverInfoMsg)
+                val serverInfo = XServerInfo.of(serverInfoMsg)
                 if (serverInfo.bindEndpoint != endpoint) {
                     serverInfo
                 } else {
@@ -46,28 +46,50 @@ class RedisCache(private val redisClient: RedisClient) {
     }
 }
 
-class RedisClient(redisIp: String, redisBindPort: Int) : StorageClient {
+class RedisCacheClient(val redisIp: String,val redisBindPort: Int) : StorageClient {
 
-    private val redisURI = "redis://$redisIp:$redisBindPort"
-
-    private val redisClient = RedisClient.create(redisURI)
-
-    private val cache = RedisCache(redisClient)
+    private lateinit var redisClient:RedisClient
+    private lateinit var redisConnection: StatefulRedisConnection<ByteArray, ByteArray>
+    private lateinit var redisCommands: RedisCommands<ByteArray, ByteArray>
+    private val redisKey = ConstOption.REDIS_CACHE_KEY.toByteArray(StandardCharsets.UTF_8)
 
     fun connect() {
-        // connect to Redis cache
+
+        val redisURI = "redis://$redisIp:$redisBindPort"
+        redisClient = RedisClient.create(redisURI)
+        redisConnection = redisClient.connect(ByteArrayCodec())
+        redisCommands =  redisConnection.sync()
+
+        redisClient.connect()
     }
 
-    override fun updateServerInfo(serverInfo: BaseServerInfo) {
-        cache.updateServerInfo(serverInfo)
+    override fun updateServerInfo(serverInfo: XServerInfo) {
+        val key = serverInfo.bindEndpoint().toByteArray(StandardCharsets.UTF_8)
+        val value = serverInfo.toByteArray()
+        redisCommands.hset(redisKey, key, value)
     }
 
-    override fun getServerList(endpoint: String): List<BaseServerInfo> {
-        return cache.getServerList(endpoint)
+    override fun getServerList(endpoint: String): List<XServerInfo> {
+        val hashEntries = redisCommands.hgetall(redisKey)
+        return hashEntries.mapNotNull { (key, value) ->
+            try {
+                val serverInfoMsg = Server.ServerInfoMsg.parseFrom(value)
+                val serverInfo = XServerInfo.of(serverInfoMsg)
+                if (serverInfo.bindEndpoint != endpoint) {
+                    serverInfo
+                } else {
+                    null
+                }
+            } catch (e: InvalidProtocolBufferException) {
+                null
+            }
+        }
     }
 
     fun close() {
-        cache.close()
+
+        redisConnection.close()
+        redisClient.shutdown()
     }
 }
 

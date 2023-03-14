@@ -2,24 +2,23 @@ package org.ulalax.playhouse.service
 
 import org.ulalax.playhouse.communicator.*
 
-class SystemPanelImpl(
-        private val serverInfoCenter: IServerInfoCenter,
-        private val ICommunicateClient: CommunicateClient,
-//    private val reqCache: RequestCache,
+class BaseSystemPanel(
+        private val serverInfoCenter: ServerInfoCenter,
+        private val clientCommunicator: ClientCommunicator,
 
-    ) : SystemPanel {
+        ) : SystemPanel {
 
     lateinit var communicator: Communicator
 
-    override fun randomServerInfo(serviceId:String): ServerInfo {
+    override fun randomServerInfo(serviceId:String): XServerInfo {
         return serverInfoCenter.findRoundRobinServer(serviceId)
     }
 
-    override fun serverInfo(endpoint: String): ServerInfo {
+    override fun serverInfo(endpoint: String): XServerInfo {
         return serverInfoCenter.findServer(endpoint)
     }
 
-    override fun serverList(): List<ServerInfo> {
+    override fun serverList(): List<XServerInfo> {
         return serverInfoCenter.getServerList()
     }
 

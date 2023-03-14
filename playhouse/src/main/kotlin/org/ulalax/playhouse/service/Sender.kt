@@ -1,7 +1,5 @@
 package org.ulalax.playhouse.service
 
-import org.ulalax.playhouse.protocol.Packet
-import org.ulalax.playhouse.protocol.ReplyPacket
 import org.ulalax.playhouse.service.api.CreateJoinStageResult
 import org.ulalax.playhouse.service.api.CreateStageResult
 import org.ulalax.playhouse.service.api.JoinStageResult
@@ -9,6 +7,8 @@ import org.ulalax.playhouse.service.play.base.TimerCallback
 import kotlinx.coroutines.CompletableDeferred
 import org.ulalax.playhouse.communicator.ServerInfo
 import org.ulalax.playhouse.communicator.ServerState
+import org.ulalax.playhouse.communicator.message.Packet
+import org.ulalax.playhouse.communicator.message.ReplyPacket
 import java.time.Duration
 
 
@@ -25,12 +25,13 @@ interface SystemPanel{
 
 
 }
-interface BaseSender {
+interface CommonSender {
     fun serviceId():String
     fun reply(reply: ReplyPacket)
     fun sendToClient(sessionEndpoint: String,sid:Int,packet: Packet)
     fun sendToApi(apiEndpoint:String, sessionInfo: String,packet: Packet)
     fun sendToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet)
+
 //    fun callToApi(apiEndpoint:String, packet: Packet, sessionInfo: String, replyCallback: ReplyCallback)
 //    fun callToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet, replyCallback: ReplyCallback)
 //    fun callToApi(apiEndpoint:String, sessionInfo: String,packet: Packet): ReplyPacket
@@ -48,7 +49,7 @@ interface BaseSender {
 
 }
 
-interface ApiBaseSender : BaseSender {
+interface ApiCommonSender : CommonSender {
 
     fun updateSession(sessionEndpoint: String,sid:Int,serviceId: String,sessionInfo:String)
 
@@ -66,7 +67,7 @@ interface ApiBaseSender : BaseSender {
                         joinPacket: Packet,
     ): CreateJoinStageResult
 }
-interface ApiSender : ApiBaseSender {
+interface ApiSender : ApiCommonSender {
 
     fun authenticate(accountId:Long,sessionInfo:String)
     fun sessionEndpoint():String
@@ -91,7 +92,7 @@ typealias AsyncPreCallback<T> = suspend ()->T
 typealias AsyncPostCallback<T> = suspend (T)->Unit
 
 
-interface StageSender : BaseSender {
+interface StageSender : CommonSender {
 
     //fun reply(reply: ReplyPacket)
     fun stageId():Long
@@ -106,7 +107,7 @@ interface StageSender : BaseSender {
 
 }
 
-interface ApiBackendSender : ApiBaseSender {
+interface ApiBackendSender : ApiCommonSender {
     fun getFromEndpoint():String
 }
-interface SessionSender : BaseSender {}
+interface SessionSender : CommonSender {}

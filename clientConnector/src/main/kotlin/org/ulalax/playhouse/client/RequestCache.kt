@@ -1,24 +1,24 @@
-package org.ulalax.playhouse
+package org.ulalax.playhouse.client
 
 import com.github.benmanes.caffeine.cache.*
 import org.ulalax.playhouse.protocol.Common.BaseErrorCode
-import org.ulalax.playhouse.protocol.ReplyCallback
-import org.ulalax.playhouse.protocol.ReplyPacket
 import kotlinx.coroutines.CompletableDeferred
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.kotlin.logger
-import org.ulalax.playhouse.protocol.ReqPacket
+import org.ulalax.playhouse.client.network.message.ClientPacket
+import org.ulalax.playhouse.client.network.message.ReplyCallback
+import org.ulalax.playhouse.client.network.message.ReplyPacket
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-data class ReplyObject<T: ReqPacket> (
-    val callback: ReplyCallback? = null,
-    val deferred: CompletableDeferred<ReplyPacket>? = null,
-    val future: CompletableFuture<ReplyPacket>? = null,
+data class ReplyObject (
+        val callback: ReplyCallback? = null,
+        val deferred: CompletableDeferred<ReplyPacket>? = null,
+        val future: CompletableFuture<ReplyPacket>? = null,
 ){
 
-    fun onReceive(packet: T){
+    fun onReceive(packet: ClientPacket){
         callback?.onReceive(packet.toReplyPacket())
         deferred?.complete(packet.toReplyPacket())
         future?.complete(packet.toReplyPacket())
@@ -30,17 +30,17 @@ data class ReplyObject<T: ReqPacket> (
     }
 }
 
-class RequestCache<T:ReqPacket>(timeout:Long) {
+class RequestCache(timeout:Long) {
     private val log = logger()
     private val sequence = AtomicInteger()
-    private val cache:Cache<Int, ReplyObject<T>>
+    private val cache:Cache<Int, ReplyObject>
 
     init {
         val builder  = Caffeine.newBuilder().scheduler(Scheduler.systemScheduler())
         if(timeout > 0) {
             builder.expireAfterWrite(timeout, TimeUnit.SECONDS)
         }
-        cache = builder.evictionListener(RemovalListener<Int, ReplyObject<T>> { _, replyObject, _ ->
+        cache = builder.evictionListener(RemovalListener<Int, ReplyObject> { _, replyObject, _ ->
             replyObject?.throws(BaseErrorCode.REQUEST_TIMEOUT_VALUE)
         }).build()
     }
@@ -49,14 +49,14 @@ class RequestCache<T:ReqPacket>(timeout:Long) {
         return sequence.incrementAndGet()
     }
 
-    fun put(seq: Int, replyObject: ReplyObject<T>) {
+    fun put(seq: Int, replyObject: ReplyObject) {
         this.cache.put(seq,replyObject)
     }
-    fun get(seq:Int): ReplyObject<T>? {
+    fun get(seq:Int): ReplyObject? {
         return this.cache.getIfPresent(seq)
     }
 
-    fun onReply(packet: T) = try {
+    fun onReply(packet: ClientPacket) = try {
         val msgSeq = packet.header().msgSeq
         val msgName = packet.header().msgName
 

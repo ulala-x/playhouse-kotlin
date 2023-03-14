@@ -1,22 +1,22 @@
-package org.ulalax.playhouse.base
+package org.ulalax.playhouse.client.network
 
-import com.google.protobuf.ByteString
-import com.google.protobuf.GeneratedMessageV3
 import io.netty.buffer.*
-import java.nio.ByteBuffer
 
 object ByteBufferAllocator {
-//    val allocator = UnpooledByteBufAllocator(false)
-    val allocator = PooledByteBufAllocator(true)
-
-    //val allocator = PooledByteBufAllocator(true)
+    private val allocator = UnpooledByteBufAllocator(false)
+//    val allocator = PooledByteBufAllocator(true)
 
     private fun getBuf(defaultBufSize:Int, maxBufSize:Int):ByteBuf  {
         return allocator.buffer(defaultBufSize,maxBufSize)
-        //return allocator.directBuffer(defaultBufSize,maxBufSize)
-    //    return allocator.directBuffer(defaultBufSize,maxBufSize)
     }
     fun getBuf(size: Int):ByteBuf {return getBuf(size,size) }
+    fun getBuf():ByteBuf{
+        return allocator.buffer()
+    }
+    fun warp(toByteArray: ByteArray): ByteBuf {
+
+        return Unpooled.wrappedBuffer(toByteArray);
+    }
 
 //    fun getBuf(message: GeneratedMessageV3):ByteBuf {
 //

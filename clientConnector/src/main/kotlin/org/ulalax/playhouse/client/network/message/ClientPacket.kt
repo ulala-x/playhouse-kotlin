@@ -1,12 +1,9 @@
-package org.ulalax.playhouse.protocol
-import com.google.protobuf.ByteString
+package org.ulalax.playhouse.client.network.message
 import com.google.protobuf.GeneratedMessageV3
 import io.netty.buffer.ByteBuf
-import io.netty.buffer.UnpooledByteBufAllocator
+import io.netty.buffer.Unpooled
 import org.ulalax.playhouse.protocol.Common.*
 import org.apache.logging.log4j.kotlin.logger
-import org.ulalax.playhouse.base.PacketParser
-import org.zeromq.ZFrame
 
 class Header constructor(var msgName:String="",var errorCode:Int = 0,var msgSeq:Int=0, var serviceId: String=""){
     companion object {
@@ -24,55 +21,66 @@ class Header constructor(var msgName:String="",var errorCode:Int = 0,var msgSeq:
 }
 
 interface Payload : AutoCloseable{
-    fun frame():ZFrame
+    fun buffer():ByteBuf
 }
 
-class ProtoPayload constructor() : Payload {
-    private val log = logger()
-    constructor(message: GeneratedMessageV3) : this() {
-        this.proto = message
+
+class BytePayload : Payload {
+
+    private  var buffer:ByteBuf
+
+    constructor(){
+        buffer = Unpooled.buffer()
     }
-    constructor(message: ByteString): this(){
-        this.byteString = message
+    constructor(byteArray: ByteArray){
+        buffer = Unpooled.wrappedBuffer(byteArray)
     }
 
-    constructor(message: ZFrame): this(){
-        this.frame = message
+    override fun buffer(): ByteBuf {
+        return buffer
     }
 
-    private var frame: ZFrame? = null
-    private var byteString:ByteString? = null
-    private var proto:GeneratedMessageV3? = null
     override fun close() {
-        frame?.apply {
-            this.close()
-        }
-
-        frame = null
-        byteString = null
-        proto = null
+        buffer.release()
     }
-
-    override fun frame(): ZFrame {
-        if(frame == null){
-            proto?.apply {
-                frame = ZFrame(proto!!.toByteArray());
-            }
-            byteString?.apply {
-                frame = ZFrame(byteString!!.toByteArray());
-            }
-        }
-
-        return frame ?: ZFrame(ByteArray(0))
-    }
-
-    fun proto(): GeneratedMessageV3? {
-        return proto
-    }
-
 }
 
-class ClientPacket private constructor(val header: Header, private var payload: Payload) : BasePacket,ReqPacket {
+//class ByteBufPayload():Payload{
+//
+//    private lateinit var buf: ByteBuf
+//    override fun buffer(): ByteArray {
+//        buf.to
+//    }
+//
+//    override fun close() {
+//        TODO("Not yet implemented")
+//    }
+//
+//}
+public
+
+//class ProtoPayload constructor() : Payload {
+//    private val log = logger()
+//    constructor(message: GeneratedMessageV3) : this() {
+//        this.proto = message
+//    }
+//
+//    private lateinit var proto:GeneratedMessageV3;
+//    override fun close() {
+//
+//    }
+//
+//    override fun buffer(): ByteBuf {
+//        return Unpooled.wrappedBuffer(proto.toByteArray())
+//    }
+//
+//    fun proto(): GeneratedMessageV3? {
+//        return proto
+//    }
+//
+//}
+
+class ClientPacket private constructor(val header: Header, private var payload: Payload) : BasePacket {
     companion object{
         fun toServerOf(serviceId: String, packet: Packet): ClientPacket {
             val header = Header(msgName = packet.msgName,serviceId = serviceId)
@@ -84,26 +92,18 @@ class ClientPacket private constructor(val header: Header, private var payload: 
             return ClientPacket(Header.of(headerMsg),payload)
         }
 
-//        fun ofErrorPacket(errorCode: Int): ReplyPacket {
-//            return ReplyPacket(errorCode,);
-//        }
-
-        private val buffer = UnpooledByteBufAllocator.DEFAULT.buffer(PacketParser.MAX_PACKET_SIZE)
     }
 
     override fun movePayload(): Payload {
         val temp = payload
-        payload = ProtoPayload()
+        payload = BytePayload()
         return temp;
     }
 
-    override fun frame():ZFrame {
-        return this.payload.frame()
+    override fun data(): ByteArray {
+        return payload.buffer().array()
     }
 
-    override fun data(): ByteArray {
-        return frame().data();
-    }
 
     fun serviceId():String {
         return header.serviceId
@@ -112,11 +112,11 @@ class ClientPacket private constructor(val header: Header, private var payload: 
         return header.msgName
     }
 
-    override  fun toReplyPacket(): ReplyPacket {
+    fun toReplyPacket(): ReplyPacket {
         return ReplyPacket(header.errorCode,header.msgName,movePayload())
     }
 
-    override fun header(): Header {
+    fun header(): Header {
         return header;
     }
 
@@ -124,12 +124,10 @@ class ClientPacket private constructor(val header: Header, private var payload: 
 
         val header = header.toMsg()
         val headerSize = header.serializedSize
-        val body = frame()
-        val packetSize =1+2+headerSize+body.length()
+        val body = payload.buffer()
+        val packetSize =1+2+headerSize+body.readableBytes()
 
         buffer.capacity(packetSize)
-
-//        val buffer = ByteBufferAllocator.getBuf(packetSize)
 
         /*
         1byte - header size
@@ -138,11 +136,9 @@ class ClientPacket private constructor(val header: Header, private var payload: 
         body
          */
         buffer.writeByte(headerSize)
-        buffer.writeShort(body.length())
+        buffer.writeShort(body.readableBytes())
         buffer.writeBytes(header.toByteArray())
-        buffer.writeBytes(body.data())
-
-        //return buffer
+        buffer.writeBytes(body)
     }
 
     fun setMsgSeq(msgSeq: Int) {
@@ -156,6 +152,8 @@ class ClientPacket private constructor(val header: Header, private var payload: 
     override fun close() {
         payload.close()
     }
+
+
 
 }
 

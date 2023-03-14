@@ -1,18 +1,17 @@
 package org.ulalax.playhouse.communicator;
 
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.communicator.zmq.ZmqCommunicateServer
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.service.*
 
 class CommunicatorOption(
-    val bindEndpoint: String,
-    val serverSystem:(SystemPanel, BaseSender) -> ServerSystem,
-    val showQps:Boolean,
+        val bindEndpoint: String,
+        val serverSystem:(SystemPanel, CommonSender) -> ServerSystem,
+        val showQps:Boolean,
 ){
     class Builder {
         var port:Int = 0
-        lateinit var serverSystem: (SystemPanel, BaseSender) -> ServerSystem
+        lateinit var serverSystem: (SystemPanel, CommonSender) -> ServerSystem
         var showQps:Boolean = false
 
         fun build(): CommunicatorOption {
@@ -23,39 +22,39 @@ class CommunicatorOption(
     }
 
 }
+
+
 class Communicator(private val option: CommunicatorOption,
                    private val requestCache: RequestCache,
                    private val serverInfoCenter: ServerInfoCenter,
                    private val service: Service,
                    private var storageClient: StorageClient,
-                   private val baseSender: BaseSenderImpl,
-                   private val systemPanel: SystemPanelImpl,
-                   private val communicateServer: ZmqCommunicateServer
+                   private val baseSender: BaseSender,
+                   private val systemPanel: BaseSystemPanel,
+                   private val communicateServer: XServerCommunicator,
+                   private val communicateClient: XClientCommunicator,
+                   private val log : Logger
 )  : CommunicateListener {
 
-    private val log = logger()
+
     private lateinit var messageLoop: MessageLoop
     private lateinit var addressResolver: ServerAddressResolver
     private lateinit var baseSystem: BaseSystem
-    private val performanceTester = PerformanceTester(option.showQps)
-
-
+    private val performanceTester = PerformanceTester(option.showQps,log)
 
     fun start(){
         val bindEndpoint = option.bindEndpoint
         val system = option.serverSystem
         systemPanel.communicator = this
 
-
-        //communicateServer = ZmqCommunicateServer(bindEndpoint,this).apply { this.bind() }
-
-        messageLoop = MessageLoop(communicateServer).apply { this.start() }
+        messageLoop = MessageLoop(communicateServer,communicateClient).apply { this.start() }
         addressResolver = ServerAddressResolver(
                                 bindEndpoint,
                                 serverInfoCenter,
-                                communicateServer.getClient(),
+                                communicateClient,
                                 service,
-                                storageClient
+                                storageClient,
+                                log
                             ).apply { this.start() }
 
 
@@ -66,14 +65,12 @@ class Communicator(private val option: CommunicatorOption,
         service.onStart()
         performanceTester.start()
 
-
-        log.info("=========plbase server start==============")
-        log.info("Ready for bind:$bindEndpoint")
-
+        log.info("============== server start ==============",this::class.simpleName)
+        log.info("Ready for bind:$bindEndpoint",this::class.simpleName)
     }
 
     private fun updateDisable(){
-        storageClient.updateServerInfo(ServerInfoImpl.of(option.bindEndpoint, service).apply {
+        storageClient.updateServerInfo(XServerInfo.of(option.bindEndpoint, service).apply {
             state = ServerState.DISABLE
         })
     }
@@ -85,7 +82,7 @@ class Communicator(private val option: CommunicatorOption,
         addressResolver.stop()
         messageLoop.stop()
 
-        log.info("=========server stop==============")
+        log.info("============== server stop ==============",this::class.simpleName)
     }
     fun awaitTermination() {
         messageLoop.awaitTermination()
@@ -94,7 +91,7 @@ class Communicator(private val option: CommunicatorOption,
     private fun isPacketToClient(routePacket: RoutePacket) = routePacket.routeHeader.sid > 0
     override fun onReceive(routePacket: RoutePacket) {
 
-        log.debug("onReceive : ${routePacket.msgName()}, from:${routePacket.routeHeader.from}")
+        log.debug("onReceive : ${routePacket.msgName()}, from:${routePacket.routeHeader.from}",this::class.simpleName)
 
         performanceTester.incCounter()
 

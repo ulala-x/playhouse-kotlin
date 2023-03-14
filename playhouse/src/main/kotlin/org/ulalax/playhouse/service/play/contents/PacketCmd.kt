@@ -1,6 +1,6 @@
 package org.ulalax.playhouse.service.play.contents
 
-import org.ulalax.playhouse.protocol.Packet
+import org.ulalax.playhouse.communicator.message.Packet
 
 
 interface PacketCmd<R,U> {

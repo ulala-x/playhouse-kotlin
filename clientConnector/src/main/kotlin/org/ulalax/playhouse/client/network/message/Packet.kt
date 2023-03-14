@@ -1,9 +1,8 @@
-package org.ulalax.playhouse.protocol
+package org.ulalax.playhouse.client.network.message
 
 import com.google.protobuf.ByteString
 import com.google.protobuf.GeneratedMessageV3
-import org.zeromq.ZFrame
-import java.nio.ByteBuffer
+import io.netty.buffer.ByteBuf
 
 interface   ReplyCallback{
     fun onReceive(replyPacket: ReplyPacket)
@@ -11,59 +10,45 @@ interface   ReplyCallback{
 
 interface BasePacket : AutoCloseable {
     fun movePayload(): Payload
-    fun frame():ZFrame
     fun data():ByteArray
-
 }
 
-interface  ReqPacket {
-    fun toReplyPacket(): ReplyPacket
-    fun header():Header
 
-}
-
-data class Packet @JvmOverloads  constructor(val msgName:String="",var payload: Payload = ProtoPayload()) : BasePacket {
-    constructor(message: GeneratedMessageV3) : this(message.descriptorForType.name, ProtoPayload(message))
-    constructor( msgName: String, message:ByteString):this(msgName, ProtoPayload(message))
-
-    override fun frame(): ZFrame {
-        return payload.frame()
-    }
+data class Packet @JvmOverloads  constructor(val msgName:String="",var payload: Payload = BytePayload()) :BasePacket {
+    constructor(message: GeneratedMessageV3) : this(message.descriptorForType.name, BytePayload(message.toByteArray()))
+    constructor( msgName: String, message:ByteString):this(msgName, BytePayload(message.toByteArray()))
 
     override fun data(): ByteArray {
-        return this.frame().data()
+        return this.payload.buffer().array();
     }
 
     override fun movePayload(): Payload {
         val temp = payload
-        payload = ProtoPayload()
+        payload = BytePayload()
         return temp;
     }
     override fun close() {
         this.payload.close()
     }
 }
-data class ReplyPacket @JvmOverloads constructor(val errorCode: Int,val msgName:String="", private var payload: Payload = ProtoPayload()):
+data class ReplyPacket @JvmOverloads constructor(val errorCode: Int,val msgName:String="", private var payload: Payload = BytePayload()):
     BasePacket {
 
-    constructor(message: GeneratedMessageV3) : this(0,message.descriptorForType.name, ProtoPayload(message))
+    constructor(message: GeneratedMessageV3) : this(0,message.descriptorForType.name, BytePayload(message.toByteArray()))
     constructor(errorCode: Int,message: GeneratedMessageV3) : this(errorCode,message.descriptorForType.name,
-        ProtoPayload(message)
+            BytePayload(message.toByteArray())
     )
     fun isSuccess():Boolean{
         return errorCode == 0
     }
-    override fun frame(): ZFrame {
-        return payload.frame()
-    }
 
     override fun data(): ByteArray {
-        return frame().data()
+        return payload.buffer().array()
     }
 
     override fun movePayload(): Payload {
         val temp = payload
-        payload = ProtoPayload()
+        payload = BytePayload()
         return temp;
     }
     override fun close() {

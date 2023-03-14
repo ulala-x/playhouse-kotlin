@@ -1,10 +1,11 @@
 package org.ulalax.playhouse.service
 
-import org.ulalax.playhouse.protocol.Packet
+import org.ulalax.playhouse.communicator.message.Packet
+
 
 interface ServerSystem {
     val systemPanel: SystemPanel
-    val baseSender: BaseSender
+    val baseSender: CommonSender
     suspend fun onStart()
     suspend fun onDispatch(packet: Packet)
     suspend fun onStop()

@@ -1,8 +1,6 @@
 package org.ulalax.playhouse.client.network
 
 import org.ulalax.playhouse.client.BasePacketListener
-import org.ulalax.playhouse.base.ByteBufferAllocator
-import org.ulalax.playhouse.protocol.ClientPacket
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.Channel
 import io.netty.channel.ChannelOption
@@ -13,6 +11,7 @@ import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
 import kotlinx.coroutines.*
+import org.ulalax.playhouse.client.network.message.ClientPacket
 import org.ulalax.playhouse.client.network.tcp.TcpSocketHandler
 import org.ulalax.playhouse.client.network.tcp.TcpSocketInitializer
 import org.ulalax.playhouse.client.network.websocket.WebSocketClientHandler

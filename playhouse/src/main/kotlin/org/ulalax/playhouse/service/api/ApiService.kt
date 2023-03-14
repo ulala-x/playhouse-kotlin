@@ -2,26 +2,26 @@ package org.ulalax.playhouse.service.api
 
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.apache.logging.log4j.kotlin.logger
-import org.ulalax.playhouse.ErrorCode
+import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.communicator.*
+import org.ulalax.playhouse.protocol.Common.*
 import org.ulalax.playhouse.protocol.Server.DisconnectNoticeMsg
-import org.ulalax.playhouse.service.RequestCache
-import org.ulalax.playhouse.service.SystemPanelImpl
+import org.ulalax.playhouse.service.BaseSystemPanel
 import java.util.concurrent.atomic.AtomicReference
 
 class ApiService(
-    private val serviceId: String,
-    private val apiOption: ApiOption,
-    private val requestCache: RequestCache,
-    private val communicateClient: CommunicateClient,
-    private val apiBaseSenderImpl: ApiBaseSenderImpl,
-    private val systemPanelImpl: SystemPanelImpl,
+        private val serviceId: String,
+        private val apiOption: ApiOption,
+        private val requestCache: RequestCache,
+        private val clientCommunicator: ClientCommunicator,
+        private val apiBaseSenderImpl: ApiBaseSender,
+        private val systemPanelImpl: BaseSystemPanel,
+        private val log:Logger
     ) : Service {
 
-    private val log = logger()
+
     private val state = AtomicReference(ServerState.DISABLE)
-    private val apiReflection = ApiReflection(apiOption.apiPath,apiOption.applicationContext)
+    private val apiReflection = ApiReflection(apiOption.apiPath,apiOption.applicationContext,log)
 
     override fun onStart() {
         state.set(ServerState.RUNNING)
@@ -34,7 +34,7 @@ class ApiService(
         val apiCallBackHandler = apiOption.apiCallBackHandler
         val executorService = apiOption.executorService
 
-        val apiSender = ApiSenderImpl(serviceId,communicateClient,requestCache).apply {
+        val apiSender = BaseApiSender(serviceId,clientCommunicator,requestCache).apply {
             setCurrentPacketHeader(routeHeader)
         }
 
@@ -47,7 +47,7 @@ class ApiService(
                     }
 
                     else -> {
-                        log.error("Invalid base Api packet:${routeHeader.msgName()}")
+                        log.error("Invalid base Api packet:${routeHeader.msgName()}",this::class.simpleName)
                     }
                 }
             }
@@ -62,13 +62,13 @@ class ApiService(
                         apiSender
                     )
                 }catch (e:Exception){
-                    apiSender.errorReply(routeHeader, ErrorCode.SYSTEM_ERROR)
-                    log.error(ExceptionUtils.getStackTrace(e))
+                    apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR.number)
+                    log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
                 }
             }
         }catch (e:Exception){
-                apiSender.errorReply(routeHeader, ErrorCode.SYSTEM_ERROR)
-                log.error(ExceptionUtils.getStackTrace(e))
+                apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR.number)
+                log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
         }
     }
 
