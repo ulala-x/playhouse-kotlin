@@ -12,7 +12,6 @@ message HeaderMsg {
   int32 msg_seq = 2;
   string msg_name = 3;
   int32 error_code = 4;
-
 }
 
 message PacketMsg {

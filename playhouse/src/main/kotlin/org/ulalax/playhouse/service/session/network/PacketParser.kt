@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBufInputStream
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.message.ClientPacket
-import org.ulalax.playhouse.communicator.message.XPayload
+import org.ulalax.playhouse.communicator.message.FramePayload
 import org.ulalax.playhouse.protocol.Common
 import org.zeromq.ZFrame
 import java.io.InputStream
@@ -29,13 +29,13 @@ open class PacketParser {
                 val headerSize = buf.getUnsignedByte(buf.readerIndex()).toInt()
 
                 if (headerSize > HEADER_SIZE) {
-                    LOG.error("Header size over : $headerSize",this::class.simpleName)
+                    LOG.error("Header size over : $headerSize",this)
                     throw IndexOutOfBoundsException("HeaderSizeOver")
                 }
 
                 val bodySize = buf.getUnsignedShort(buf.readerIndex()+1);
                 if (bodySize > MAX_PACKET_SIZE) {
-                    LOG.error("body size over : $headerSize",this::class.simpleName)
+                    LOG.error("body size over : $headerSize",this)
                     throw IndexOutOfBoundsException("BodySizeOver")
                 }
 
@@ -52,10 +52,10 @@ open class PacketParser {
                 val bodyInputStream = ByteBufInputStream(buf, bodySize)
                 val body = bodyInputStream.readAllBytes()
 
-                val clientPacket = ClientPacket.of(header, XPayload(ZFrame(body)))
+                val clientPacket = ClientPacket.of(header, FramePayload(ZFrame(body)))
                 packets.add(clientPacket)
             }catch (e:Exception){
-                LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+                LOG.error(ExceptionUtils.getStackTrace(e),this,e)
             }
         }
         return packets

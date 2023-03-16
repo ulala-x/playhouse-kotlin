@@ -15,7 +15,8 @@ class TcpSocketPacketCodec() : ByteToMessageCodec<ClientPacket>() {
     private val parser = PacketParser()
     override fun encode(ctx: ChannelHandlerContext, clientPacket: ClientPacket, out: ByteBuf) {
         clientPacket.use {
-            clientPacket.toByteBuf(out)
+            //clientPacket.toByteBuf(out)
+            out.writeBytes(clientPacket.payload.data())
         }
     }
 
@@ -24,7 +25,7 @@ class TcpSocketPacketCodec() : ByteToMessageCodec<ClientPacket>() {
             val packets = parser.parse(msg)
             packets.forEach{el->out.add(el)}
         }catch (e:Exception){
-            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+            LOG.error(ExceptionUtils.getStackTrace(e),this,e)
         }
     }
 }

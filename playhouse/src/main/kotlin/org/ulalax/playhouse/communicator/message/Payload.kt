@@ -3,52 +3,76 @@ package org.ulalax.playhouse.communicator.message
 import com.google.protobuf.ByteString
 import com.google.protobuf.GeneratedMessageV3
 import org.zeromq.ZFrame
+import java.io.OutputStream
 
 
 interface Payload : AutoCloseable{
-    fun frame(): ZFrame
+    fun data():ByteArray
+    fun output(outputStream: OutputStream)
+}
+class ProtoPayload(val proto: GeneratedMessageV3) : Payload {
+
+    override fun data(): ByteArray {
+        return proto.toByteArray()
+    }
+
+    override fun output(outputStream: OutputStream) {
+        proto.writeTo(outputStream)
+    }
+
+    override fun close() {
+    }
+}
+class ByteStringPayload(private val byteString: ByteString): Payload{
+    override fun data(): ByteArray {
+        return byteString.toByteArray()
+    }
+
+    override fun output(outputStream: OutputStream) {
+        byteString.writeTo(outputStream)
+    }
+
+    override fun close() {
+    }
+}
+class EmptyPayload :Payload {
+
+    override fun data(): ByteArray {
+        return ByteArray(0)
+    }
+
+    override fun output(outputStream: OutputStream) {
+    }
+
+
+    override fun close() {
+    }
 }
 
-class XPayload constructor() : Payload {
-    constructor(message: GeneratedMessageV3) : this() {
-        this.proto = message
-    }
-    constructor(message: ByteString): this(){
-        this.byteString = message
+class ByteArrayPayload(var byteArray: ByteArray):Payload{
+    override fun data(): ByteArray {
+        return byteArray
     }
 
-    constructor(message: ZFrame): this(){
-        this.frame = message
+    override fun output(outputStream: OutputStream) {
+        outputStream.write(byteArray)
     }
 
-    private var frame: ZFrame? = null
-    private var byteString: ByteString? = null
-    private var proto: GeneratedMessageV3? = null
     override fun close() {
-        frame?.apply {
-            this.close()
-        }
+    }
+}
 
-        frame = null
-        byteString = null
-        proto = null
+
+class FramePayload(var frame: ZFrame) : Payload{
+    override fun data(): ByteArray {
+        return frame.data()
     }
 
-    override fun frame(): ZFrame {
-        if(frame == null){
-            proto?.apply {
-                frame = ZFrame(proto!!.toByteArray());
-            }
-            byteString?.apply {
-                frame = ZFrame(byteString!!.toByteArray());
-            }
-        }
-
-        return frame ?: ZFrame(ByteArray(0))
+    override fun output(outputStream: OutputStream) {
+        outputStream.write(frame.data())
     }
 
-    fun proto(): GeneratedMessageV3? {
-        return proto
+    override fun close(){
+        frame.close()
     }
-
 }

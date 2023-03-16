@@ -26,7 +26,7 @@ class WebSocketPacketCodec
             val packet = parser.parse(msg.content())
             packet.forEach{el->out.add(el)}
         }catch (e:Exception){
-            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName)
+            LOG.error(ExceptionUtils.getStackTrace(e),this)
         }
     }
 }

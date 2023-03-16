@@ -58,7 +58,7 @@ class BaseStage(
             }
         }catch (e:Exception){
             stageSenderImpl.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR.number)
-            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+            LOG.error(ExceptionUtils.getStackTrace(e),this,e)
         }finally {
             stageSenderImpl.clearCurrentPacketHeader()
         }
@@ -78,7 +78,7 @@ class BaseStage(
                             }
                         } catch (e: Exception) {
                             stageSenderImpl.errorReply(routePacket.routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR.number)
-                            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+                            LOG.error(ExceptionUtils.getStackTrace(e),this,e)
                         }
                     }
                 }else{
@@ -154,7 +154,7 @@ class BaseStage(
         try{
             this.stage.onPostCreate()
         }catch (e:Exception){
-            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+            LOG.error(ExceptionUtils.getStackTrace(e),this,e)
         }
 
     }
@@ -166,11 +166,11 @@ class BaseStage(
             if(baseUser!=null){
                 this.stage.onPostJoinStage(baseUser.actor)
             }else{
-                LOG.error("user is not exist : $accountId",this::class.simpleName)
+                LOG.error("user is not exist : $accountId",this)
             }
 
         }catch (e:Exception){
-            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+            LOG.error(ExceptionUtils.getStackTrace(e),this,e)
         }
     }
 
@@ -181,7 +181,7 @@ class BaseStage(
         if(baseUser!=null){
             this.stage.onDisconnect(baseUser.actor)
         }else{
-            LOG.error("user is not exist : $accountId",this::class.simpleName)
+            LOG.error("user is not exist : $accountId",this)
         }
     }
 

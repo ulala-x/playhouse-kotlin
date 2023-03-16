@@ -21,7 +21,7 @@ class XServerCommunicator(
                 try {
                     listener.onReceive(packet)
                 }catch (e:Exception){
-                    LOG.error("${playSocket.id} Error during communication",this::class.simpleName,e)
+                    LOG.error("${playSocket.id} Error during communication",this,e)
                 }
 
                 packet = playSocket.receive()

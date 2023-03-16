@@ -56,7 +56,7 @@ class ConsoleLogger : Logger {
 
 }
 
-object LOG : Logger {
+object LOG  {
     private var log:Logger = ConsoleLogger()
     private var logLevel:LogLevel = LogLevel.TRACE
 
@@ -65,39 +65,46 @@ object LOG : Logger {
         this.logLevel = logLevel
     }
 
-    override fun trace(message: String, className: String?) {
-        if(logLevel.intValue >= LogLevel.TRACE.intValue){
-            this.log.trace(message,className)
+    fun trace(message: String, clazz: Any) {
+        if( LogLevel.TRACE.intValue >= logLevel.intValue){
+            this.log.trace(message,clazz::class.simpleName)
         }
     }
 
-    override fun debug(message: String, className: String?) {
-        if(logLevel.intValue >= LogLevel.DEBUG.intValue){
-            this.log.debug(message,className)
+    fun debug(message: String, clazz: Any) {
+        if(LogLevel.DEBUG.intValue >= logLevel.intValue){
+            this.log.debug(message,clazz::class.simpleName)
         }
     }
 
-    override fun info(message: String, className: String?) {
-        if(logLevel.intValue >= LogLevel.INFO.intValue){
-            this.log.info(message,className)
+    fun info(message: String, clazz: Any) {
+        if(LogLevel.INFO.intValue >= logLevel.intValue){
+            this.log.info(message,clazz::class.simpleName)
         }
     }
 
-    override fun warn(message: String, className: String?) {
-        if(logLevel.intValue >= LogLevel.WARNING.intValue){
-            this.log.warn(message,className)
+    fun warn(message: String, clazz: Any) {
+        if(LogLevel.WARNING.intValue >= logLevel.intValue){
+            this.log.warn(message,clazz::class.simpleName)
         }
     }
 
-    override fun error(message: String, className: String?, ex: Throwable?) {
-        if(logLevel.intValue >= LogLevel.ERROR.intValue){
-            this.log.error(message,className)
+    fun error(message: String, clazz: Any) {
+        if(LogLevel.ERROR.intValue >= logLevel.intValue){
+            this.log.error(message,clazz::class.simpleName)
         }
     }
 
-    override fun fatal(message: String, className: String?) {
-        if(logLevel.intValue >= LogLevel.FATAL.intValue){
-            this.log.warn(message,className)
+    fun error(message: String, clazz: Any, ex: Throwable?) {
+        if(LogLevel.ERROR.intValue >= logLevel.intValue){
+            this.log.error(message,clazz::class.simpleName,ex)
+        }
+    }
+
+
+    fun fatal(message: String, clazz: Any) {
+        if(LogLevel.FATAL.intValue >= logLevel.intValue ){
+            this.log.warn(message,clazz::class.simpleName)
         }
     }
 }

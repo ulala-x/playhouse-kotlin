@@ -61,7 +61,7 @@ class SessionClient(
                         sessionSender.sendToBaseStage(serverInfo.bindEndpoint,stageId,accountId,discconectPacket)
                     }
                     else -> {
-                        LOG.error("has invalid type session data : ${serverInfo.serviceType}",this::class.simpleName)
+                        LOG.error("has invalid type session data : ${serverInfo.serviceType}",this)
                     }
                 }
 
@@ -82,7 +82,7 @@ class SessionClient(
             if(signInURIs.contains(uri)){
                 relayTo(serviceId, clientPacket)
             }else{
-                LOG.warn("client is not authenticated :${msgName}",this::class.simpleName)
+                LOG.warn("client is not authenticated :${msgName}",this)
             }
         }
     }
@@ -97,17 +97,17 @@ class SessionClient(
 
         when(type){
             ServiceType.API -> {
-                sessionSender.relayToApi(endpoint,sid,sessionInfo,clientPacket.toPacket(),msgSeq)
+                sessionSender.relayToApi(endpoint,sid,sessionInfo,clientPacket,msgSeq)
             }
             ServiceType.Play ->{
-                sessionSender.relayToRoom(endpoint,stageId,sid,accountId,sessionInfo,clientPacket.toPacket(),msgSeq)
+                sessionSender.relayToRoom(endpoint,stageId,sid,accountId,sessionInfo,clientPacket,msgSeq)
             }
             else ->{
-                    LOG.error("Invalid Serive Type request $type,${clientPacket.msgName()}",this::class.simpleName)
+                    LOG.error("Invalid Serive Type request $type,${clientPacket.msgName()}",this)
             }
         }
 
-        LOG.debug("session relayTo $type:${endpoint}, sessionInfo:$sessionInfo, msgName:${clientPacket.msgName()}",this::class.simpleName)
+        LOG.debug("session relayTo $type:${endpoint}, sessionInfo:$sessionInfo, msgName:${clientPacket.msgName()}",this)
     }
 
     fun getSessionInfo(serviceId: String):String  {
@@ -131,30 +131,30 @@ class SessionClient(
                 AuthenticateMsg.getDescriptor().name -> {
                     val authenticateMsg = AuthenticateMsg.parseFrom(packet.data())
                     authenticate(authenticateMsg.serviceId,authenticateMsg.accountId,authenticateMsg.sessionInfo)
-                    LOG.debug("$accountId is authenticated",this::class.simpleName)
+                    LOG.debug("$accountId is authenticated",this)
                 }
                 UpdateSessionInfoMsg.getDescriptor().name ->{
                     val updatedSessionInfo = UpdateSessionInfoMsg.parseFrom(packet.data())
                     updateSessionInfo(updatedSessionInfo.serviceId,updatedSessionInfo.sessionInfo)
-                    LOG.debug("sessionInfo of $accountId is updated with $updatedSessionInfo",this::class.simpleName)
+                    LOG.debug("sessionInfo of $accountId is updated with $updatedSessionInfo",this)
                 }
                 SessionCloseMsg.getDescriptor().name -> {
                     channel.disconnect()
-                    LOG.debug("$accountId is required to session close",this::class.simpleName)
+                    LOG.debug("$accountId is required to session close",this)
                 }
                 JoinStageMsg.getDescriptor().name ->{
                     val joinStageMsg = JoinStageMsg.parseFrom(packet.data())
                     val playEndpoint =joinStageMsg.playEndpoint
                     val stageId = joinStageMsg.stageId
                     updateRoomInfo(playEndpoint,stageId)
-                    LOG.debug("$accountId is roomInfo updated:$playEndpoint,$stageId $",this::class.simpleName)
+                    LOG.debug("$accountId is roomInfo updated:$playEndpoint,$stageId $",this)
                 }
                 LeaveStageMsg.getDescriptor().name->{
                     clearRoomInfo()
-                    LOG.debug("$accountId is roomInfo clear:$playEndpoint,$stageId $",this::class.simpleName)
+                    LOG.debug("$accountId is roomInfo clear:$playEndpoint,$stageId $",this)
                 }
                 else ->{
-                    LOG.error("Invalid Packet $msgName",this::class.simpleName)
+                    LOG.error("Invalid Packet $msgName",this)
                 }
             }
         }else{

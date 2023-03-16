@@ -15,7 +15,7 @@ class StageTimerCmd(override val playService: PlayService): BaseStageCmd {
         if(baseStage.hasTimer(timerId)){
             timerCallback()
         }else{
-            LOG.warn("timer already canceled stageId:${baseStage.stageId()}, timerId:$timerId",this::class.simpleName)
+            LOG.warn("timer already canceled stageId:${baseStage.stageId()}, timerId:$timerId",this)
         }
     }
 

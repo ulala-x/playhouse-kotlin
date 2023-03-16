@@ -51,7 +51,7 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
                 val targetInstance = instances[targetMethod.className]!!
                 targetMethod.method.invoke(targetInstance.instance,systemPanel,apiBaseSender)
             }catch (e:Exception){
-                LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+                LOG.error(ExceptionUtils.getStackTrace(e),this,e)
                 exitProcess(1)
             }
         }
@@ -81,7 +81,7 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
             }
         }catch (e:Exception){
             apiSender.errorReply(routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR.number)
-            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+            LOG.error(ExceptionUtils.getStackTrace(e),this,e)
         }
     }
 

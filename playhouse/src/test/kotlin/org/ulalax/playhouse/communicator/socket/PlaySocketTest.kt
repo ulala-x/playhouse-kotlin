@@ -7,9 +7,9 @@ import org.ulalax.playhouse.communicator.message.RouteHeader
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.Test.TestMsg
 import org.ulalax.playhouse.communicator.IpFinder
-import org.ulalax.playhouse.communicator.message.XPayload
+import org.ulalax.playhouse.communicator.message.EmptyPayload
 
- class PlaySocketTest : FunSpec(){
+class PlaySocketTest : FunSpec(){
     private val localIp = IpFinder.findLocalIp()
     private val serverPort = 18888
     private val clientPort = 17777
@@ -41,7 +41,7 @@ import org.ulalax.playhouse.communicator.message.XPayload
 
 
         test("should send message with empty frame") {
-            val sendRoutePacket = RoutePacket.of(RouteHeader.of(HeaderMsg.newBuilder().build()), XPayload())
+            val sendRoutePacket = RoutePacket.of(RouteHeader.of(HeaderMsg.newBuilder().build()), EmptyPayload())
             clientSocket.send(serverBindEndpoint, sendRoutePacket)
 
             var receiveRoutePacket: RoutePacket? = null

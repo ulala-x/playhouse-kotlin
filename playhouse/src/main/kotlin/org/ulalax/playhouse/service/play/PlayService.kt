@@ -4,10 +4,9 @@ import org.ulalax.playhouse.communicator.message.RouteHeader
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import kotlinx.coroutines.runBlocking
 import org.ulalax.playhouse.LOG
-import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.communicator.*
-import org.ulalax.playhouse.communicator.message.XPayload
+import org.ulalax.playhouse.communicator.message.ProtoPayload
 import org.ulalax.playhouse.protocol.Common.BaseErrorCode
 import org.ulalax.playhouse.service.BaseSender
 import org.ulalax.playhouse.service.play.base.BaseStage
@@ -67,7 +66,7 @@ class PlayService(val serviceId:String,
                         doBaseRoomPacket(msgName, roomPacket, stageId)
                     }else{
                         baseRooms[stageId]?.run { this.send(roomPacket) }
-                            ?: LOG.error("stageId:$stageId is not exist, msgName:$msgName",this::class.simpleName)
+                            ?: LOG.error("stageId:$stageId is not exist, msgName:$msgName",this)
                     }
                 }
                 routePacket = msgQueue.poll()
@@ -93,8 +92,8 @@ class PlayService(val serviceId:String,
 
             TimerMsg.getDescriptor().name -> {
                 val timerId = routePacket.timerId
-                val protoPayload = routePacket.getPayload() as XPayload
-                timerProcess(stageId, timerId, protoPayload.proto() as TimerMsg, routePacket.timerCallback)
+                val protoPayload = routePacket.getPayload() as ProtoPayload
+                timerProcess(stageId, timerId, protoPayload.proto as TimerMsg, routePacket.timerCallback)
             }
 
             DestroyStage.getDescriptor().name -> {
@@ -104,7 +103,7 @@ class PlayService(val serviceId:String,
             else -> {
                 var room = baseRooms[stageId]
                 if (room == null) {
-                    LOG.error(" room is not exist :$stageId,$msgName",this::class.simpleName)
+                    LOG.error(" room is not exist :$stageId,$msgName",this)
                     errorReply(routePacket.routeHeader, BaseErrorCode.STAGE_IS_NOT_EXIST.number)
                     return
                 }
@@ -119,7 +118,7 @@ class PlayService(val serviceId:String,
                     }
 
                     else -> {
-                        LOG.error("$msgName is not base packet",this::class.simpleName)
+                        LOG.error("$msgName is not base packet",this)
                     }
                 }
             }
@@ -153,9 +152,9 @@ class PlayService(val serviceId:String,
                     timerManager.cancelTimer(timerId)
 
                 }
-                else -> {LOG.error("Invalid timer type $type",this::class.simpleName)}
+                else -> {LOG.error("Invalid timer type $type",this)}
             }
-        }?:LOG.error("room for timer is not exist:$stageId, ${timerMsg.type}",this::class.simpleName)
+        }?:LOG.error("room for timer is not exist:$stageId, ${timerMsg.type}",this)
     }
 
     override fun onReceive(routePacket: RoutePacket) {

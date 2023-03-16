@@ -15,7 +15,8 @@ class WebSocketPacketCodec : MessageToMessageCodec<BinaryWebSocketFrame, ClientP
     override fun encode(ctx: ChannelHandlerContext, clientPacket: ClientPacket, out: MutableList<Any>) {
         clientPacket.use {
             val buffer = ByteBufferAllocator.getBuf()
-            clientPacket.toByteBuf(buffer)
+            //clientPacket.toByteBuf(buffer)
+            buffer.writeBytes(clientPacket.payload.data())
             out.add(BinaryWebSocketFrame(true,0,buffer))
         }
     }
@@ -25,7 +26,7 @@ class WebSocketPacketCodec : MessageToMessageCodec<BinaryWebSocketFrame, ClientP
             val packets = parser.parse(msg.content())
             packets.forEach{el->out.add(el)}
         }catch (e:Exception){
-            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+            LOG.error(ExceptionUtils.getStackTrace(e),this,e)
         }
     }
 }

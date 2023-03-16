@@ -23,7 +23,7 @@ class TcpSocketPacketCodec : ByteToMessageCodec<ClientPacket>() {
             val packet = parser.parse(msg)
             packet.forEach{el->out.add(el)}
         }catch (e:Exception){
-            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+            LOG.error(ExceptionUtils.getStackTrace(e),this,e)
         }
     }
 }

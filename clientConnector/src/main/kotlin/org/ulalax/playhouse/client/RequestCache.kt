@@ -63,10 +63,10 @@ class RequestCache(timeout:Long){
             this.onReceive(packet)
             cache.invalidate(msgSeq)
         } ?: {
-            LOG.error("$msgSeq, $msgName request is not exist",this::class.simpleName)
+            LOG.error("$msgSeq, $msgName request is not exist",this)
         }
     }catch (e:Exception){
-        LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+        LOG.error(ExceptionUtils.getStackTrace(e),this,e)
     }
 }
 

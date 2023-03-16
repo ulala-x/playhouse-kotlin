@@ -63,8 +63,8 @@ class Communicator(private val option: CommunicatorOption,
         service.onStart()
         performanceTester.start()
 
-        LOG.info("============== server start ==============",this::class.simpleName)
-        LOG.info("Ready for bind:$bindEndpoint",this::class.simpleName)
+        LOG.info("============== server start ==============",this)
+        LOG.info("Ready for bind:$bindEndpoint",this)
     }
 
     private fun updateDisable(){
@@ -80,7 +80,7 @@ class Communicator(private val option: CommunicatorOption,
         addressResolver.stop()
         messageLoop.stop()
 
-        LOG.info("============== server stop ==============",this::class.simpleName)
+        LOG.info("============== server stop ==============",this)
     }
     fun awaitTermination() {
         messageLoop.awaitTermination()
@@ -89,7 +89,7 @@ class Communicator(private val option: CommunicatorOption,
     private fun isPacketToClient(routePacket: RoutePacket) = routePacket.routeHeader.sid > 0
     override fun onReceive(routePacket: RoutePacket) {
 
-        LOG.debug("onReceive : ${routePacket.msgName()}, from:${routePacket.routeHeader.from}",this::class.simpleName)
+        LOG.debug("onReceive : ${routePacket.msgName()}, from:${routePacket.routeHeader.from}",this)
 
         performanceTester.incCounter()
 

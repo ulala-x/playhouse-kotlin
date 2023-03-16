@@ -14,7 +14,7 @@ class ServerAddressResolver (
 ){
     private lateinit var timer: Timer
     fun start(){
-        LOG.info("Server address resolver start",this::class.simpleName)
+        LOG.info("Server address resolver start",this)
 
         timer = timer(name = "ServerAddressResolverTimer", period = ConstOption.ADDRESS_RESOLVER_PERIOD,
                 initialDelay = ConstOption.ADDRESS_RESOLVER_INITIAL_DELAY) {
@@ -42,7 +42,7 @@ class ServerAddressResolver (
                     }
                 }
             }catch (e:Exception){
-                LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+                LOG.error(ExceptionUtils.getStackTrace(e),this,e)
             }
         }
     }

@@ -1,11 +1,13 @@
 package org.ulalax.playhouse.communicator.message
 
 import com.google.protobuf.GeneratedMessageV3
+import org.ulalax.playhouse.communicator.CommunicatorException
+import org.ulalax.playhouse.communicator.ConstOption
+import org.ulalax.playhouse.communicator.socket.PreAllocByteArrayOutputStream
 import org.ulalax.playhouse.protocol.Common.HeaderMsg
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.service.AsyncPostCallback
 import org.ulalax.playhouse.service.play.base.TimerCallback
-import org.zeromq.ZFrame
 import java.time.Duration
 
 
@@ -17,7 +19,8 @@ class RouteHeader private constructor(val header: Header,
                                       var isBackend:Boolean = false,
                                       var isReply:Boolean = false,
                                       var accountId:Long = 0,
-                                      var stageId:Long = 0
+                                      var stageId:Long = 0,
+                                      var forClient:Boolean = false
 ){
 
     var from: String = ""
@@ -32,6 +35,7 @@ class RouteHeader private constructor(val header: Header,
             .setIsReply(isReply)
             .setAccountId(accountId)
             .setStageId(stageId)
+            .setForClient(forClient)
             .build()
     }
 
@@ -71,29 +75,28 @@ class RouteHeader private constructor(val header: Header,
 
 open class RoutePacket protected constructor(val routeHeader: RouteHeader, private var payload: Payload) : BasePacket {
 
-    var timerId:Long = 0
+    var timerId: Long = 0
     var timerCallback: TimerCallback = {}
 
-    fun msgName():String { return  routeHeader.header.msgName }
-    fun serviceId():String {return routeHeader.header.serviceId}
-    fun isBackend():Boolean{return routeHeader.isBackend}
-
-
-//    fun toMsg(): Plbase.RoutePacketMsg {
-//        return Plbase.RoutePacketMsg.newBuilder()
-//            .setRouteHeaderMsg(routeHeader.toMsg())
-//            .setMessage(message).build()
-//    }
-    override fun frame(): ZFrame {
-        return payload.frame()
+    fun msgName(): String {
+        return routeHeader.header.msgName
     }
 
+    fun serviceId(): String {
+        return routeHeader.header.serviceId
+    }
+
+    fun isBackend(): Boolean {
+        return routeHeader.isBackend
+    }
+
+
     override fun data(): ByteArray {
-        return frame().data();
+        return payload.data();
     }
 
     fun toReplyPacket(): ReplyPacket {
-        return ReplyPacket(routeHeader.header.errorCode,routeHeader.msgName(),movePayload())
+        return ReplyPacket(routeHeader.header.errorCode, routeHeader.msgName(), movePayload())
     }
 
     fun header(): Header {
@@ -104,11 +107,11 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
 //        val packetMsg = PacketMsg.newBuilder()
 //            .setHeaderMsg(routeHeader.header.toMsg())
 //            .setMessage(message).build()
-        return ClientPacket.of(routeHeader.header.toMsg(),movePayload())
+        return ClientPacket.of(routeHeader.header.toMsg(), movePayload())
     }
 
     fun toPacket(): Packet {
-        return Packet(msgName(),movePayload())
+        return Packet(msgName(), movePayload())
     }
 
     fun isBase(): Boolean {
@@ -139,30 +142,35 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         return routeHeader.isSystem
     }
 
+    fun forClient(): Boolean {
+        return routeHeader.forClient
+    }
+
 
     companion object {
         fun moveOf(routePacket: RoutePacket): RoutePacket {
-            if (routePacket is AsyncBlockPacket<*>){
+            if (routePacket is AsyncBlockPacket<*>) {
                 return routePacket
             }
-            var movePacket = of(routePacket.routeHeader,routePacket.movePayload())
+            var movePacket = of(routePacket.routeHeader, routePacket.movePayload())
             movePacket.timerId = routePacket.timerId
             movePacket.timerCallback = routePacket.timerCallback
             return movePacket
         }
 
         fun of(routePacketMsg: RoutePacketMsg): RoutePacket {
-            return RoutePacket(RouteHeader.of(routePacketMsg.routeHeaderMsg), XPayload(routePacketMsg.message))
+            return RoutePacket(RouteHeader.of(routePacketMsg.routeHeaderMsg), ByteStringPayload(routePacketMsg.message))
         }
-//        fun of(routeHeader: RouteHeader, message: ByteBuf): RoutePacket {
+
+        //        fun of(routeHeader: RouteHeader, message: ByteBuf): RoutePacket {
 //            return RoutePacket(routeHeader,ProtoPayload(message))
 //        }
         fun of(routeHeader: RouteHeader, payload: Payload): RoutePacket {
-            return RoutePacket(routeHeader,payload)
+            return RoutePacket(routeHeader, payload)
         }
 
         fun of(routeHeader: RouteHeader, message: GeneratedMessageV3): RoutePacket {
-            return RoutePacket(routeHeader, XPayload(message))
+            return RoutePacket(routeHeader, ProtoPayload(message))
         }
 
         fun systemOf(packet: Packet, isBase: Boolean): RoutePacket {
@@ -171,20 +179,22 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
                 this.isSystem = true
                 this.isBase = isBase
             }
-            return RoutePacket(routeHeader,packet.movePayload())
+            return RoutePacket(routeHeader, packet.movePayload())
         }
-        fun  apiOf(sessionInfo: String,
-                   packet: Packet,
-                   isBase: Boolean, isBackend: Boolean): RoutePacket {
+
+        fun apiOf(sessionInfo: String,
+                  packet: Packet,
+                  isBase: Boolean, isBackend: Boolean): RoutePacket {
             val header = Header(packet.msgName)
             val routeHeader = RouteHeader.of(header).apply {
                 this.sessionInfo = sessionInfo
                 this.isBase = isBase
                 this.isBackend = isBackend
             }
-            return RoutePacket(routeHeader,packet.movePayload())
+            return RoutePacket(routeHeader, packet.movePayload())
         }
-        fun sessionOf(sid:Int,
+
+        fun sessionOf(sid: Int,
                       packet: Packet,
                       isBase: Boolean, isBackend: Boolean): RoutePacket {
             val header = Header(packet.msgName)
@@ -193,17 +203,17 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
                 this.isBase = isBase
                 this.isBackend = isBackend
             }
-            return RoutePacket(routeHeader,packet.movePayload())
+            return RoutePacket(routeHeader, packet.movePayload())
         }
 
         fun addTimerOf(
-            type: TimerMsg.Type,
-            stageId: Long,
-            timerId: Long,
-            timerCallback: TimerCallback,
-            initialDelay: Duration,
-            period: Duration,
-            count: Int = 0
+                type: TimerMsg.Type,
+                stageId: Long,
+                timerId: Long,
+                timerCallback: TimerCallback,
+                initialDelay: Duration,
+                period: Duration,
+                count: Int = 0
         ): RoutePacket {
             val header = Header(TimerMsg.getDescriptor().name)
             val routeHeader = RouteHeader.of(header).apply {
@@ -212,23 +222,23 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
             }
 
             val message = TimerMsg.newBuilder().setType(type).setCount(count)
-                .setInitialDelay(initialDelay.toMillis())
-                .setPeriod(period.toMillis())
-                .build()
-            return RoutePacket(routeHeader, XPayload(message)).apply {
+                    .setInitialDelay(initialDelay.toMillis())
+                    .setPeriod(period.toMillis())
+                    .build()
+            return RoutePacket(routeHeader, ProtoPayload(message)).apply {
                 this.timerCallback = timerCallback
                 this.timerId = timerId
             }
         }
 
         fun stageTimerOf(
-            stageId: Long,
-            timerId: Long,
-            timerCallback: TimerCallback
+                stageId: Long,
+                timerId: Long,
+                timerCallback: TimerCallback
         ): RoutePacket {
             val header = Header(StageTimer.getDescriptor().name)
             val routeHeader = RouteHeader.of(header)
-            return RoutePacket(routeHeader, XPayload()).apply {
+            return RoutePacket(routeHeader, EmptyPayload()).apply {
                 this.routeHeader.stageId = stageId
                 this.timerId = timerId
                 this.timerCallback = timerCallback
@@ -237,10 +247,10 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         }
 
         fun stageOf(
-            stageId: Long,
-            accountId: Long,
-            packet: Packet,
-            isBase: Boolean, isBackend: Boolean): RoutePacket {
+                stageId: Long,
+                accountId: Long,
+                packet: Packet,
+                isBase: Boolean, isBackend: Boolean): RoutePacket {
             val header = Header(packet.msgName)
             val routeHeader = RouteHeader.of(header).apply {
                 this.stageId = stageId
@@ -248,13 +258,13 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
                 this.isBase = isBase
                 this.isBackend = isBackend
             }
-            return RoutePacket(routeHeader,packet.movePayload())
+            return RoutePacket(routeHeader, packet.movePayload())
         }
 
         fun replyOf(
-            serviceId: String,
-            msgSeq: Int,
-            reply: ReplyPacket
+                serviceId: String,
+                msgSeq: Int,
+                reply: ReplyPacket
         ): RoutePacket {
             val header = Header(reply.msgName).apply {
                 this.serviceId = serviceId
@@ -264,7 +274,7 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
             val routeHeader = RouteHeader.of(header).apply {
                 this.isReply = true
             }
-            return RoutePacket(routeHeader,reply.movePayload())
+            return RoutePacket(routeHeader, reply.movePayload())
         }
 
         fun clientOf(serviceId: String, sid: Int, packet: Packet): RoutePacket {
@@ -273,14 +283,41 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
             }
             val routeHeader = RouteHeader.of(header).apply {
                 this.sid = sid
+                this.forClient = true
             }
-            return RoutePacket(routeHeader,packet.movePayload())
+            return RoutePacket(routeHeader, packet.movePayload())
+        }
+
+        fun toClientPayload(clientPacket: ClientPacket,outputStream: PreAllocByteArrayOutputStream): ByteArray {
+            val header = clientPacket.header.toMsg()
+            val payload = clientPacket.payload
+
+            val headerSize = header.serializedSize
+
+            if (headerSize > ConstOption.HEADER_SIZE) {
+                throw CommunicatorException("header size is over $header")
+            }
+
+            outputStream.writeByte(headerSize)
+
+            //prepare body size
+            val index = outputStream.writeShort(0)
+            // header
+            header.writeTo(outputStream)
+            // body
+            payload.output(outputStream)
+
+            val bodySize = outputStream.writtenDataLength() - (1 + 2 + headerSize)
+            // write body size
+            outputStream.replaceShort(index, bodySize)
+
+            return outputStream.array()
         }
     }
 
     override fun movePayload(): Payload {
         val temp = payload
-        payload = XPayload()
+        payload = EmptyPayload()
         return temp;
     }
 
@@ -292,13 +329,18 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         return this.payload
     }
 
+    fun getClientPacketBytes(outputStream: PreAllocByteArrayOutputStream): ByteArray {
+        val clientPacket = toClientPacket()
+        return toClientPayload(clientPacket,outputStream)
+    }
+
 }
 
 class AsyncBlockPacket<T> private constructor(
     val asyncPostCallback: AsyncPostCallback<T>,
     val result:T,
     routeHeader: RouteHeader
-) : RoutePacket(routeHeader, XPayload()) {
+) : RoutePacket(routeHeader, EmptyPayload()) {
 
     companion object {
         fun<T> of(

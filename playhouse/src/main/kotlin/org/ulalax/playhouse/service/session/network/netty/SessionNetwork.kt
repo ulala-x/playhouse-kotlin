@@ -55,14 +55,14 @@ class SessionNetwork(private val sessionOption: SessionOption,
 
         channel = bootstrap.bind(port).sync().channel()
 
-        LOG.info("Ready for ${IpFinder.findLocalIp()}:$port",this::class.simpleName)
+        LOG.info("Ready for ${IpFinder.findLocalIp()}:$port",this)
     }
 
     fun await(){
         channel.closeFuture().sync()
     }
     fun shutdown() {
-        LOG.info("netty shutdown",this::class.simpleName)
+        LOG.info("netty shutdown",this)
         NettyConfigure.shutdownGracefully()
     }
 }

@@ -11,7 +11,6 @@ interface   ReplyCallback{
 
 interface BasePacket : AutoCloseable {
     fun movePayload(): Payload
-    fun frame():ZFrame
     fun data():ByteArray
 
 }
@@ -30,48 +29,39 @@ class Header constructor(var msgName:String="",var errorCode:Int = 0,var msgSeq:
                 .setErrorCode(this.errorCode).build()
     }
 }
-data class Packet @JvmOverloads  constructor(val msgName:String="",var payload: Payload = XPayload()) : BasePacket {
-    constructor(message: GeneratedMessageV3) : this(message.descriptorForType.name, XPayload(message))
-    constructor( msgName: String, message:ByteString):this(msgName, XPayload(message))
-
-    override fun frame(): ZFrame {
-        return payload.frame()
-    }
+data class Packet @JvmOverloads  constructor(val msgName:String="",var payload: Payload = EmptyPayload()) : BasePacket {
+    constructor(message: GeneratedMessageV3) : this(message.descriptorForType.name, ProtoPayload(message))
+    constructor( msgName: String, message:ByteString):this(msgName, ByteStringPayload(message))
 
     override fun data(): ByteArray {
-        return this.frame().data()
+        return this.payload.data()
     }
 
     override fun movePayload(): Payload {
         val temp = payload
-        payload = XPayload()
+        payload = EmptyPayload()
         return temp;
     }
     override fun close() {
         this.payload.close()
     }
 }
-data class ReplyPacket @JvmOverloads constructor(val errorCode: Int,val msgName:String="", private var payload: Payload = XPayload()):
+data class ReplyPacket @JvmOverloads constructor(val errorCode: Int,val msgName:String="", private var payload: Payload = EmptyPayload()):
     BasePacket {
 
-    constructor(message: GeneratedMessageV3) : this(0,message.descriptorForType.name, XPayload(message))
-    constructor(errorCode: Int,message: GeneratedMessageV3) : this(errorCode,message.descriptorForType.name,
-        XPayload(message)
-    )
+    constructor(message: GeneratedMessageV3) : this(0,message.descriptorForType.name, ProtoPayload(message))
+    constructor(errorCode: Int,message: GeneratedMessageV3) : this(errorCode,message.descriptorForType.name, ProtoPayload(message))
     fun isSuccess():Boolean{
         return errorCode == 0
     }
-    override fun frame(): ZFrame {
-        return payload.frame()
-    }
 
     override fun data(): ByteArray {
-        return frame().data()
+        return payload.data()
     }
 
     override fun movePayload(): Payload {
         val temp = payload
-        payload = XPayload()
+        payload = EmptyPayload()
         return temp;
     }
     override fun close() {

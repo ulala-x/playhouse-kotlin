@@ -2,9 +2,43 @@ package org.ulalax.playhouse.service.session
 
 import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.ulalax.playhouse.communicator.RequestCache
+import org.ulalax.playhouse.communicator.message.ClientPacket
+import org.ulalax.playhouse.communicator.message.Packet
+import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.service.BaseSender
 import org.ulalax.playhouse.service.SessionSender
 
 
-class XSessionSender(serviceId:String, clientCommunicator: ClientCommunicator, reqCache: RequestCache) :
-    BaseSender(serviceId,clientCommunicator,reqCache), SessionSender
+class XSessionSender(serviceId:String,private val clientCommunicator: ClientCommunicator, reqCache: RequestCache) :
+    BaseSender(serviceId,clientCommunicator,reqCache), SessionSender {
+
+    fun relayToRoom(
+            playEndpoint: String,
+            stageId: Long,
+            sid:Int,
+            accountId: Long,
+            sessionInfo: String,
+            packet: ClientPacket,
+            msgSeq: Int
+    ) {
+        val routePacket = RoutePacket.apiOf(sessionInfo,packet.toPacket(), isBase = false, isBackend = false).apply {
+            this.routeHeader.stageId = stageId
+            this.routeHeader.accountId = accountId
+            this.routeHeader.header.msgSeq = msgSeq
+            this.routeHeader.sid = sid
+            this.routeHeader.forClient = true
+        }
+        clientCommunicator.send(playEndpoint, routePacket)
+    }
+
+    fun relayToApi(apiEndpoint: String, sid: Int, sessionInfo: String, packet: ClientPacket, msgSeq: Int){
+        val routePacket = RoutePacket.apiOf(sessionInfo,packet.toPacket(), isBase = false, isBackend = false).apply {
+            this.routeHeader.sid = sid
+            this.routeHeader.header.msgSeq = msgSeq
+            this.routeHeader.forClient = true
+        }
+        clientCommunicator.send(apiEndpoint, routePacket)
+    }
+
+
+}

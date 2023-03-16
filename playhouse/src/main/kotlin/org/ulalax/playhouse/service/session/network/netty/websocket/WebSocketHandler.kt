@@ -15,12 +15,12 @@ class WebSocketHandler(private val sessionPacketListener: SessionPacketListener)
     }
 
     override fun handlerAdded(ctx: ChannelHandlerContext) {
-        LOG.info("connect",this::class.simpleName)
+        LOG.info("connect",this)
         sessionPacketListener.onConnect(ctx.channel())
     }
 
     override fun handlerRemoved(ctx: ChannelHandlerContext) {
-        LOG.info("disconnect",this::class.simpleName)
+        LOG.info("disconnect",this)
         sessionPacketListener.onDisconnect(ctx.channel())
         ctx.close()
     }
@@ -29,7 +29,7 @@ class WebSocketHandler(private val sessionPacketListener: SessionPacketListener)
         if (evt is IdleStateEvent) {
             if (evt.state() == IdleState.READER_IDLE || evt.state() == IdleState.WRITER_IDLE) {
                 sessionPacketListener.onDisconnect(ctx.channel())
-                LOG.trace("client socket idle disconnect",this::class.simpleName)
+                LOG.trace("client socket idle disconnect",this)
                 ctx.close()
             }
         }

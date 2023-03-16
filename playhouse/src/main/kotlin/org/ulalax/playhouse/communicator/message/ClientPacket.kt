@@ -1,11 +1,9 @@
 package org.ulalax.playhouse.communicator.message
 import io.netty.buffer.ByteBuf
 import org.ulalax.playhouse.protocol.Common.*
-import org.zeromq.ZFrame
 
 
-
-class ClientPacket private constructor(val header: Header, private var payload: Payload) : BasePacket {
+class ClientPacket private constructor(val header: Header, var payload: Payload) : BasePacket {
     companion object{
         fun toServerOf(serviceId: String, packet: Packet): ClientPacket {
             val header = Header(msgName = packet.msgName,serviceId = serviceId)
@@ -18,16 +16,12 @@ class ClientPacket private constructor(val header: Header, private var payload: 
 
     override fun movePayload(): Payload {
         val temp = payload
-        payload = XPayload()
+        payload = EmptyPayload()
         return temp;
     }
 
-    override fun frame():ZFrame {
-        return this.payload.frame()
-    }
-
     override fun data(): ByteArray {
-        return frame().data();
+        return payload.data()
     }
 
     fun serviceId():String {
@@ -46,8 +40,8 @@ class ClientPacket private constructor(val header: Header, private var payload: 
 
         val header = header.toMsg()
         val headerSize = header.serializedSize
-        val body = frame()
-        val packetSize =1+2+headerSize+body.length()
+        val body = payload.data()
+        val packetSize =1+2+headerSize+body.size
 
         buffer.capacity(packetSize)
 
@@ -60,9 +54,9 @@ class ClientPacket private constructor(val header: Header, private var payload: 
         body
          */
         buffer.writeByte(headerSize)
-        buffer.writeShort(body.length())
+        buffer.writeShort(body.size)
         buffer.writeBytes(header.toByteArray())
-        buffer.writeBytes(body.data())
+        buffer.writeBytes(body)
     }
 
     fun setMsgSeq(msgSeq: Int) {
@@ -76,5 +70,7 @@ class ClientPacket private constructor(val header: Header, private var payload: 
     override fun close() {
         payload.close()
     }
+
+
 }
 

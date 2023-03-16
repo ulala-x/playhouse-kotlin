@@ -6,12 +6,18 @@ import io.netty.channel.Channel
 import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.client.Connector
 import org.ulalax.playhouse.client.network.message.Packet
+import org.ulalax.playhouse.communicator.ConstOption
 import org.ulalax.playhouse.communicator.IpFinder
+import org.ulalax.playhouse.communicator.message.ByteArrayPayload
 import org.ulalax.playhouse.communicator.message.ClientPacket
+import org.ulalax.playhouse.communicator.message.FramePayload
+import org.ulalax.playhouse.communicator.message.RoutePacket
+import org.ulalax.playhouse.communicator.socket.PreAllocByteArrayOutputStream
 import org.ulalax.playhouse.protocol.Test.TestMsg
 import org.ulalax.playhouse.service.session.SessionOption
 import org.ulalax.playhouse.service.session.network.netty.SessionNetwork
 import org.ulalax.playhouse.service.session.network.netty.SessionPacketListener
+import org.zeromq.ZFrame
 
 class ClientNetworkTest : FunSpec(){
 
@@ -28,15 +34,13 @@ class ClientNetworkTest : FunSpec(){
         }
 
         override fun onReceive(channel: Channel, clientPacket: ClientPacket) {
+            LOG.info("server received : ${clientPacket.msgName()}",this)
+
             val testMsg = TestMsg.parseFrom(clientPacket.data())
             resultValue = testMsg.testMsg
             if(testMsg.testMsg == "request"){
-                if(useWebSocket){
-                    channel.writeAndFlush(clientPacket)
-                }else{
-                    channel.writeAndFlush(clientPacket)
-                }
-
+                clientPacket.payload = FramePayload(ZFrame(RoutePacket.toClientPayload(clientPacket, PreAllocByteArrayOutputStream(ByteArray(ConstOption.MAX_PACKET_SIZE)))))
+                channel.writeAndFlush(clientPacket)
             }
         }
 
@@ -52,7 +56,7 @@ class ClientNetworkTest : FunSpec(){
 
        test("client and session communicate ") {
 
-            arrayOf( true,false).forEach { useWebSocket ->
+            arrayOf( false,true).forEach { useWebSocket ->
                 val serverListener = ServerListener()
                 serverListener.useWebSocket = useWebSocket
                 val sessionNetwork = SessionNetwork(SessionOption().apply { this.useWebSocket = useWebSocket }, serverListener)
@@ -61,13 +65,13 @@ class ClientNetworkTest : FunSpec(){
                 val server = Thread {
                     sessionNetwork.bind(port)
                     sessionNetwork.await()
-                    LOG.info ( "server down" ,this::class.simpleName)
+                    LOG.info ( "server down" ,this)
                 }
                 server.start()
                 Thread.sleep(100)
 
                 val connector = Connector(0, useWebSocket) { serviceId: String, packet: Packet ->
-                    LOG.info("received packet:$serviceId,${packet.msgName}",this::class.simpleName)
+                    LOG.info("client: received packet:$serviceId,${packet.msgName}",this)
                 }
 
                 connector.connect("127.0.0.1", port)
@@ -76,7 +80,8 @@ class ClientNetworkTest : FunSpec(){
                 resultValue shouldBe "onConnect"
 
                 connector.send("api", Packet(TestMsg.newBuilder().setTestMsg("test").build()))
-
+                connector.send("api", Packet(TestMsg.newBuilder().setTestMsg("test").build()))
+//
                 Thread.sleep(200)
                 resultValue shouldBe "test"
 

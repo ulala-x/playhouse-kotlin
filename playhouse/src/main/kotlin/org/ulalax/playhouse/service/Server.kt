@@ -4,5 +4,4 @@ interface Server {
     fun start()
     fun stop()
     fun awaitTermination()
-
 }

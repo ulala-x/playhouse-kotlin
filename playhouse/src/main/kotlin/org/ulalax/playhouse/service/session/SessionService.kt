@@ -53,10 +53,10 @@ class SessionService(private val serviceId:String,
                 val clientPacket = message.second
 
                 clientPacket.use {
-                    LOG.debug("SessionService:onReceive ${clientPacket.header.msgName} : from client",this::class.simpleName)
+                    LOG.debug("SessionService:onReceive ${clientPacket.header.msgName} : from client",this)
                     val sessionClient = clients[sessionId]
                     if (sessionClient == null) {
-                        LOG.error("sessionId is not exist $sessionId,${clientPacket.msgName()}",this::class.simpleName)
+                        LOG.error("sessionId is not exist $sessionId,${clientPacket.msgName()}",this)
                     }else{
                         sessionClient.onReceive(clientPacket)
                     }
@@ -79,7 +79,7 @@ class SessionService(private val serviceId:String,
                     val packetName = routePacket.msgName()
                     val sessionClient = clients[sessionId]
                     if(sessionClient == null) {
-                        LOG.error("sessionId is already disconnected  $sessionId,$packetName",this::class.simpleName)
+                        LOG.error("sessionId is already disconnected  $sessionId,$packetName",this)
                     }else{
                         sessionClient.onReceive(routePacket)
                     }
@@ -138,7 +138,7 @@ class SessionService(private val serviceId:String,
                 sessionOption.urls,
                 requestCache)
         }else{
-            LOG.error("sessionId is exist $sessionId",this::class.simpleName)
+            LOG.error("sessionId is exist $sessionId",this)
         }
     }
 
@@ -151,7 +151,7 @@ class SessionService(private val serviceId:String,
         val sid = getSessionId(channel)
         val sessionClient = clients[sid]
         if(sessionClient == null) {
-            LOG.error("sessionId is not exist $sid",this::class.simpleName)
+            LOG.error("sessionId is not exist $sid",this)
             return
         }
 

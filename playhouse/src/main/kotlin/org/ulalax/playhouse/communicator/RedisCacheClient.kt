@@ -51,7 +51,7 @@ class RedisCacheClient(val redisIp: String,val redisBindPort: Int) : StorageClie
     private lateinit var redisClient:RedisClient
     private lateinit var redisConnection: StatefulRedisConnection<ByteArray, ByteArray>
     private lateinit var redisCommands: RedisCommands<ByteArray, ByteArray>
-    private val redisKey = ConstOption.REDIS_CACHE_KEY.toByteArray(StandardCharsets.UTF_8)
+    private val redisKey = ConstOption.REDIS_CACHE_KEY.toByteArray()
 
     fun connect() {
 

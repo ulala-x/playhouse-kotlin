@@ -41,7 +41,7 @@ class XClientCommunicator(private val playSocket: PlaySocket) : ClientCommunicat
                     playSocket.send(endpoint,routePacket)
                 }
             }catch (e:Exception){
-                LOG.error("${playSocket.id} socket send error : $endpoint,${routePacket.msgName()}",this::class.simpleName,e)
+                LOG.error("${playSocket.id} socket send error : $endpoint,${routePacket.msgName()}",this,e)
             }
         }
     }
@@ -53,7 +53,7 @@ class XClientCommunicator(private val playSocket: PlaySocket) : ClientCommunicat
                 try {
                     action.invoke()
                 }catch (e:Exception){
-                    LOG.error("${playSocket.id} Error during communication",this::class.simpleName,e)
+                    LOG.error("${playSocket.id} Error during communication",this,e)
                 }
                 action = jobBucket.get()
             }

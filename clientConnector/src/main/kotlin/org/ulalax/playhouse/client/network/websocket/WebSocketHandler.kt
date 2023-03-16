@@ -26,7 +26,7 @@ class WebSocketHandler(private val basePacketListener: BasePacketListener) : Cha
         if (evt is IdleStateEvent) {
             if (evt.state() == IdleState.READER_IDLE || evt.state() == IdleState.WRITER_IDLE) {
                 basePacketListener.onDisconnect(ctx.channel())
-                LOG.debug("client socket idle disconnect",this::class.simpleName)
+                LOG.debug("client socket idle disconnect",this)
                 ctx.close()
             }
         }

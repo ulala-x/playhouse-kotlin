@@ -12,13 +12,13 @@ class BasePacketListener(private val requestCache: RequestCache,
 
 
     override fun onConnect(channel: Channel) {
-        LOG.info("connected",this::class.simpleName)
+        LOG.info("connected",this)
     }
 
     override fun onReceive(channel: Channel, clientPacket: ClientPacket) {
 
         clientPacket.use {
-            LOG.debug("onReceive:${clientPacket.msgName()},${clientPacket.header.msgSeq}",this::class.simpleName)
+            LOG.debug("onReceive - from server:${clientPacket.msgName()},${clientPacket.header.msgSeq}",this)
 
             val msgSeq = clientPacket.header.msgSeq
             if (msgSeq != 0) {
@@ -36,7 +36,7 @@ class BasePacketListener(private val requestCache: RequestCache,
     }
 
      override fun onDisconnect(channel: Channel) {
-         LOG.info("Disconnected",this::class.simpleName)
+         LOG.info("Disconnected",this)
     }
 
 }

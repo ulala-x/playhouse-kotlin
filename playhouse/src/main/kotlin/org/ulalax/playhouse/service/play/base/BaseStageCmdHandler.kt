@@ -19,10 +19,10 @@ class BaseStageCmdHandler() {
             if(maps.containsKey(msgName)){
                 maps[msgName]?.execute(baseStage,request)
             }else{
-                LOG.error ("not registered message : $msgName",this::class.simpleName)
+                LOG.error ("not registered message : $msgName",this)
             }
         }else{
-            LOG.error("Invalid packet : $msgName",this::class.simpleName)
+            LOG.error("Invalid packet : $msgName",this)
         }
     }
 }

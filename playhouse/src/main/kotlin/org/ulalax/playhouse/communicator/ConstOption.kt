@@ -5,10 +5,14 @@ import org.ulalax.playhouse.Logger
 
 object ConstOption {
 
-    val THREAD_SLEEP:Long = 50
-    val ADDRESS_RESOLVER_PERIOD:Long = 1000
-    val ADDRESS_RESOLVER_INITIAL_DELAY:Long = 3000
-    val REDIS_CACHE_KEY:String = "playhouse_serverinfos"
+    const val THREAD_SLEEP:Long = 50
+    const val ADDRESS_RESOLVER_PERIOD:Long = 1000
+    const val ADDRESS_RESOLVER_INITIAL_DELAY:Long = 3000
+    const val REDIS_CACHE_KEY:String = "playhouse_serverinfos"
+
+    const val MAX_PACKET_SIZE = 65535
+    const val HEADER_SIZE = 256
+    const val LENGTH_FIELD_SIZE = 3
 
     val logger:Logger = ConsoleLogger()
 }

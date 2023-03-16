@@ -46,7 +46,7 @@ class ApiService(
                     }
 
                     else -> {
-                        LOG.error("Invalid base Api packet:${routeHeader.msgName()}",this::class.simpleName)
+                        LOG.error("Invalid base Api packet:${routeHeader.msgName()}",this)
                     }
                 }
             }
@@ -62,12 +62,12 @@ class ApiService(
                     )
                 }catch (e:Exception){
                     apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR.number)
-                    LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+                    LOG.error(ExceptionUtils.getStackTrace(e),this,e)
                 }
             }
         }catch (e:Exception){
                 apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR.number)
-                LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+                LOG.error(ExceptionUtils.getStackTrace(e),this,e)
         }
     }
 

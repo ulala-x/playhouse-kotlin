@@ -30,14 +30,14 @@ open class PacketParser() {
                 val headerSize = buf.getUnsignedByte(buf.readerIndex()).toInt()
 
                 if (headerSize > HEADER_SIZE) {
-                    LOG.error("Header size over : $headerSize",this::class.simpleName)
+                    LOG.error("Header size over : $headerSize",this)
                     throw IndexOutOfBoundsException("HeaderSizeOver")
                 }
                 //buf.readerIndex(buf.readerIndex() + 1)
 
                 val bodySize = buf.getUnsignedShort(buf.readerIndex()+1);
                 if (bodySize > MAX_PACKET_SIZE) {
-                    LOG.error("body size over : $headerSize",this::class.simpleName)
+                    LOG.error("body size over : $headerSize",this)
                     throw IndexOutOfBoundsException("BodySizeOver")
                 }
 
@@ -57,7 +57,7 @@ open class PacketParser() {
                 val clientPacket = ClientPacket.of(header, BytePayload(body))
                 packets.add(clientPacket)
             }catch (e:Exception){
-                LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+                LOG.error(ExceptionUtils.getStackTrace(e),this,e)
             }
         }
         return packets

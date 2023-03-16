@@ -40,13 +40,14 @@ open class BaseSender(private val serviceId: String,
                 val from = this.from
                 val routePacket = RoutePacket.replyOf(serviceId,msgSeq,reply).apply {
                     this.routeHeader.sid = sid
+                    this.routeHeader.forClient = forClient
                 }
                 clientCommunicator.send(from,routePacket)
             }else{
-                LOG.error("not exist request packet ${reply.msgName},${header.msgName} is not request packet",this::class.simpleName)
+                LOG.error("not exist request packet ${reply.msgName},${header.msgName} is not request packet",this)
             }
 
-        } ?: LOG.error("not exist request packet ${reply.msgName}",this::class.simpleName)
+        } ?: LOG.error("not exist request packet ${reply.msgName}",this)
     }
 
 

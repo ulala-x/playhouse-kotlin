@@ -13,6 +13,7 @@ message RouteHeaderMsg {
   string session_info = 7;
   int64 stage_id = 8;
   int64 account_id = 9;
+  bool for_client = 10;
 }
 
 message RoutePacketMsg {

@@ -58,7 +58,7 @@ class BaseSystem(private val serverSystem: ServerSystem,
                                     serverSystem.onStop()
                                 }
                                 else -> {
-                                    LOG.error("Invalid baseSystem packet ${routePacket.msgName()}",this::class.simpleName)
+                                    LOG.error("Invalid baseSystem packet ${routePacket.msgName()}",this)
                                 }
                             }
                         } else {
@@ -66,7 +66,7 @@ class BaseSystem(private val serverSystem: ServerSystem,
                             serverSystem.onDispatch(Packet(routePacket.msgName(), routePacket.movePayload()))
                         }
                     }catch (e:Exception){
-                        LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName)
+                        LOG.error(ExceptionUtils.getStackTrace(e),this)
                         baseSender.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE)
                     }finally {
                         baseSender.clearCurrentPacketHeader()

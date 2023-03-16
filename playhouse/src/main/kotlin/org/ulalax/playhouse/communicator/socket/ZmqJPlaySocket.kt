@@ -2,7 +2,8 @@ package org.ulalax.playhouse.communicator.socket
 
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.ulalax.playhouse.LOG
-import org.ulalax.playhouse.communicator.message.XPayload
+import org.ulalax.playhouse.communicator.ConstOption
+import org.ulalax.playhouse.communicator.message.FramePayload
 import org.ulalax.playhouse.communicator.message.RouteHeader
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.Server
@@ -10,12 +11,63 @@ import org.zeromq.SocketType
 import org.zeromq.ZFrame
 import org.zeromq.ZMessage
 import org.zeromq.ZSocket
+import java.io.OutputStream
+
+class PreAllocByteArrayOutputStream(private val buffer: ByteArray) : OutputStream() {
+    private var position: Int = 0
+
+    @Throws(IndexOutOfBoundsException::class)
+    override fun write(byte: Int) {
+        if (position >= buffer.size) {
+            throw IndexOutOfBoundsException("Buffer is full")
+        }
+        buffer[position++] = byte.toByte()
+    }
+
+    fun writtenDataLength(): Int {
+        return position
+    }
+
+    fun reset() {
+        position = 0
+    }
+
+    fun writeByte(headerSize: Int) {
+        write(headerSize)
+    }
+
+    fun writeShort(value: Int) : Int {
+        val startIndex = position
+        replaceShort(position,value)
+        position += 2
+        return startIndex
+    }
+
+    fun replaceShort(index:Int,value:Int) {
+        var tempIndex = index
+        buffer[tempIndex++] = (value ushr 8).toByte()
+        buffer[tempIndex++] = (value and 0xFF).toByte()
+    }
+
+    fun getShort(index:Int): Int {
+        val byteArray = buffer.sliceArray(index until index+2)
+        require(byteArray.size == 2) { "ByteArray size should be 4 for Int conversion" }
+        return  (byteArray[0].toInt() and 0xFF shl 8) or (byteArray[1].toInt() and 0xFF)
+    }
+
+    fun array(): ByteArray {
+        return buffer.sliceArray(0 until position)
+    }
+
+}
+
 
 
 class ZmqJPlaySocket  (override val id:String,
         ) : PlaySocket {
 
     private val socket = ZSocket(SocketType.ROUTER)
+    private val outputStream = PreAllocByteArrayOutputStream(ByteArray(ConstOption.MAX_PACKET_SIZE))
 
     init {
         socket.routingId(id.toByteArray())
@@ -35,17 +87,30 @@ class ZmqJPlaySocket  (override val id:String,
 
     override fun bind(){
         socket.bind(id)
-        LOG.info("socket bind $id",this::class.simpleName)
+        LOG.info("socket bind $id",this)
     }
     override fun send(target: String, routePacket: RoutePacket){
 
         var message = ZMessage()
-        val payload = routePacket.getPayload() as XPayload
+        val payload = routePacket.getPayload()
+
+        val frame:ZFrame = if (payload is FramePayload){
+            payload.frame
+        } else {
+            outputStream.reset()
+            if (routePacket.forClient()) {
+               ZFrame(routePacket.getClientPacketBytes(outputStream))
+            } else {
+                payload.output(outputStream)
+                ZFrame(outputStream.array(), 0, outputStream.writtenDataLength())
+            }
+        }
+
 
         message.use{
             message.add(ZFrame(target.toByteArray()))
             message.add(ZFrame(routePacket.routeHeader.toByteArray()))
-            message.add(payload.frame())
+            message.add(frame)
             this.socket.send(message,true)
         }
     }
@@ -67,12 +132,12 @@ class ZmqJPlaySocket  (override val id:String,
                             val header = Server.RouteHeaderMsg.parseFrom(msg.data(1))
                             val body = msg.removeAt(2)
 
-                            val routePacket =  RoutePacket.of(RouteHeader.of(header), XPayload(body))
+                            val routePacket =  RoutePacket.of(RouteHeader.of(header), FramePayload(body))
                             routePacket.routeHeader.from = target
                             return routePacket
                         }
                         else -> {
-                            LOG.error("message size is invalid ${msg.size}",this::class.simpleName)
+                            LOG.error("message size is invalid ${msg.size}",this)
                             return null
                         }
                     }
@@ -80,7 +145,7 @@ class ZmqJPlaySocket  (override val id:String,
             }
 
         }catch (e:Exception){
-            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+            LOG.error(ExceptionUtils.getStackTrace(e),this,e)
             return null;
         }
     }
