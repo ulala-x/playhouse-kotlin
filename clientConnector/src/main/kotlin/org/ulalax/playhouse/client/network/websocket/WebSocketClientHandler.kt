@@ -7,29 +7,29 @@ import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.websocketx.*
 import io.netty.util.CharsetUtil
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.client.LOG
 import org.ulalax.playhouse.client.network.BasePacketListener
 
 
 class WebSocketClientHandler(private val basePacketListener: BasePacketListener,
-                             private val handshaker: WebSocketClientHandshaker) : SimpleChannelInboundHandler<Any>() {
+                             private val handshaker: WebSocketClientHandshaker,
+) : SimpleChannelInboundHandler<Any>() {
     
-    private val log = logger()
+
     private lateinit var handshakeFuture: ChannelPromise;
     fun handshakeFuture(): ChannelFuture {
         return handshakeFuture
     }
 
-
     override fun channelActive(ctx: ChannelHandlerContext) {
-        log.debug("channelActive")
+        LOG.debug("channelActive",this::class.simpleName)
         handshaker.handshake(ctx.channel())
 
         ctx.fireChannelActive()
     }
 
     override fun channelInactive(ctx: ChannelHandlerContext) {
-        log.debug("WebSocket Client disconnected!")
+        LOG.debug("WebSocket Client disconnected!",this::class.simpleName)
         ctx.fireChannelInactive()
     }
 
@@ -38,10 +38,10 @@ class WebSocketClientHandler(private val basePacketListener: BasePacketListener,
         if (!handshaker.isHandshakeComplete) {
             try {
                 handshaker.finishHandshake(ch, msg as FullHttpResponse?)
-                log.debug("WebSocket Client connected!")
+                LOG.debug("WebSocket Client connected!",this::class.simpleName)
                 handshakeFuture.setSuccess()
             } catch (e: WebSocketHandshakeException) {
-                log.debug("WebSocket Client failed to connect")
+                LOG.debug("WebSocket Client failed to connect",this::class.simpleName)
                 handshakeFuture.setFailure(e)
             }
             return
@@ -54,13 +54,13 @@ class WebSocketClientHandler(private val basePacketListener: BasePacketListener,
         }
         when (val frame = msg as WebSocketFrame) {
             is TextWebSocketFrame -> {
-                log.debug("WebSocket Client received message: ${frame.text()}")
+                LOG.debug("WebSocket Client received message: ${frame.text()}",this::class.simpleName)
             }
             is PongWebSocketFrame -> {
-                log.debug("WebSocket Client received pong")
+                LOG.debug("WebSocket Client received pong",this::class.simpleName)
             }
             is CloseWebSocketFrame -> {
-                log.debug("WebSocket Client received closing")
+                LOG.debug("WebSocket Client received closing",this::class.simpleName)
                 ch.close()
                 return
             }
@@ -72,11 +72,10 @@ class WebSocketClientHandler(private val basePacketListener: BasePacketListener,
     }
 
     override fun handlerAdded(ctx: ChannelHandlerContext) {
-        log.debug("handlerAdded")
+        LOG.debug("handlerAdded",this::class.simpleName)
         ctx.pipeline().addLast(WebSocketPacketCodec()).addLast(WebSocketHandler(basePacketListener))
         handshakeFuture = ctx.newPromise()
     }
-
 
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         cause.printStackTrace()
@@ -85,6 +84,4 @@ class WebSocketClientHandler(private val basePacketListener: BasePacketListener,
         }
         ctx.close()
     }
-
-
 }

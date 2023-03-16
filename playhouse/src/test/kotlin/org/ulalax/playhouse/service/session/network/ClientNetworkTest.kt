@@ -3,7 +3,7 @@ package org.ulalax.playhouse.service.session.network
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.netty.channel.Channel
-import org.ulalax.playhouse.ConsoleLogger
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.client.Connector
 import org.ulalax.playhouse.client.network.message.Packet
 import org.ulalax.playhouse.communicator.IpFinder
@@ -15,7 +15,6 @@ import org.ulalax.playhouse.service.session.network.netty.SessionPacketListener
 
 class ClientNetworkTest : FunSpec(){
 
-    val log = ConsoleLogger()
 
     companion object{
         var resultValue = ""
@@ -56,19 +55,19 @@ class ClientNetworkTest : FunSpec(){
             arrayOf( true,false).forEach { useWebSocket ->
                 val serverListener = ServerListener()
                 serverListener.useWebSocket = useWebSocket
-                val sessionNetwork = SessionNetwork(SessionOption().apply { this.useWebSocket = useWebSocket }, serverListener,log)
+                val sessionNetwork = SessionNetwork(SessionOption().apply { this.useWebSocket = useWebSocket }, serverListener)
 
                 val port = IpFinder.findFreePort()
                 val server = Thread {
                     sessionNetwork.bind(port)
                     sessionNetwork.await()
-                    log.info ( "server down" ,this::class.simpleName)
+                    LOG.info ( "server down" ,this::class.simpleName)
                 }
                 server.start()
                 Thread.sleep(100)
 
                 val connector = Connector(0, useWebSocket) { serviceId: String, packet: Packet ->
-                    log.info("received packet:$serviceId,${packet.msgName}",this::class.simpleName)
+                    LOG.info("received packet:$serviceId,${packet.msgName}",this::class.simpleName)
                 }
 
                 connector.connect("127.0.0.1", port)

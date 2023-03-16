@@ -1,5 +1,6 @@
 package org.ulalax.playhouse.communicator;
 
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.service.*
@@ -20,7 +21,6 @@ class CommunicatorOption(
             return CommunicatorOption(bindEndpoint,serverSystem,showQps)
         }
     }
-
 }
 
 
@@ -33,14 +33,13 @@ class Communicator(private val option: CommunicatorOption,
                    private val systemPanel: BaseSystemPanel,
                    private val communicateServer: XServerCommunicator,
                    private val communicateClient: XClientCommunicator,
-                   private val log : Logger
 )  : CommunicateListener {
 
 
     private lateinit var messageLoop: MessageLoop
     private lateinit var addressResolver: ServerAddressResolver
     private lateinit var baseSystem: BaseSystem
-    private val performanceTester = PerformanceTester(option.showQps,log)
+    private val performanceTester = PerformanceTester(option.showQps)
 
     fun start(){
         val bindEndpoint = option.bindEndpoint
@@ -53,8 +52,7 @@ class Communicator(private val option: CommunicatorOption,
                                 serverInfoCenter,
                                 communicateClient,
                                 service,
-                                storageClient,
-                                log
+                                storageClient
                             ).apply { this.start() }
 
 
@@ -65,8 +63,8 @@ class Communicator(private val option: CommunicatorOption,
         service.onStart()
         performanceTester.start()
 
-        log.info("============== server start ==============",this::class.simpleName)
-        log.info("Ready for bind:$bindEndpoint",this::class.simpleName)
+        LOG.info("============== server start ==============",this::class.simpleName)
+        LOG.info("Ready for bind:$bindEndpoint",this::class.simpleName)
     }
 
     private fun updateDisable(){
@@ -82,7 +80,7 @@ class Communicator(private val option: CommunicatorOption,
         addressResolver.stop()
         messageLoop.stop()
 
-        log.info("============== server stop ==============",this::class.simpleName)
+        LOG.info("============== server stop ==============",this::class.simpleName)
     }
     fun awaitTermination() {
         messageLoop.awaitTermination()
@@ -91,7 +89,7 @@ class Communicator(private val option: CommunicatorOption,
     private fun isPacketToClient(routePacket: RoutePacket) = routePacket.routeHeader.sid > 0
     override fun onReceive(routePacket: RoutePacket) {
 
-        log.debug("onReceive : ${routePacket.msgName()}, from:${routePacket.routeHeader.from}",this::class.simpleName)
+        LOG.debug("onReceive : ${routePacket.msgName()}, from:${routePacket.routeHeader.from}",this::class.simpleName)
 
         performanceTester.incCounter()
 

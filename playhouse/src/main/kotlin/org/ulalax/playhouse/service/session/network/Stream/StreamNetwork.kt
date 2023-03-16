@@ -69,7 +69,7 @@ class StreamNetwork(private val sessionPacketListener: SessionPacketListener,pri
     }
 
     private fun getParsers(): PacketParser {
-        return PacketParser(log)
+        return PacketParser()
     }
 
     private fun sendLoop(){

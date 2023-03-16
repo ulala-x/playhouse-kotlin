@@ -14,15 +14,14 @@ object Depend {
 
     val embededRedis by lazy {"it.ozimov:embedded-redis:${Versions.embedded_redis}"}
 
-    val log4JCore by lazy {"org.apache.logging.log4j:log4j-core:${Versions.log4j2}"}
-    val log4JApi by lazy {"org.apache.logging.log4j:log4j-api:${Versions.log4j2}"}
-    val log4JApiKotlin by lazy {"org.apache.logging.log4j:log4j-api-kotlin:${Versions.log4j2kotlin}"}
-
-    val log4JWeb by lazy {"org.apache.logging.log4j:log4j-web:${Versions.log4j2}"}
+//    val log4JCore by lazy {"org.apache.logging.log4j:log4j-core:${Versions.log4j2}"}
+//    val log4JApi by lazy {"org.apache.logging.log4j:log4j-api:${Versions.log4j2}"}
+//    val log4JApiKotlin by lazy {"org.apache.logging.log4j:log4j-api-kotlin:${Versions.log4j2kotlin}"}
+//    val log4JWeb by lazy {"org.apache.logging.log4j:log4j-web:${Versions.log4j2}"}
 
     val lettuce by lazy {"io.lettuce:lettuce-core:${Versions.lettuce}"}
 
 
-    val kotlinLoggingJvm by lazy {"io.github.microutils:kotlin-logging-jvm:${Versions.kotlin_logging_jvm}"}
+//    val kotlinLoggingJvm by lazy {"io.github.microutils:kotlin-logging-jvm:${Versions.kotlin_logging_jvm}"}
     val kotlinCoroutinesCore by lazy {"org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinx_coroutines_core}"}
 }

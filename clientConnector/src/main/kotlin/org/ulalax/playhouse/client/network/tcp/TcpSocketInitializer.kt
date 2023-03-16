@@ -2,11 +2,12 @@ package org.ulalax.playhouse.client.network.tcp
 
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
-import io.netty.handler.codec.http.HttpClientCodec
-import io.netty.handler.codec.http.HttpObjectAggregator
-import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler
+import org.ulalax.playhouse.client.Logger
 
-class TcpSocketInitializer(private val handler:TcpSocketHandler) :
+class TcpSocketInitializer(private val handler:TcpSocketHandler,
+
+
+        ) :
     ChannelInitializer<SocketChannel>() {
 
     override fun initChannel(socketChannel: SocketChannel) {

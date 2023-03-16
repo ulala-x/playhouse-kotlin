@@ -1,8 +1,8 @@
 package org.ulalax.playhouse.service.session
 
 import io.netty.channel.Channel
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.apache.logging.log4j.kotlin.logger
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.ulalax.playhouse.communicator.RequestCache
@@ -19,9 +19,8 @@ class SessionClient(
         clientCommunicator: ClientCommunicator,
         urls: ArrayList<String>,
         reqCache: RequestCache,
-) {
 
-    private val log = logger()
+) {
 
     private val sessionSender = XSessionSender(serviceId,clientCommunicator,reqCache)
     private val targetServiceCache = TargetServiceCache(serviceInfoCenter)
@@ -62,7 +61,7 @@ class SessionClient(
                         sessionSender.sendToBaseStage(serverInfo.bindEndpoint,stageId,accountId,discconectPacket)
                     }
                     else -> {
-                        log.error("has invalid type session data : ${serverInfo.serviceType}")
+                        LOG.error("has invalid type session data : ${serverInfo.serviceType}",this::class.simpleName)
                     }
                 }
 
@@ -83,9 +82,7 @@ class SessionClient(
             if(signInURIs.contains(uri)){
                 relayTo(serviceId, clientPacket)
             }else{
-                log.warn("client is not authenticated :${msgName}")
-
-
+                LOG.warn("client is not authenticated :${msgName}",this::class.simpleName)
             }
         }
     }
@@ -106,11 +103,11 @@ class SessionClient(
                 sessionSender.relayToRoom(endpoint,stageId,sid,accountId,sessionInfo,clientPacket.toPacket(),msgSeq)
             }
             else ->{
-                    log.error("Invalid Serive Type request $type,${clientPacket.msgName()}")
+                    LOG.error("Invalid Serive Type request $type,${clientPacket.msgName()}",this::class.simpleName)
             }
         }
 
-        log.debug("session relayTo $type:${endpoint}, sessionInfo:$sessionInfo, msgName:${clientPacket.msgName()}")
+        LOG.debug("session relayTo $type:${endpoint}, sessionInfo:$sessionInfo, msgName:${clientPacket.msgName()}",this::class.simpleName)
     }
 
     fun getSessionInfo(serviceId: String):String  {
@@ -134,30 +131,30 @@ class SessionClient(
                 AuthenticateMsg.getDescriptor().name -> {
                     val authenticateMsg = AuthenticateMsg.parseFrom(packet.data())
                     authenticate(authenticateMsg.serviceId,authenticateMsg.accountId,authenticateMsg.sessionInfo)
-                    log.debug("$accountId is authenticated")
+                    LOG.debug("$accountId is authenticated",this::class.simpleName)
                 }
                 UpdateSessionInfoMsg.getDescriptor().name ->{
                     val updatedSessionInfo = UpdateSessionInfoMsg.parseFrom(packet.data())
                     updateSessionInfo(updatedSessionInfo.serviceId,updatedSessionInfo.sessionInfo)
-                    log.debug("sessionInfo of $accountId is updated with $updatedSessionInfo")
+                    LOG.debug("sessionInfo of $accountId is updated with $updatedSessionInfo",this::class.simpleName)
                 }
                 SessionCloseMsg.getDescriptor().name -> {
                     channel.disconnect()
-                    log.debug("$accountId is required to session close")
+                    LOG.debug("$accountId is required to session close",this::class.simpleName)
                 }
                 JoinStageMsg.getDescriptor().name ->{
                     val joinStageMsg = JoinStageMsg.parseFrom(packet.data())
                     val playEndpoint =joinStageMsg.playEndpoint
                     val stageId = joinStageMsg.stageId
                     updateRoomInfo(playEndpoint,stageId)
-                    log.debug("$accountId is roomInfo updated:$playEndpoint,$stageId $")
+                    LOG.debug("$accountId is roomInfo updated:$playEndpoint,$stageId $",this::class.simpleName)
                 }
                 LeaveStageMsg.getDescriptor().name->{
                     clearRoomInfo()
-                    log.debug("$accountId is roomInfo clear:$playEndpoint,$stageId $")
+                    LOG.debug("$accountId is roomInfo clear:$playEndpoint,$stageId $",this::class.simpleName)
                 }
                 else ->{
-                    log.error("Invalid Packet $msgName")
+                    LOG.error("Invalid Packet $msgName",this::class.simpleName)
                 }
             }
         }else{

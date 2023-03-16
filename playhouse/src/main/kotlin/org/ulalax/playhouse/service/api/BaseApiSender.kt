@@ -1,8 +1,8 @@
 package org.ulalax.playhouse.service.api
 
 import com.google.protobuf.ByteString
+import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.communicator.ClientCommunicator
-import org.apache.logging.log4j.kotlin.logger
 import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.protocol.Server.*
@@ -79,7 +79,6 @@ class BaseApiSender (private val serviceId:String,
                      private val reqCache: RequestCache
 ) : ApiBaseSender(serviceId,clientCommunicator,reqCache),
     ApiSender, ApiBackendSender {
-    private val log = logger()
 
     override fun getFromEndpoint(): String {
         return this.currentHeader?.from ?:""

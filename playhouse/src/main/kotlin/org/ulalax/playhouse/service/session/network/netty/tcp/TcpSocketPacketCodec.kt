@@ -5,15 +5,14 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageCodec
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.apache.logging.log4j.kotlin.logger
-import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.message.ClientPacket
 import org.ulalax.playhouse.service.session.network.PacketParser
 
 
-class TcpSocketPacketCodec(private val log: Logger) : ByteToMessageCodec<ClientPacket>() {
+class TcpSocketPacketCodec() : ByteToMessageCodec<ClientPacket>() {
 
-    private val parser = PacketParser(log)
+    private val parser = PacketParser()
     override fun encode(ctx: ChannelHandlerContext, clientPacket: ClientPacket, out: ByteBuf) {
         clientPacket.use {
             clientPacket.toByteBuf(out)
@@ -25,7 +24,7 @@ class TcpSocketPacketCodec(private val log: Logger) : ByteToMessageCodec<ClientP
             val packets = parser.parse(msg)
             packets.forEach{el->out.add(el)}
         }catch (e:Exception){
-            log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
         }
     }
 }

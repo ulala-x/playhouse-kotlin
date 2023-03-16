@@ -1,10 +1,10 @@
 package org.ulalax.playhouse.service.play.base
 
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.apache.logging.log4j.kotlin.logger
 
-class BaseStageCmdHandler {
-    private val logger = logger()
+class BaseStageCmdHandler() {
+
     private val maps = HashMap<String, BaseStageCmd>()
     fun register(msgName: String, baseStageCmd: BaseStageCmd){
         if(msgName in maps){
@@ -19,10 +19,10 @@ class BaseStageCmdHandler {
             if(maps.containsKey(msgName)){
                 maps[msgName]?.execute(baseStage,request)
             }else{
-                logger.error { "not registered message : $msgName" }
+                LOG.error ("not registered message : $msgName",this::class.simpleName)
             }
         }else{
-            logger.error("Invalid packet : $msgName")
+            LOG.error("Invalid packet : $msgName",this::class.simpleName)
         }
     }
 }

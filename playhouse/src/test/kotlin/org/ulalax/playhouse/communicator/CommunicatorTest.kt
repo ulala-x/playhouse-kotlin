@@ -29,8 +29,8 @@ internal class CommunicatorTest : FunSpec() {
 
         sessionPort = IpFinder.findFreePort()
         sessionEndpoint = "tcp://${localIp}:$sessionPort"
-        sessionServer = XServerCommunicator(ZmqJPlaySocket(sessionEndpoint), ConsoleLogger())
-        sessionClient = XClientCommunicator(ZmqJPlaySocket(sessionEndpoint), ConsoleLogger())
+        sessionServer = XServerCommunicator(ZmqJPlaySocket(sessionEndpoint))
+        sessionClient = XClientCommunicator(ZmqJPlaySocket(sessionEndpoint))
 
         sessionServer.bind(object : CommunicateListener {
             override fun onReceive(routePacket: RoutePacket) {
@@ -40,8 +40,8 @@ internal class CommunicatorTest : FunSpec() {
 
         apiPort = IpFinder.findFreePort()
         apiEndpoint = "tcp://${localIp}:${apiPort}"
-        apiServer = XServerCommunicator(ZmqJPlaySocket(apiEndpoint), ConsoleLogger())
-        apiClient = XClientCommunicator(ZmqJPlaySocket(apiEndpoint), ConsoleLogger())
+        apiServer = XServerCommunicator(ZmqJPlaySocket(apiEndpoint))
+        apiClient = XClientCommunicator(ZmqJPlaySocket(apiEndpoint))
 
         apiServer.bind(object : CommunicateListener {
             override fun onReceive(routePacket: RoutePacket) {

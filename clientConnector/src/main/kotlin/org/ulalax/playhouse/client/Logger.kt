@@ -1,4 +1,5 @@
-package org.ulalax.playhouse
+package org.ulalax.playhouse.client
+
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 

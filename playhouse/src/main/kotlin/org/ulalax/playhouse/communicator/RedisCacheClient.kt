@@ -25,7 +25,7 @@ class RedisCache(private val redisClient: RedisClient) {
 
     fun getServerList(endpoint: String): List<XServerInfo> {
         val hashEntries = redisCommands.hgetall(redisKey)
-        return hashEntries.mapNotNull { (key, value) ->
+        return hashEntries.mapNotNull { (_, value) ->
             try {
                 val serverInfoMsg = Server.ServerInfoMsg.parseFrom(value)
                 val serverInfo = XServerInfo.of(serverInfoMsg)
@@ -71,7 +71,7 @@ class RedisCacheClient(val redisIp: String,val redisBindPort: Int) : StorageClie
 
     override fun getServerList(endpoint: String): List<XServerInfo> {
         val hashEntries = redisCommands.hgetall(redisKey)
-        return hashEntries.mapNotNull { (key, value) ->
+        return hashEntries.mapNotNull { (_, value) ->
             try {
                 val serverInfoMsg = Server.ServerInfoMsg.parseFrom(value)
                 val serverInfo = XServerInfo.of(serverInfoMsg)

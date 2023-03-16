@@ -8,7 +8,10 @@ import org.ulalax.playhouse.client.network.message.ReplyCallback
 import org.ulalax.playhouse.client.network.message.ReplyPacket
 import java.net.URI
 
-class Connector(private val reqTimeoutSec:Long,private val useWebsocket: Boolean=false, clientPacketListener: ClientPacketListener ) {
+class Connector(private val reqTimeoutSec:Long,
+                private val useWebsocket: Boolean=false,
+                clientPacketListener: ClientPacketListener
+        ) {
 
     private lateinit var clientNetwork: ClientNetwork
     private val requestCache = RequestCache(reqTimeoutSec)

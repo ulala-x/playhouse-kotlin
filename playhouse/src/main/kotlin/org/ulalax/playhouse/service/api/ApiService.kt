@@ -2,7 +2,7 @@ package org.ulalax.playhouse.service.api
 
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.protocol.Common.*
 import org.ulalax.playhouse.protocol.Server.DisconnectNoticeMsg
@@ -15,13 +15,12 @@ class ApiService(
         private val requestCache: RequestCache,
         private val clientCommunicator: ClientCommunicator,
         private val apiBaseSenderImpl: ApiBaseSender,
-        private val systemPanelImpl: BaseSystemPanel,
-        private val log:Logger
+        private val systemPanelImpl: BaseSystemPanel
     ) : Service {
 
 
     private val state = AtomicReference(ServerState.DISABLE)
-    private val apiReflection = ApiReflection(apiOption.apiPath,apiOption.applicationContext,log)
+    private val apiReflection = ApiReflection(apiOption.apiPath,apiOption.applicationContext)
 
     override fun onStart() {
         state.set(ServerState.RUNNING)
@@ -47,7 +46,7 @@ class ApiService(
                     }
 
                     else -> {
-                        log.error("Invalid base Api packet:${routeHeader.msgName()}",this::class.simpleName)
+                        LOG.error("Invalid base Api packet:${routeHeader.msgName()}",this::class.simpleName)
                     }
                 }
             }
@@ -63,12 +62,12 @@ class ApiService(
                     )
                 }catch (e:Exception){
                     apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR.number)
-                    log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+                    LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
                 }
             }
         }catch (e:Exception){
                 apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR.number)
-                log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+                LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
         }
     }
 

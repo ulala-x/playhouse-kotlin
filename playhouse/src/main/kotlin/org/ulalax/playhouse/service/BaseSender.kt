@@ -4,7 +4,7 @@ import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.ulalax.playhouse.communicator.message.RouteHeader
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import kotlinx.coroutines.CompletableDeferred
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.ReplyObject
 import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.communicator.message.Packet
@@ -16,8 +16,6 @@ open class BaseSender(private val serviceId: String,
                       private val clientCommunicator: ClientCommunicator,
                       private val reqCache : RequestCache
 ) : CommonSender {
-
-    private val log = logger()
 
     protected var currentHeader: RouteHeader? = null
 
@@ -45,10 +43,10 @@ open class BaseSender(private val serviceId: String,
                 }
                 clientCommunicator.send(from,routePacket)
             }else{
-                log.error("not exist request packet ${reply.msgName},${header.msgName} is not request packet")
+                LOG.error("not exist request packet ${reply.msgName},${header.msgName} is not request packet",this::class.simpleName)
             }
 
-        } ?: log.error("not exist request packet ${reply.msgName}")
+        } ?: LOG.error("not exist request packet ${reply.msgName}",this::class.simpleName)
     }
 
 

@@ -1,9 +1,7 @@
 package org.ulalax.playhouse.client.network.message
-import com.google.protobuf.GeneratedMessageV3
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import org.ulalax.playhouse.protocol.Common.*
-import org.apache.logging.log4j.kotlin.logger
 
 class Header constructor(var msgName:String="",var errorCode:Int = 0,var msgSeq:Int=0, var serviceId: String=""){
     companion object {

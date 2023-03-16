@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 import org.springframework.stereotype.Controller
 import org.springframework.stereotype.Repository
 import org.springframework.stereotype.Service
-import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.protocol.Common.BaseErrorCode
 import org.ulalax.playhouse.service.ApiBackendSender
@@ -28,7 +28,7 @@ data class ApiMethod(val msgName:String,val className: String,val method: Method
 data class ApiInstance(val instance:Any)
 
 
-class ApiReflection(packageName: String, private val applicationContext: ApplicationContext,val log:Logger) {
+class ApiReflection(packageName: String, private val applicationContext: ApplicationContext) {
 
     val instances: MutableMap<String, ApiInstance> = HashMap()
     val initMethods:MutableList<ApiMethod> = mutableListOf()
@@ -51,7 +51,7 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
                 val targetInstance = instances[targetMethod.className]!!
                 targetMethod.method.invoke(targetInstance.instance,systemPanel,apiBaseSender)
             }catch (e:Exception){
-                log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+                LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
                 exitProcess(1)
             }
         }
@@ -81,7 +81,7 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
             }
         }catch (e:Exception){
             apiSender.errorReply(routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR.number)
-            log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
         }
     }
 

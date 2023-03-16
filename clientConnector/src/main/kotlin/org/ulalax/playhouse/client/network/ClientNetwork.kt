@@ -7,7 +7,6 @@ import io.netty.channel.ChannelOption
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.DefaultHttpHeaders
-import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
 import kotlinx.coroutines.*
@@ -18,7 +17,8 @@ import org.ulalax.playhouse.client.network.websocket.WebSocketClientHandler
 import org.ulalax.playhouse.client.network.websocket.WebSocketInitializer
 import java.net.URI
 
-class ClientNetwork(private val connectorListener: BasePacketListener) {
+class ClientNetwork(private val connectorListener: BasePacketListener,
+) {
     private lateinit var bootstrap: Bootstrap
     private val group = NioEventLoopGroup()
     private lateinit var channel: Channel
@@ -37,7 +37,7 @@ class ClientNetwork(private val connectorListener: BasePacketListener) {
                     WebSocketClientHandshakerFactory.newHandshaker(
                         uri, WebSocketVersion.V13, null, true, DefaultHttpHeaders()
                     )
-                )
+               )
             }else{
                 tcpHandler = TcpSocketHandler(connectorListener)
             }

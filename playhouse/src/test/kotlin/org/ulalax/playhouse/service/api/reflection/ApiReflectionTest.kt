@@ -114,7 +114,7 @@ class ApiReflectionTest : FunSpec(){
 
         test("makeClassInstanceMap") {
             val applicationContext = AnnotationConfigApplicationContext(TestConfigure::class.java)
-            val apiReflection = ApiReflection(TestApiReflections::class.java.packageName, applicationContext, ConsoleLogger())
+            val apiReflection = ApiReflection(TestApiReflections::class.java.packageName, applicationContext)
 
             val instances: Map<String, ApiInstance> = apiReflection.instances
 
@@ -128,11 +128,11 @@ class ApiReflectionTest : FunSpec(){
 
         test("apiInitMethodCall"){
             val applicationContext = AnnotationConfigApplicationContext(TestConfigure::class.java)
-            val apiReflection = ApiReflection(TestApiReflections::class.java.packageName,applicationContext,ConsoleLogger())
+            val apiReflection = ApiReflection(TestApiReflections::class.java.packageName,applicationContext)
 
             val IClientCommunicator: ClientCommunicator = mock()
             val serverInfoCenter: ServerInfoCenter = mock()
-            val requestCache = RequestCache(5,ConsoleLogger())
+            val requestCache = RequestCache(5)
             var systemPanelImpl = BaseSystemPanel(serverInfoCenter,IClientCommunicator)
             var apiBaseSenderImpl = ApiBaseSender("test", IClientCommunicator,requestCache)
 
@@ -143,7 +143,7 @@ class ApiReflectionTest : FunSpec(){
 
         test("apiBackendMethodCall"){
             val applicationContext = AnnotationConfigApplicationContext(TestConfigure::class.java)
-            val apiReflection = ApiReflection(TestApiReflections::class.java.packageName,applicationContext,ConsoleLogger())
+            val apiReflection = ApiReflection(TestApiReflections::class.java.packageName,applicationContext)
 
             val routePacketMsg = RoutePacketMsg.newBuilder()
                     .setRouteHeaderMsg(RouteHeaderMsg.newBuilder().setSessionInfo("")
@@ -158,7 +158,7 @@ class ApiReflectionTest : FunSpec(){
                 override fun communicate() {}
                 override fun disconnect(endpoint: String) {}
                 override fun stop() {}
-            }, RequestCache(5,ConsoleLogger()))
+            }, RequestCache(5))
 
             apiReflection.callMethod(routePacket.routeHeader,routePacket.toPacket(),routePacket.isBackend(),apiSenderImpl)
             resultValue.shouldBe("message.ApiTestMsg2")

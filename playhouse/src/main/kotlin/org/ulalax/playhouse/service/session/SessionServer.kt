@@ -1,12 +1,11 @@
 package org.ulalax.playhouse.service.session
 
 import org.ulalax.playhouse.communicator.XServerCommunicator
-import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.communicator.socket.ZmqJPlaySocket
 import org.ulalax.playhouse.service.*
 
-class SessionServer constructor(private val commonOption: CommonOption, private  val sessionOption: SessionOption,private val log: Logger) : Server {
+class SessionServer constructor(private val commonOption: CommonOption, private  val sessionOption: SessionOption) : Server {
 
     private lateinit var communicator: Communicator
 
@@ -21,10 +20,10 @@ class SessionServer constructor(private val commonOption: CommonOption, private 
         val bindEndpoint = communicatorOption.bindEndpoint
         val serviceId = commonOption.serviceId
 
-        val communicateServer = XServerCommunicator(ZmqJPlaySocket(bindEndpoint),log)
-        val communicateClient = XClientCommunicator(ZmqJPlaySocket(bindEndpoint),log)
+        val communicateServer = XServerCommunicator(ZmqJPlaySocket(bindEndpoint))
+        val communicateClient = XClientCommunicator(ZmqJPlaySocket(bindEndpoint))
 
-        val requestCache = RequestCache(commonOption.requestTimeoutSec,log)
+        val requestCache = RequestCache(commonOption.requestTimeoutSec)
 
         val storageClient = LettuceRedisClient(commonOption.redisIp,commonOption.redisPort).apply { this.connect() }
         val serverInfoCenter = XServerInfoCenter()
@@ -43,8 +42,7 @@ class SessionServer constructor(private val commonOption: CommonOption, private 
                 communicateClient,
                 requestCache,
                 sessionOption.sessionPort,
-                commonOption.showQps,
-                log
+                commonOption.showQps
         )
 
         communicator = Communicator(
@@ -56,8 +54,7 @@ class SessionServer constructor(private val commonOption: CommonOption, private 
             baseSenderImpl,
             systemPanelImpl,
             communicateServer,
-            communicateClient,
-            log
+            communicateClient
         )
         communicator.start()
 

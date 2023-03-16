@@ -2,7 +2,6 @@ package org.ulalax.playhouse.communicator.message
 
 import com.google.protobuf.ByteString
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.logging.log4j.kotlin.logger
 import org.zeromq.ZFrame
 
 
@@ -11,7 +10,6 @@ interface Payload : AutoCloseable{
 }
 
 class XPayload constructor() : Payload {
-    private val log = logger()
     constructor(message: GeneratedMessageV3) : this() {
         this.proto = message
     }

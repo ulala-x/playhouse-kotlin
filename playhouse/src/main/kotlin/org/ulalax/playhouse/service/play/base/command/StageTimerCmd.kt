@@ -4,9 +4,9 @@ import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.service.play.PlayService
 import org.ulalax.playhouse.service.play.base.BaseStage
 import org.ulalax.playhouse.service.play.base.BaseStageCmd
-import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.LOG
 
-class StageTimerCmd(override val playService: PlayService,private val log: Logger): BaseStageCmd {
+class StageTimerCmd(override val playService: PlayService): BaseStageCmd {
 
     override suspend fun execute(baseStage: BaseStage, routePacket: RoutePacket) {
 
@@ -15,7 +15,7 @@ class StageTimerCmd(override val playService: PlayService,private val log: Logge
         if(baseStage.hasTimer(timerId)){
             timerCallback()
         }else{
-            log.warn("timer already canceled stageId:${baseStage.stageId()}, timerId:$timerId",this::class.simpleName)
+            LOG.warn("timer already canceled stageId:${baseStage.stageId()}, timerId:$timerId",this::class.simpleName)
         }
     }
 

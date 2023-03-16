@@ -48,9 +48,9 @@ dependencies {
 
 
     implementation(Depend.protoBuf)
-    implementation(Depend.log4JApiKotlin)
-    implementation(Depend.log4JApi)
-    implementation(Depend.log4JCore)
+//    implementation(Depend.log4JApiKotlin)
+//    implementation(Depend.log4JApi)
+//    implementation(Depend.log4JCore)
     implementation(Depend.nettyBuffer)
     implementation(Depend.commonLang3)
 

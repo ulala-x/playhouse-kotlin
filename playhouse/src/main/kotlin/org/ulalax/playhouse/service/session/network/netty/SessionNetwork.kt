@@ -7,13 +7,12 @@ import io.netty.channel.Channel
 import io.netty.channel.ChannelOption
 import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
-import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.service.session.network.netty.tcp.TcpSocketServerInitializer
 import org.ulalax.playhouse.service.session.network.netty.websocket.WebSocketServerInitializer
 
 class SessionNetwork(private val sessionOption: SessionOption,
                      private val sessionPacketListener: SessionPacketListener,
-                     private val log:Logger
 ) {
 
     private val bootstrap = ServerBootstrap()
@@ -47,23 +46,23 @@ class SessionNetwork(private val sessionOption: SessionOption,
 //
 //
             if(sessionOption.useWebSocket){
-                childHandler(WebSocketServerInitializer(sessionOption,sessionPacketListener,log))
+                childHandler(WebSocketServerInitializer(sessionOption,sessionPacketListener))
             }else{
-                childHandler(TcpSocketServerInitializer(sessionOption,sessionPacketListener,log))
+                childHandler(TcpSocketServerInitializer(sessionOption,sessionPacketListener))
 
             }
         }
 
         channel = bootstrap.bind(port).sync().channel()
 
-        log.info("Ready for ${IpFinder.findLocalIp()}:$port",this::class.simpleName)
+        LOG.info("Ready for ${IpFinder.findLocalIp()}:$port",this::class.simpleName)
     }
 
     fun await(){
         channel.closeFuture().sync()
     }
     fun shutdown() {
-        log.info("netty shutdown",this::class.simpleName)
+        LOG.info("netty shutdown",this::class.simpleName)
         NettyConfigure.shutdownGracefully()
     }
 }

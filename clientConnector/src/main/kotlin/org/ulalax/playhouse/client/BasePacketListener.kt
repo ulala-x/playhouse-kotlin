@@ -2,23 +2,23 @@ package org.ulalax.playhouse.client
 
 import org.ulalax.playhouse.client.network.BasePacketListener
 import io.netty.channel.Channel
-import org.apache.logging.log4j.kotlin.logger
 import org.ulalax.playhouse.client.network.message.ClientPacket
 
 class BasePacketListener(private val requestCache: RequestCache,
-                         private val clientPacketListener: ClientPacketListener
+                         private val clientPacketListener: ClientPacketListener,
+
 ) :
     BasePacketListener {
-    private val log = logger()
+
 
     override fun onConnect(channel: Channel) {
-        log.info("connected")
+        LOG.info("connected",this::class.simpleName)
     }
 
     override fun onReceive(channel: Channel, clientPacket: ClientPacket) {
 
         clientPacket.use {
-            log.debug("onReceive:${clientPacket.msgName()},${clientPacket.header.msgSeq}")
+            LOG.debug("onReceive:${clientPacket.msgName()},${clientPacket.header.msgSeq}",this::class.simpleName)
 
             val msgSeq = clientPacket.header.msgSeq
             if (msgSeq != 0) {
@@ -36,7 +36,7 @@ class BasePacketListener(private val requestCache: RequestCache,
     }
 
      override fun onDisconnect(channel: Channel) {
-        log.info("Disconnected")
+         LOG.info("Disconnected",this::class.simpleName)
     }
 
 }

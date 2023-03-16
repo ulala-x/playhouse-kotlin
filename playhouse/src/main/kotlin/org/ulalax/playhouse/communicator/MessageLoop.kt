@@ -1,17 +1,18 @@
 package org.ulalax.playhouse.communicator;
 
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.LOG
 
-class MessageLoop(private val server: CommunicateServer, private val client: ClientCommunicator)  {
-    private val logger = logger()
+
+class MessageLoop(private val server: CommunicateServer,
+                  private val client: ClientCommunicator)  {
 
     private var serverThread:Thread = Thread({
-        logger.info("start Server Communicator")
+        LOG.info("start Server Communicator",this::class.simpleName)
         server.communicate()
     },"server:Communicator")
 
     private var clientThread:Thread = Thread({
-        logger.info("start client Communicator")
+        LOG.info("start client Communicator",this::class.simpleName)
         client.communicate()
     },"client:Communicator")
 

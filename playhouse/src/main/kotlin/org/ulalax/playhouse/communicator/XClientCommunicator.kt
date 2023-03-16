@@ -1,12 +1,10 @@
 package org.ulalax.playhouse.communicator
-
-
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.socket.PlaySocket
 import java.util.concurrent.CopyOnWriteArraySet
 
-class XClientCommunicator(private val playSocket: PlaySocket, private val log: Logger) : ClientCommunicator {
+class XClientCommunicator(private val playSocket: PlaySocket) : ClientCommunicator {
 
     private val connected:MutableSet<String> = CopyOnWriteArraySet()
     private val disconnected:MutableSet<String> = CopyOnWriteArraySet()
@@ -43,7 +41,7 @@ class XClientCommunicator(private val playSocket: PlaySocket, private val log: L
                     playSocket.send(endpoint,routePacket)
                 }
             }catch (e:Exception){
-                log.error("${playSocket.id} socket send error : $endpoint,${routePacket.msgName()}",this::class.simpleName,e)
+                LOG.error("${playSocket.id} socket send error : $endpoint,${routePacket.msgName()}",this::class.simpleName,e)
             }
         }
     }
@@ -55,7 +53,7 @@ class XClientCommunicator(private val playSocket: PlaySocket, private val log: L
                 try {
                     action.invoke()
                 }catch (e:Exception){
-                    log.error("${playSocket.id} Error during communication",this::class.simpleName,e)
+                    LOG.error("${playSocket.id} Error during communication",this::class.simpleName,e)
                 }
                 action = jobBucket.get()
             }

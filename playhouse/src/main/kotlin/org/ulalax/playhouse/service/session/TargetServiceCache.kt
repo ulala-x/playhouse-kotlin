@@ -2,11 +2,8 @@ package org.ulalax.playhouse.service.session
 
 import org.ulalax.playhouse.communicator.XServerInfo
 import org.ulalax.playhouse.communicator.ServerInfoCenter
-import org.apache.logging.log4j.kotlin.logger
 
 class TargetServiceCache(private val serverInfoCenter: ServerInfoCenter) {
-
-    private val log = logger()
 
     private val targetedService = HashMap<String, XServerInfo>()
 

@@ -8,13 +8,14 @@ import io.netty.channel.epoll.EpollServerSocketChannel
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.util.concurrent.DefaultThreadFactory
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.communicator.ConstOption
 
 object NettyConfigure {
-    val log = logger()
 
     lateinit var bossGroup: EventLoopGroup
     lateinit var workerGroup: EventLoopGroup
+    private  val log:Logger = ConstOption.logger
 
     fun getChannel(): Class<out ServerChannel> {
         return if (Epoll.isAvailable()) {
@@ -32,11 +33,11 @@ object NettyConfigure {
     fun init() {
         var avaiable = Runtime.getRuntime().availableProcessors()
         if (Epoll.isAvailable()) {
-            log.info("============Start with Epoll $avaiable============")
+            log.info("============Start with Epoll $avaiable============",this::class.simpleName)
             bossGroup = EpollEventLoopGroup(1, DefaultThreadFactory("session:epoll-boss", true))
             workerGroup = EpollEventLoopGroup(1, DefaultThreadFactory("session:epoll-worker", true))
         } else {
-            log.info("=============Start with Nio $avaiable=============")
+            log.info("=============Start with Nio $avaiable=============",this::class.simpleName)
             bossGroup = NioEventLoopGroup(1, DefaultThreadFactory("session:nio-boss", true))
             workerGroup = NioEventLoopGroup(1, DefaultThreadFactory("session:nio-worker", true))
         }

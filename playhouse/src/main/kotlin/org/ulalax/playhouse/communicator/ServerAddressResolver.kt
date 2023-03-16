@@ -1,7 +1,7 @@
 package org.ulalax.playhouse.communicator
 
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.LOG
 import java.util.*
 import kotlin.concurrent.timer
 
@@ -10,12 +10,11 @@ class ServerAddressResolver (
         private val serverInfoCenter: ServerInfoCenter,
         private val clientCommunicator: ClientCommunicator,
         private val service: Service,
-        private val storageClient: StorageClient,
-        private val log:Logger
+        private val storageClient: StorageClient
 ){
     private lateinit var timer: Timer
     fun start(){
-        log.info("Server address resolver start",this::class.simpleName)
+        LOG.info("Server address resolver start",this::class.simpleName)
 
         timer = timer(name = "ServerAddressResolverTimer", period = ConstOption.ADDRESS_RESOLVER_PERIOD,
                 initialDelay = ConstOption.ADDRESS_RESOLVER_INITIAL_DELAY) {
@@ -43,7 +42,7 @@ class ServerAddressResolver (
                     }
                 }
             }catch (e:Exception){
-                log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+                LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
             }
         }
     }

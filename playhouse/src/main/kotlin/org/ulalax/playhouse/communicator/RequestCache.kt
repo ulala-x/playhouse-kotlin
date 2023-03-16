@@ -4,7 +4,7 @@ import com.github.benmanes.caffeine.cache.*
 import org.ulalax.playhouse.protocol.Common.BaseErrorCode
 import kotlinx.coroutines.CompletableDeferred
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.message.ReplyCallback
 import org.ulalax.playhouse.communicator.message.ReplyPacket
 import org.ulalax.playhouse.communicator.message.RoutePacket
@@ -30,7 +30,7 @@ data class ReplyObject (
     }
 }
 
-class RequestCache(timeout:Long,private val log:Logger) {
+class RequestCache(timeout:Long) {
 
     private val sequence = AtomicInteger()
     private val cache:Cache<Int, ReplyObject>
@@ -64,10 +64,10 @@ class RequestCache(timeout:Long,private val log:Logger) {
             this.onReceive(packet)
             cache.invalidate(msgSeq)
         } ?: {
-            log.error("$msgSeq, $msgName request is not exist",this::class.simpleName)
+            LOG.error("$msgSeq, $msgName request is not exist",this::class.simpleName)
         }
     }catch (e:Exception){
-        log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+        LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
     }
 }
 

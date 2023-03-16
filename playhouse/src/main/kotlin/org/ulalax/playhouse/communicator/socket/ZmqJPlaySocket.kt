@@ -1,7 +1,7 @@
 package org.ulalax.playhouse.communicator.socket
 
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.message.XPayload
 import org.ulalax.playhouse.communicator.message.RouteHeader
 import org.ulalax.playhouse.communicator.message.RoutePacket
@@ -12,8 +12,9 @@ import org.zeromq.ZMessage
 import org.zeromq.ZSocket
 
 
-class ZmqJPlaySocket  (override val id:String) : PlaySocket {
-    private val log = logger()
+class ZmqJPlaySocket  (override val id:String,
+        ) : PlaySocket {
+
     private val socket = ZSocket(SocketType.ROUTER)
 
     init {
@@ -34,7 +35,7 @@ class ZmqJPlaySocket  (override val id:String) : PlaySocket {
 
     override fun bind(){
         socket.bind(id)
-        log.info("socket bind $id")
+        LOG.info("socket bind $id",this::class.simpleName)
     }
     override fun send(target: String, routePacket: RoutePacket){
 
@@ -71,7 +72,7 @@ class ZmqJPlaySocket  (override val id:String) : PlaySocket {
                             return routePacket
                         }
                         else -> {
-                            log.error("message size is invalid ${msg.size}")
+                            LOG.error("message size is invalid ${msg.size}",this::class.simpleName)
                             return null
                         }
                     }
@@ -79,19 +80,10 @@ class ZmqJPlaySocket  (override val id:String) : PlaySocket {
             }
 
         }catch (e:Exception){
-            log.error(ExceptionUtils.getStackTrace(e))
+            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
             return null;
         }
-
     }
-
-//    private fun receiveMessage(): ZMessage? {
-//        var msg = ZMessage()
-//        if(socket.receive(msg,true)){
-//            return msg
-//        }
-//        return null
-//    }
 
     override fun disconnect(endpoint: String) {
         socket.disconnect(endpoint)

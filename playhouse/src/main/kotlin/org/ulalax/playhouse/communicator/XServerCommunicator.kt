@@ -1,10 +1,10 @@
 package org.ulalax.playhouse.communicator
 
-import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.socket.PlaySocket
 
 class XServerCommunicator(
-        private val playSocket:PlaySocket, private val log: Logger
+        private val playSocket:PlaySocket
 ) : CommunicateServer {
 
     private lateinit var listener: CommunicateListener
@@ -21,7 +21,7 @@ class XServerCommunicator(
                 try {
                     listener.onReceive(packet)
                 }catch (e:Exception){
-                    log.error("${playSocket.id} Error during communication",this::class.simpleName,e)
+                    LOG.error("${playSocket.id} Error during communication",this::class.simpleName,e)
                 }
 
                 packet = playSocket.receive()

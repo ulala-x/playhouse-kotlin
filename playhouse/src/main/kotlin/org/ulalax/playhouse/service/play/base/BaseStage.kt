@@ -6,7 +6,7 @@ import org.ulalax.playhouse.communicator.message.RoutePacket
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.ulalax.playhouse.Logger
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.communicator.message.ReplyPacket
@@ -22,8 +22,7 @@ class BaseStage(
         private val playService: PlayService,
         clientCommunicator: ClientCommunicator,
         reqCache: RequestCache,
-        private val serverInfoCenter: ServerInfoCenter,
-        private val log:Logger
+        private val serverInfoCenter: ServerInfoCenter
     ) {
 
     private val msgHandler = BaseStageCmdHandler()
@@ -40,7 +39,7 @@ class BaseStage(
         msgHandler.register(CreateStageReq.getDescriptor().name, CreateStageCmd(playService))
         msgHandler.register(JoinStageReq.getDescriptor().name, JoinStageCmd(playService))
         msgHandler.register(CreateJoinStageReq.getDescriptor().name, CreateJoinStageCmd(playService))
-        msgHandler.register(StageTimer.getDescriptor().name, StageTimerCmd(playService,log))
+        msgHandler.register(StageTimer.getDescriptor().name, StageTimerCmd(playService))
         msgHandler.register(DisconnectNoticeMsg.getDescriptor().name, DisconnectNoticeCmd(playService))
         msgHandler.register(AsyncBlock.getDescriptor().name, AsyncBlockCmd<Any>(playService))
     }
@@ -59,7 +58,7 @@ class BaseStage(
             }
         }catch (e:Exception){
             stageSenderImpl.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR.number)
-            log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
         }finally {
             stageSenderImpl.clearCurrentPacketHeader()
         }
@@ -79,7 +78,7 @@ class BaseStage(
                             }
                         } catch (e: Exception) {
                             stageSenderImpl.errorReply(routePacket.routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR.number)
-                            log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+                            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
                         }
                     }
                 }else{
@@ -155,7 +154,7 @@ class BaseStage(
         try{
             this.stage.onPostCreate()
         }catch (e:Exception){
-            log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
         }
 
     }
@@ -167,11 +166,11 @@ class BaseStage(
             if(baseUser!=null){
                 this.stage.onPostJoinStage(baseUser.actor)
             }else{
-                log.error("user is not exist : $accountId",this::class.simpleName)
+                LOG.error("user is not exist : $accountId",this::class.simpleName)
             }
 
         }catch (e:Exception){
-            log.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
+            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName,e)
         }
     }
 
@@ -182,7 +181,7 @@ class BaseStage(
         if(baseUser!=null){
             this.stage.onDisconnect(baseUser.actor)
         }else{
-            log.error("user is not exist : $accountId",this::class.simpleName)
+            LOG.error("user is not exist : $accountId",this::class.simpleName)
         }
     }
 

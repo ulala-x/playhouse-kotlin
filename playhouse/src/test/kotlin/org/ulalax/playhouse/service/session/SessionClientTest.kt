@@ -33,7 +33,7 @@ internal class SessionClientTest : FunSpec() {
         beforeTest {
             serviceCenter = mock()
             channel = mock()
-            reqCache = RequestCache(0, ConsoleLogger())
+            reqCache = RequestCache(0)
             IClientCommunicator = SpyClientCommunicator(resultList)
         }
 

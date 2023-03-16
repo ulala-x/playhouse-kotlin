@@ -3,15 +3,17 @@ package org.ulalax.playhouse.service
 import kotlinx.coroutines.runBlocking
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.protocol.Common.*
 import java.lang.Thread.sleep
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class BaseSystem(private val serverSystem: ServerSystem, private val baseSender: BaseSender) {
+class BaseSystem(private val serverSystem: ServerSystem,
+                 private val baseSender: BaseSender
+) {
 
-    private val log = logger()
+
     private val thread = Thread({ messingLoop() },"system:message-loop")
     private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
     private var running = true
@@ -56,7 +58,7 @@ class BaseSystem(private val serverSystem: ServerSystem, private val baseSender:
                                     serverSystem.onStop()
                                 }
                                 else -> {
-                                    log.error("Invalid baseSystem packet ${routePacket.msgName()}")
+                                    LOG.error("Invalid baseSystem packet ${routePacket.msgName()}",this::class.simpleName)
                                 }
                             }
                         } else {
@@ -64,7 +66,7 @@ class BaseSystem(private val serverSystem: ServerSystem, private val baseSender:
                             serverSystem.onDispatch(Packet(routePacket.msgName(), routePacket.movePayload()))
                         }
                     }catch (e:Exception){
-                        log.error(ExceptionUtils.getStackTrace(e))
+                        LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName)
                         baseSender.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE)
                     }finally {
                         baseSender.clearCurrentPacketHeader()

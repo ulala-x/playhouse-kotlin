@@ -5,18 +5,16 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.handler.timeout.IdleState
 import io.netty.handler.timeout.IdleStateEvent
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.client.LOG
 import org.ulalax.playhouse.client.network.BasePacketListener
 import org.ulalax.playhouse.client.network.message.ClientPacket
 
-class TcpSocketHandler(private val basePacketListener: BasePacketListener) : ChannelInboundHandlerAdapter() {
-
-    private val log = logger()
+class TcpSocketHandler(private val basePacketListener: BasePacketListener,
+        ) : ChannelInboundHandlerAdapter() {
 
     lateinit var channel: Channel;
 
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
-        //super.channelRead(ctx, msg)
         basePacketListener.onReceive(ctx.channel(),msg as ClientPacket)
     }
 
@@ -33,7 +31,7 @@ class TcpSocketHandler(private val basePacketListener: BasePacketListener) : Cha
         if (evt is IdleStateEvent) {
             if (evt.state() == IdleState.READER_IDLE || evt.state() == IdleState.WRITER_IDLE) {
                 basePacketListener.onDisconnect(ctx.channel())
-                log.debug("client socket idle disconnect")
+                LOG.debug("client socket idle disconnect",this::class.simpleName)
                 ctx.close()
             }
         }

@@ -4,13 +4,14 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageCodec
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.apache.logging.log4j.kotlin.logger
+import org.ulalax.playhouse.client.LOG
 import org.ulalax.playhouse.client.network.ByteBufferAllocator
 import org.ulalax.playhouse.client.network.PacketParser
 import org.ulalax.playhouse.client.network.message.ClientPacket
 
-class WebSocketPacketCodec : MessageToMessageCodec< BinaryWebSocketFrame, ClientPacket>() {
-    private val log = logger()
+class WebSocketPacketCodec
+    : MessageToMessageCodec< BinaryWebSocketFrame, ClientPacket>() {
+
     private val parser = PacketParser()
     override fun encode(ctx: ChannelHandlerContext, clientPacket: ClientPacket, out: MutableList<Any>) {
         clientPacket.use {
@@ -24,11 +25,8 @@ class WebSocketPacketCodec : MessageToMessageCodec< BinaryWebSocketFrame, Client
         try {
             val packet = parser.parse(msg.content())
             packet.forEach{el->out.add(el)}
-
         }catch (e:Exception){
-            log.error(ExceptionUtils.getStackTrace(e))
+            LOG.error(ExceptionUtils.getStackTrace(e),this::class.simpleName)
         }
-
-
     }
 }

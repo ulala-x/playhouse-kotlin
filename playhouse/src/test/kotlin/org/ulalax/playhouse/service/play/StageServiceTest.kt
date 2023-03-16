@@ -33,7 +33,7 @@ class StageServiceTest : FunSpec() {
             ThreadPoolController.coroutineContext
 
             val communicateClient = SpyClientCommunicator(resultList)
-            val reqCache = RequestCache(5,ConsoleLogger())
+            val reqCache = RequestCache(5)
 
             val playOption = PlayOption().apply {
                 this.elementConfigurator.register(StageType,
@@ -43,7 +43,7 @@ class StageServiceTest : FunSpec() {
 
             val serverInfoCenter: ServerInfoCenter = mock()
 
-            playService = PlayService("play", bindEndpoint, playOption, communicateClient, reqCache,serverInfoCenter, ConsoleLogger())
+            playService = PlayService("play", bindEndpoint, playOption, communicateClient, reqCache,serverInfoCenter)
             playService.onStart()
         }
 
