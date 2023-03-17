@@ -3,6 +3,7 @@ package org.ulalax.playhouse.communicator.socket
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
+import org.ulalax.playhouse.communicator.message.PreAllocByteArrayOutputStream
 
 class PreAllocByteArrayOutputStreamTest : FunSpec({
 

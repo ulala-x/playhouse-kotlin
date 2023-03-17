@@ -11,8 +11,8 @@ import org.ulalax.playhouse.protocol.Common.BaseErrorCode
 import org.ulalax.playhouse.service.BaseSender
 import org.ulalax.playhouse.service.play.base.BaseStage
 import org.ulalax.playhouse.service.play.base.BaseActor
-import org.ulalax.playhouse.service.play.base.TimerCallback
-import org.ulalax.playhouse.service.play.base.TimerManager
+import org.ulalax.playhouse.service.TimerCallback
+import org.ulalax.playhouse.service.TimerManager
 import java.lang.Thread.sleep
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue

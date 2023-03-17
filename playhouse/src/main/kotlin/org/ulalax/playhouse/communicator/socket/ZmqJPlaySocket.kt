@@ -4,6 +4,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils
 import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.ConstOption
 import org.ulalax.playhouse.communicator.message.FramePayload
+import org.ulalax.playhouse.communicator.message.PreAllocByteArrayOutputStream
 import org.ulalax.playhouse.communicator.message.RouteHeader
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.Server
@@ -11,55 +12,7 @@ import org.zeromq.SocketType
 import org.zeromq.ZFrame
 import org.zeromq.ZMessage
 import org.zeromq.ZSocket
-import java.io.OutputStream
 
-class PreAllocByteArrayOutputStream(private val buffer: ByteArray) : OutputStream() {
-    private var position: Int = 0
-
-    @Throws(IndexOutOfBoundsException::class)
-    override fun write(byte: Int) {
-        if (position >= buffer.size) {
-            throw IndexOutOfBoundsException("Buffer is full")
-        }
-        buffer[position++] = byte.toByte()
-    }
-
-    fun writtenDataLength(): Int {
-        return position
-    }
-
-    fun reset() {
-        position = 0
-    }
-
-    fun writeByte(headerSize: Int) {
-        write(headerSize)
-    }
-
-    fun writeShort(value: Int) : Int {
-        val startIndex = position
-        replaceShort(position,value)
-        position += 2
-        return startIndex
-    }
-
-    fun replaceShort(index:Int,value:Int) {
-        var tempIndex = index
-        buffer[tempIndex++] = (value ushr 8).toByte()
-        buffer[tempIndex++] = (value and 0xFF).toByte()
-    }
-
-    fun getShort(index:Int): Int {
-        val byteArray = buffer.sliceArray(index until index+2)
-        require(byteArray.size == 2) { "ByteArray size should be 4 for Int conversion" }
-        return  (byteArray[0].toInt() and 0xFF shl 8) or (byteArray[1].toInt() and 0xFF)
-    }
-
-    fun array(): ByteArray {
-        return buffer.sliceArray(0 until position)
-    }
-
-}
 
 
 
@@ -99,11 +52,11 @@ class ZmqJPlaySocket  (override val id:String,
         } else {
             outputStream.reset()
             if (routePacket.forClient()) {
-               ZFrame(routePacket.getClientPacketBytes(outputStream))
+                routePacket.writeClientPacketBytes(outputStream)
             } else {
                 payload.output(outputStream)
-                ZFrame(outputStream.array(), 0, outputStream.writtenDataLength())
             }
+            ZFrame(outputStream.array(), 0, outputStream.writtenDataLength())
         }
 
 

@@ -1,13 +1,10 @@
 package org.ulalax.playhouse.service
 
-import org.ulalax.playhouse.service.api.CreateJoinStageResult
-import org.ulalax.playhouse.service.api.CreateStageResult
-import org.ulalax.playhouse.service.api.JoinStageResult
-import org.ulalax.playhouse.service.play.base.TimerCallback
 import kotlinx.coroutines.CompletableDeferred
 import org.ulalax.playhouse.communicator.ServerInfo
 import org.ulalax.playhouse.communicator.ServerState
 import org.ulalax.playhouse.communicator.message.Packet
+import org.ulalax.playhouse.communicator.message.ReplyCallback
 import org.ulalax.playhouse.communicator.message.ReplyPacket
 import java.time.Duration
 
@@ -17,7 +14,6 @@ interface SystemPanel{
     fun randomServerInfo(serviceId: String) : ServerInfo
     fun serverInfo(endpoint:String) : ServerInfo
     fun serverList(): List<ServerInfo>
-//    fun removeServerInfo(endpoint: String)
     fun pause()
     fun resume()
     fun shutdown()
@@ -32,10 +28,8 @@ interface CommonSender {
     fun sendToApi(apiEndpoint:String, sessionInfo: String,packet: Packet)
     fun sendToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet)
 
-//    fun callToApi(apiEndpoint:String, packet: Packet, sessionInfo: String, replyCallback: ReplyCallback)
-//    fun callToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet, replyCallback: ReplyCallback)
-//    fun callToApi(apiEndpoint:String, sessionInfo: String,packet: Packet): ReplyPacket
-//    fun callToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet): ReplyPacket
+    fun requestToApi(apiEndpoint:String, packet: Packet, sessionInfo: String, replyCallback: ReplyCallback)
+    fun requestToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet, replyCallback: ReplyCallback)
     suspend fun requestToApi(apiEndpoint:String, sessionInfo: String, packet: Packet): ReplyPacket
     suspend fun requestToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet): ReplyPacket
 
@@ -60,12 +54,12 @@ interface ApiCommonSender : CommonSender {
                   sessionEndpoint: String,
                   sid:Int,
                   packet: Packet
-    ): JoinStageResult
+    ): org.ulalax.playhouse.service.JoinStageResult
     fun createJoinStage(playEndpoint:String, StageType:String, stageId:Long,
                         createPacket: Packet,
                         accountId: Long, sessionEndpoint: String, sid:Int,
                         joinPacket: Packet,
-    ): CreateJoinStageResult
+    ): org.ulalax.playhouse.service.CreateJoinStageResult
 }
 interface ApiSender : ApiCommonSender {
 

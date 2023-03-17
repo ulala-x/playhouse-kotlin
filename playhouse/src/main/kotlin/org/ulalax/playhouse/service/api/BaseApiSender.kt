@@ -1,7 +1,6 @@
 package org.ulalax.playhouse.service.api
 
 import com.google.protobuf.ByteString
-import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.communicator.message.Packet
@@ -33,7 +32,7 @@ open class ApiBaseSender(serviceId:String,
     override fun joinStage(playEndpoint: String, stageId: Long,
                            accountId: Long, sessionEndpoint: String, sid:Int,
                            packet: Packet
-    ): JoinStageResult {
+    ): org.ulalax.playhouse.service.JoinStageResult {
         val req = JoinStageReq.newBuilder()
             .setSessionEndpoint(sessionEndpoint)
             .setSid(sid)
@@ -43,7 +42,7 @@ open class ApiBaseSender(serviceId:String,
         val reply  = callToBaseRoom(playEndpoint,stageId,accountId, Packet(req))
         val res = JoinStageRes.parseFrom(reply.data())
 
-        return JoinStageResult(reply.errorCode, Packet(res.payloadName,res.payload))
+        return org.ulalax.playhouse.service.JoinStageResult(reply.errorCode, Packet(res.payloadName, res.payload))
 
     }
 
@@ -52,7 +51,7 @@ open class ApiBaseSender(serviceId:String,
             createPacket: Packet,
             accountId: Long, sessionEndpoint: String, sid:Int,
             joinPacket: Packet,
-    ): CreateJoinStageResult {
+    ): org.ulalax.playhouse.service.CreateJoinStageResult {
         val req = CreateJoinStageReq.newBuilder()
             .setStageType(stageType)
             .setCreatePayloadName(createPacket.msgName)
@@ -64,11 +63,11 @@ open class ApiBaseSender(serviceId:String,
 
         val reply = callToBaseRoom(playEndpoint,stageId,accountId, Packet(req))
         val res = CreateJoinStageRes.parseFrom(reply.data())
-        return CreateJoinStageResult(
-            reply.errorCode,
-            res.isCreated,
-            Packet(res.createPayloadName,res.createPayload),
-            Packet(res.joinPayloadName,res.joinPayload)
+        return org.ulalax.playhouse.service.CreateJoinStageResult(
+                reply.errorCode,
+                res.isCreated,
+                Packet(res.createPayloadName, res.createPayload),
+                Packet(res.joinPayloadName, res.joinPayload)
         )
 
     }

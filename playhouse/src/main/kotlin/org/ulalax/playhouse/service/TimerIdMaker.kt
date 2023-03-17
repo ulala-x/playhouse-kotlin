@@ -1,4 +1,4 @@
-package org.ulalax.playhouse.service.play.base
+package org.ulalax.playhouse.service
 
 import java.util.concurrent.atomic.AtomicLong
 

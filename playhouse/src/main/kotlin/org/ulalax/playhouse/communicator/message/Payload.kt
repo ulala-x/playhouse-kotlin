@@ -49,19 +49,6 @@ class EmptyPayload :Payload {
     }
 }
 
-class ByteArrayPayload(var byteArray: ByteArray):Payload{
-    override fun data(): ByteArray {
-        return byteArray
-    }
-
-    override fun output(outputStream: OutputStream) {
-        outputStream.write(byteArray)
-    }
-
-    override fun close() {
-    }
-}
-
 
 class FramePayload(var frame: ZFrame) : Payload{
     override fun data(): ByteArray {

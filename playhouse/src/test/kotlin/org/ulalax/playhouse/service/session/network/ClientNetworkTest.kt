@@ -8,11 +8,10 @@ import org.ulalax.playhouse.client.Connector
 import org.ulalax.playhouse.client.network.message.Packet
 import org.ulalax.playhouse.communicator.ConstOption
 import org.ulalax.playhouse.communicator.IpFinder
-import org.ulalax.playhouse.communicator.message.ByteArrayPayload
 import org.ulalax.playhouse.communicator.message.ClientPacket
 import org.ulalax.playhouse.communicator.message.FramePayload
+import org.ulalax.playhouse.communicator.message.PreAllocByteArrayOutputStream
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.communicator.socket.PreAllocByteArrayOutputStream
 import org.ulalax.playhouse.protocol.Test.TestMsg
 import org.ulalax.playhouse.service.session.SessionOption
 import org.ulalax.playhouse.service.session.network.netty.SessionNetwork
@@ -29,6 +28,8 @@ class ClientNetworkTest : FunSpec(){
     class ServerListener: SessionPacketListener {
 
         var useWebSocket:Boolean = false
+        var outputStream = PreAllocByteArrayOutputStream(ByteArray(ConstOption.MAX_PACKET_SIZE))
+
         override fun onConnect(channel: Channel) {
             resultValue = "onConnect"
         }
@@ -39,7 +40,9 @@ class ClientNetworkTest : FunSpec(){
             val testMsg = TestMsg.parseFrom(clientPacket.data())
             resultValue = testMsg.testMsg
             if(testMsg.testMsg == "request"){
-                clientPacket.payload = FramePayload(ZFrame(RoutePacket.toClientPayload(clientPacket, PreAllocByteArrayOutputStream(ByteArray(ConstOption.MAX_PACKET_SIZE)))))
+                outputStream.reset()
+                RoutePacket.writeClientPacketBytes(clientPacket,outputStream)
+                clientPacket.payload = FramePayload(ZFrame(outputStream.array(),0,outputStream.writtenDataLength()))
                 channel.writeAndFlush(clientPacket)
             }
         }
@@ -56,7 +59,7 @@ class ClientNetworkTest : FunSpec(){
 
        test("client and session communicate ") {
 
-            arrayOf( false,true).forEach { useWebSocket ->
+            arrayOf( false,true,false,true,false,true,false,true,false,true).forEach { useWebSocket ->
                 val serverListener = ServerListener()
                 serverListener.useWebSocket = useWebSocket
                 val sessionNetwork = SessionNetwork(SessionOption().apply { this.useWebSocket = useWebSocket }, serverListener)
@@ -70,7 +73,7 @@ class ClientNetworkTest : FunSpec(){
                 server.start()
                 Thread.sleep(100)
 
-                val connector = Connector(0, useWebSocket) { serviceId: String, packet: Packet ->
+                val connector = Connector(3, useWebSocket) { serviceId: String, packet: Packet ->
                     LOG.info("client: received packet:$serviceId,${packet.msgName}",this)
                 }
 
@@ -86,6 +89,7 @@ class ClientNetworkTest : FunSpec(){
                 resultValue shouldBe "test"
 
                 var replyPacket = connector.request("api", Packet(TestMsg.newBuilder().setTestMsg("request").build()))
+                LOG.info("message payload size: ${replyPacket.data().size},${replyPacket.msgName}",this)
                 TestMsg.parseFrom(replyPacket.data()).testMsg shouldBe "request"
 
                 replyPacket = connector.request("api", Packet(TestMsg.newBuilder().setTestMsg("request").build()))

@@ -3,8 +3,8 @@ package org.ulalax.playhouse.service.play
 import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.ulalax.playhouse.communicator.message.AsyncBlockPacket
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.service.play.base.TimerCallback
-import org.ulalax.playhouse.service.play.base.TimerIdMaker
+import org.ulalax.playhouse.service.TimerCallback
+import org.ulalax.playhouse.service.TimerIdMaker
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.ulalax.playhouse.communicator.RequestCache
@@ -54,10 +54,10 @@ class BaseStageSender(
     }
 
     override fun addCountTimer(
-        initialDelay: Duration,
-        count: Int,
-        period: Duration,
-        timerCallback: TimerCallback,
+            initialDelay: Duration,
+            count: Int,
+            period: Duration,
+            timerCallback: TimerCallback,
     ): Long {
         val timerId = makeTimerId()
         val packet = RoutePacket.addTimerOf(TimerMsg.Type.COUNT,this.stageId,timerId,timerCallback,initialDelay,period,count)

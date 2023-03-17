@@ -8,7 +8,7 @@ import org.testcontainers.containers.GenericContainer
 import org.testcontainers.utility.DockerImageName
 import org.ulalax.playhouse.protocol.Server
 
-class RedisTest : FunSpec() {
+class CacheTest : FunSpec() {
 
     private var port = 6379
     private val redisContainer:GenericContainer<Nothing> =  GenericContainer<Nothing>(DockerImageName.parse("redis:6.2.5"))

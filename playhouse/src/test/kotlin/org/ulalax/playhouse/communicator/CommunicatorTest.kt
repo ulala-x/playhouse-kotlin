@@ -69,7 +69,7 @@ internal class CommunicatorTest : FunSpec() {
             sessionClient.connect(apiEndpoint)
             sleep(100)
 
-            val message = HeaderMsg.newBuilder().setMsgName("sessionPacket").build()
+            val message = HeaderMsg.newBuilder().build()
 
             sessionClient.send(apiEndpoint, RoutePacket.clientOf("session", 0, Packet(message)))
             sleep(200)

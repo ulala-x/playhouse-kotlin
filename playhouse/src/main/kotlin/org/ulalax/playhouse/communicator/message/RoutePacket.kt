@@ -1,13 +1,13 @@
 package org.ulalax.playhouse.communicator.message
 
 import com.google.protobuf.GeneratedMessageV3
+import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.CommunicatorException
 import org.ulalax.playhouse.communicator.ConstOption
-import org.ulalax.playhouse.communicator.socket.PreAllocByteArrayOutputStream
 import org.ulalax.playhouse.protocol.Common.HeaderMsg
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.service.AsyncPostCallback
-import org.ulalax.playhouse.service.play.base.TimerCallback
+import org.ulalax.playhouse.service.TimerCallback
 import java.time.Duration
 
 
@@ -45,7 +45,7 @@ class RouteHeader private constructor(val header: Header,
                 Header.of(headerMsg.headerMsg),
                 headerMsg.sid, headerMsg.sessionInfo,
                 headerMsg.isSystem,headerMsg.isBase,headerMsg.isBackend,headerMsg.isReply,
-                headerMsg.accountId,headerMsg.stageId,
+                headerMsg.accountId,headerMsg.stageId,headerMsg.forClient
             )
         }
 
@@ -288,7 +288,7 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
             return RoutePacket(routeHeader, packet.movePayload())
         }
 
-        fun toClientPayload(clientPacket: ClientPacket,outputStream: PreAllocByteArrayOutputStream): ByteArray {
+        fun writeClientPacketBytes(clientPacket: ClientPacket, outputStream: PreAllocByteArrayOutputStream) {
             val header = clientPacket.header.toMsg()
             val payload = clientPacket.payload
 
@@ -308,10 +308,12 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
             payload.output(outputStream)
 
             val bodySize = outputStream.writtenDataLength() - (1 + 2 + headerSize)
+
+            LOG.info("headerSize:${headerSize}, bodySize:${bodySize}",this)
             // write body size
             outputStream.replaceShort(index, bodySize)
 
-            return outputStream.array()
+            LOG.info("body:${outputStream.array().joinToString(separator = ","){ String.format("%02X", it) }}",this)
         }
     }
 
@@ -329,9 +331,9 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         return this.payload
     }
 
-    fun getClientPacketBytes(outputStream: PreAllocByteArrayOutputStream): ByteArray {
+    fun writeClientPacketBytes(outputStream: PreAllocByteArrayOutputStream) {
         val clientPacket = toClientPacket()
-        return toClientPayload(clientPacket,outputStream)
+        writeClientPacketBytes(clientPacket,outputStream)
     }
 
 }

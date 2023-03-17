@@ -1,4 +1,4 @@
-package org.ulalax.playhouse.service.api
+package org.ulalax.playhouse.service
 
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.protocol.Common.BaseErrorCode
