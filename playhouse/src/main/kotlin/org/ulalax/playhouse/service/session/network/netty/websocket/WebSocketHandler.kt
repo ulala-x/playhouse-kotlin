@@ -6,9 +6,9 @@ import io.netty.handler.timeout.IdleState
 import io.netty.handler.timeout.IdleStateEvent
 import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.message.ClientPacket
-import org.ulalax.playhouse.service.session.network.netty.SessionPacketListener
+import org.ulalax.playhouse.service.session.network.netty.SessionListener
 
-class WebSocketHandler(private val sessionPacketListener: SessionPacketListener) : ChannelInboundHandlerAdapter() {
+class WebSocketHandler(private val sessionPacketListener: SessionListener) : ChannelInboundHandlerAdapter() {
 
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
         sessionPacketListener.onReceive(ctx.channel(),msg as ClientPacket)

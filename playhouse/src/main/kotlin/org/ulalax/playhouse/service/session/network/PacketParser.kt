@@ -46,6 +46,8 @@ open class PacketParser {
 
                 buf.readerIndex(buf.readerIndex() + 1 + 2)
 
+                LOG.info("server parser - headerSize:$headerSize,bodySize:$bodySize",this)
+
                 val headerInputStream: InputStream = ByteBufInputStream(buf, headerSize)
                 val header = Common.HeaderMsg.parseFrom(headerInputStream)
 

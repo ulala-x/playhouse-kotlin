@@ -23,10 +23,10 @@ class ServerAddressResolver (
                 storageClient.updateServerInfo(
                     XServerInfo.of(
                         bindEndpoint,
-                        service.serviceType(),
-                        service.serviceId(),
-                        service.serverState(),
-                        service.weightPoint(),
+                        service.getServiceType(),
+                        service.serviceId,
+                        service.getServerState(),
+                        service.getWeightPoint(),
                         System.currentTimeMillis()
                     )
                 )
@@ -35,9 +35,9 @@ class ServerAddressResolver (
                 val updateList = serverInfoCenter.update(serverInfoList)
 
                 updateList.forEach { serverInfo->
-                    when(serverInfo.state){
-                        ServerState.RUNNING -> clientCommunicator.connect(serverInfo.bindEndpoint)
-                        ServerState.DISABLE -> clientCommunicator.disconnect(serverInfo.bindEndpoint)
+                    when(serverInfo.state()){
+                        ServerState.RUNNING -> clientCommunicator.connect(serverInfo.bindEndpoint())
+                        ServerState.DISABLE -> clientCommunicator.disconnect(serverInfo.bindEndpoint())
                         else -> {}
                     }
                 }

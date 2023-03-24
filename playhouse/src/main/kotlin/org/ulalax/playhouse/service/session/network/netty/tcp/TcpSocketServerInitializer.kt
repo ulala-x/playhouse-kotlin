@@ -4,12 +4,11 @@ import org.ulalax.playhouse.service.session.SessionOption
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
 import io.netty.handler.timeout.IdleStateHandler
-import org.ulalax.playhouse.Logger
-import org.ulalax.playhouse.service.session.network.netty.SessionPacketListener
+import org.ulalax.playhouse.service.session.network.netty.SessionListener
 import java.util.concurrent.TimeUnit
 
 class TcpSocketServerInitializer(private val sessionOption: SessionOption,
-                                 private val sessionPacketListener: SessionPacketListener)
+                                 private val sessionPacketListener: SessionListener)
     : ChannelInitializer<SocketChannel>() {
 
     override fun initChannel(ch: SocketChannel) {

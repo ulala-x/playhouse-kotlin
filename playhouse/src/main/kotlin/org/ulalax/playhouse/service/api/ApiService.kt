@@ -10,12 +10,12 @@ import org.ulalax.playhouse.service.BaseSystemPanel
 import java.util.concurrent.atomic.AtomicReference
 
 class ApiService(
-        private val serviceId: String,
-        private val apiOption: ApiOption,
-        private val requestCache: RequestCache,
-        private val clientCommunicator: ClientCommunicator,
-        private val apiBaseSenderImpl: ApiBaseSender,
-        private val systemPanelImpl: BaseSystemPanel
+    override val serviceId: String,
+    private val apiOption: ApiOption,
+    private val requestCache: RequestCache,
+    private val clientCommunicator: ClientCommunicator,
+    private val apiBaseSenderImpl: ApiBaseSender,
+    private val systemPanelImpl: BaseSystemPanel
     ) : Service {
 
 
@@ -75,21 +75,18 @@ class ApiService(
         state.set(ServerState.DISABLE)
     }
 
-    override fun weightPoint(): Int {
+    override fun getWeightPoint(): Int {
         return 0
     }
 
-    override fun serverState(): ServerState {
+    override fun getServerState(): ServerState {
          return state.get()
     }
 
-    override fun serviceType(): ServiceType {
+    override fun getServiceType(): ServiceType {
         return ServiceType.API
     }
 
-    override fun serviceId(): String {
-       return serviceId
-    }
 
     override fun pause() {
         state.set(ServerState.PAUSE)

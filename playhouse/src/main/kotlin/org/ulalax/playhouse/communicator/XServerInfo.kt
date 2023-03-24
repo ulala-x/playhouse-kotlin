@@ -14,10 +14,10 @@ class XServerInfo private constructor(val bindEndpoint: String,
         fun of(bindEndpoint: String, service: Service): XServerInfo {
             return XServerInfo(
                 bindEndpoint,
-                service.serviceType(),
-                service.serviceId(),
-                service.serverState(),
-                service.weightPoint(),
+                service.getServiceType(),
+                service.serviceId,
+                service.getServerState(),
+                service.getWeightPoint(),
                 System.currentTimeMillis()
             )
         }

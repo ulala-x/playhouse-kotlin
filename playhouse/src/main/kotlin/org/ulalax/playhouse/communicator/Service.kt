@@ -9,13 +9,16 @@ enum class ServiceType {
 }
 
 interface Service {
+
+    val serviceId:String
+    fun getWeightPoint():Int
+    fun getServerState(): ServerState
+    fun getServiceType(): ServiceType
+
     fun onStart()
     fun onReceive(routePacket: RoutePacket)
     fun onStop()
-    fun weightPoint():Int
-    fun serverState(): ServerState
-    fun serviceType(): ServiceType
-    fun serviceId():String
+
     fun pause()
     fun resume()
 }

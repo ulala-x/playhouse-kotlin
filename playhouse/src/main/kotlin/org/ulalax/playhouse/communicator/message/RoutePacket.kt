@@ -78,7 +78,7 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
     var timerId: Long = 0
     var timerCallback: TimerCallback = {}
 
-    fun msgName(): String {
+    fun getMsgName(): String {
         return routeHeader.header.msgName
     }
 
@@ -111,7 +111,7 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
     }
 
     fun toPacket(): Packet {
-        return Packet(msgName(), movePayload())
+        return Packet(getMsgName(), movePayload())
     }
 
     fun isBase(): Boolean {

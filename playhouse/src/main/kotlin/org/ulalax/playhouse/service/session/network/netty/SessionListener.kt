@@ -3,7 +3,7 @@ package org.ulalax.playhouse.service.session.network.netty
 import io.netty.channel.Channel
 import org.ulalax.playhouse.communicator.message.ClientPacket
 
-interface SessionPacketListener {
+interface SessionListener {
     fun onConnect(channel: Channel)
     fun onReceive(channel: Channel, clientPacket: ClientPacket)
     fun onDisconnect(channel: Channel)

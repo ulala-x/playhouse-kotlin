@@ -4,9 +4,9 @@ import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.websocketx.*
-import org.ulalax.playhouse.service.session.network.netty.SessionPacketListener
+import org.ulalax.playhouse.service.session.network.netty.SessionListener
 
-class WebSocketBinaryHandler(private val sessionPacketListener: SessionPacketListener
+class WebSocketBinaryHandler(private val sessionPacketListener: SessionListener
 ) : SimpleChannelInboundHandler<WebSocketFrame>() {
     override fun channelRead0(ctx: ChannelHandlerContext, msg: WebSocketFrame) {
         if (msg is CloseWebSocketFrame) {

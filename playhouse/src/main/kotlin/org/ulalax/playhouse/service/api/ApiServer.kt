@@ -2,6 +2,8 @@ package org.ulalax.playhouse.service.api
 
 import org.ulalax.playhouse.communicator.XServerCommunicator
 import org.ulalax.playhouse.communicator.*
+import org.ulalax.playhouse.communicator.socket.PlaySocketFactory
+import org.ulalax.playhouse.communicator.socket.SocketConfig
 import org.ulalax.playhouse.communicator.socket.ZmqJPlaySocket
 import org.ulalax.playhouse.service.ControlContext
 import org.ulalax.playhouse.service.Server
@@ -27,8 +29,8 @@ class ApiServer(private val commonOption: CommonOption, private val apiOption: A
         val storageClient = LettuceRedisClient(commonOption.redisIp,commonOption.redisPort).apply { this.connect() }
         val serverInfoCenter = XServerInfoCenter()
 
-        val communicateServer = XServerCommunicator(ZmqJPlaySocket(bindEndpoint))
-        val communicateClient = XClientCommunicator(ZmqJPlaySocket(bindEndpoint))
+        val communicateServer = XServerCommunicator(PlaySocketFactory.createPlaySocket(SocketConfig(), bindEndpoint))
+        val communicateClient = XClientCommunicator(PlaySocketFactory.createPlaySocket(SocketConfig(), bindEndpoint))
 
         val apiBaseSenderImpl = ApiBaseSender(serviceId, communicateClient,requestCache)
         val systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicateClient)

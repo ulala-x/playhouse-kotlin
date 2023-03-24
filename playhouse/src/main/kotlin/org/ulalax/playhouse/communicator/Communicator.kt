@@ -2,7 +2,6 @@ package org.ulalax.playhouse.communicator;
 
 import org.ulalax.playhouse.LOG
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.Logger
 import org.ulalax.playhouse.service.*
 
 class CommunicatorOption(
@@ -36,27 +35,25 @@ class Communicator(private val option: CommunicatorOption,
 )  : CommunicateListener {
 
 
-    private lateinit var messageLoop: MessageLoop
-    private lateinit var addressResolver: ServerAddressResolver
-    private lateinit var baseSystem: BaseSystem
+    private var messageLoop: MessageLoop = MessageLoop(communicateServer,communicateClient)
+    private var addressResolver: ServerAddressResolver = ServerAddressResolver(
+        option.bindEndpoint,
+        serverInfoCenter,
+        communicateClient,
+        service,
+        storageClient
+    )
+    private var baseSystem: BaseSystem = BaseSystem(option.serverSystem.invoke(systemPanel,baseSender),baseSender)
     private val performanceTester = PerformanceTester(option.showQps)
 
     fun start(){
         val bindEndpoint = option.bindEndpoint
-        val system = option.serverSystem
+
         systemPanel.communicator = this
 
-        messageLoop = MessageLoop(communicateServer,communicateClient).apply { this.start() }
-        addressResolver = ServerAddressResolver(
-                                bindEndpoint,
-                                serverInfoCenter,
-                                communicateClient,
-                                service,
-                                storageClient
-                            ).apply { this.start() }
-
-
-        baseSystem = BaseSystem(system.invoke(systemPanel,baseSender),baseSender).apply { start() }
+        messageLoop.start()
+        addressResolver.start()
+        baseSystem.start()
 
         communicateServer.bind(this)
 
@@ -89,7 +86,7 @@ class Communicator(private val option: CommunicatorOption,
     private fun isPacketToClient(routePacket: RoutePacket) = routePacket.routeHeader.sid > 0
     override fun onReceive(routePacket: RoutePacket) {
 
-        LOG.debug("onReceive : ${routePacket.msgName()}, from:${routePacket.routeHeader.from}",this)
+        LOG.debug("onReceive : ${routePacket.getMsgName()}, from:${routePacket.routeHeader.from}",this)
 
         performanceTester.incCounter()
 
@@ -116,6 +113,6 @@ class Communicator(private val option: CommunicatorOption,
     }
 
     fun serverState(): ServerState {
-        return this.service.serverState()
+        return this.service.getServerState()
     }
 }

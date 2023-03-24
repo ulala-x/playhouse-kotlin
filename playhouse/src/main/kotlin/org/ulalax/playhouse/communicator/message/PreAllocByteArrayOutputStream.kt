@@ -39,13 +39,19 @@ class PreAllocByteArrayOutputStream(private val buffer: ByteArray) : OutputStrea
     }
 
     fun getShort(index:Int): Int {
-        val byteArray = buffer.sliceArray(index until index+2)
-        require(byteArray.size == 2) { "ByteArray size should be 4 for Int conversion" }
-        return  (byteArray[0].toInt() and 0xFF shl 8) or (byteArray[1].toInt() and 0xFF)
+//        val byteArray = buffer.sliceArray(index until index+2)
+//        require(byteArray.size == 2) { "ByteArray size should be 4 for Int conversion" }
+
+        if (index + 1 >= buffer.size)
+        {
+            throw  IndexOutOfBoundsException("Index is out of bounds");
+        }
+//        return  (buffer[index].toInt() and 0xFF shl 8) or (buffer[index+1].toInt() and 0xFF)
+        return  (buffer[index].toInt() shl 8) or (buffer[index+1].toInt() and 0xFF)
     }
 
     fun array(): ByteArray {
-        return buffer.sliceArray(0 until position)
+        return buffer
     }
 
 }

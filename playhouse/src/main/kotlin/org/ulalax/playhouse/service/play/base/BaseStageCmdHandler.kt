@@ -14,7 +14,7 @@ class BaseStageCmdHandler() {
     }
 
     suspend fun dispatch(baseStage: BaseStage, request: RoutePacket) {
-        val msgName = request.msgName()
+        val msgName = request.getMsgName()
         if(request.isBase()){
             if(maps.containsKey(msgName)){
                 maps[msgName]?.execute(baseStage,request)

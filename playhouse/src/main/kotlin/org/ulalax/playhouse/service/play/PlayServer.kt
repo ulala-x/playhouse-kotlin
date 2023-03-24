@@ -2,6 +2,8 @@ package org.ulalax.playhouse.service.play
 
 import org.ulalax.playhouse.communicator.XServerCommunicator
 import org.ulalax.playhouse.communicator.*
+import org.ulalax.playhouse.communicator.socket.PlaySocketFactory
+import org.ulalax.playhouse.communicator.socket.SocketConfig
 import org.ulalax.playhouse.communicator.socket.ZmqJPlaySocket
 import org.ulalax.playhouse.service.*
 
@@ -22,8 +24,8 @@ class PlayServer constructor(private val commonOption: CommonOption,
         val bindEndpoint = communicatorOption.bindEndpoint
         val serviceId = commonOption.serviceId
 
-        val communicateServer = XServerCommunicator(ZmqJPlaySocket(bindEndpoint))
-        val communicateClient = XClientCommunicator(ZmqJPlaySocket(bindEndpoint))
+        val communicateServer = XServerCommunicator(PlaySocketFactory.createPlaySocket(SocketConfig(), bindEndpoint))
+        val communicateClient = XClientCommunicator(PlaySocketFactory.createPlaySocket(SocketConfig(), bindEndpoint))
 
 
         val requestCache = RequestCache(commonOption.requestTimeoutSec)

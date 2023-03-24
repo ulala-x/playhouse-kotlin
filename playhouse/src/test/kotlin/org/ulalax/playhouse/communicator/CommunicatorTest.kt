@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.ConsoleLogger
 import org.ulalax.playhouse.communicator.message.Packet
+import org.ulalax.playhouse.communicator.socket.SocketConfig
 import org.ulalax.playhouse.communicator.socket.ZmqJPlaySocket
 import org.ulalax.playhouse.protocol.Common.HeaderMsg
 import java.lang.Thread.sleep
@@ -29,8 +30,8 @@ internal class CommunicatorTest : FunSpec() {
 
         sessionPort = IpFinder.findFreePort()
         sessionEndpoint = "tcp://${localIp}:$sessionPort"
-        sessionServer = XServerCommunicator(ZmqJPlaySocket(sessionEndpoint))
-        sessionClient = XClientCommunicator(ZmqJPlaySocket(sessionEndpoint))
+        sessionServer = XServerCommunicator(ZmqJPlaySocket(SocketConfig(),sessionEndpoint))
+        sessionClient = XClientCommunicator(ZmqJPlaySocket(SocketConfig(),sessionEndpoint))
 
         sessionServer.bind(object : CommunicateListener {
             override fun onReceive(routePacket: RoutePacket) {
@@ -40,8 +41,8 @@ internal class CommunicatorTest : FunSpec() {
 
         apiPort = IpFinder.findFreePort()
         apiEndpoint = "tcp://${localIp}:${apiPort}"
-        apiServer = XServerCommunicator(ZmqJPlaySocket(apiEndpoint))
-        apiClient = XClientCommunicator(ZmqJPlaySocket(apiEndpoint))
+        apiServer = XServerCommunicator(ZmqJPlaySocket(SocketConfig(),apiEndpoint))
+        apiClient = XClientCommunicator(ZmqJPlaySocket(SocketConfig(),apiEndpoint))
 
         apiServer.bind(object : CommunicateListener {
             override fun onReceive(routePacket: RoutePacket) {
@@ -75,7 +76,7 @@ internal class CommunicatorTest : FunSpec() {
             sleep(200)
 
             apiResults.size.shouldBe(1)
-            apiResults[0].msgName().shouldBe("HeaderMsg")
+            apiResults[0].getMsgName().shouldBe("HeaderMsg")
 
             ////////// api to session ///////////////
 
@@ -86,7 +87,7 @@ internal class CommunicatorTest : FunSpec() {
             sleep(200)
 
             sessionResults.size.shouldBe(1)
-            sessionResults[0].msgName().shouldBe("apiPacket")
+            sessionResults[0].getMsgName().shouldBe("apiPacket")
         }
     }
 

@@ -12,7 +12,7 @@ import org.ulalax.playhouse.service.session.network.netty.tcp.TcpSocketServerIni
 import org.ulalax.playhouse.service.session.network.netty.websocket.WebSocketServerInitializer
 
 class SessionNetwork(private val sessionOption: SessionOption,
-                     private val sessionPacketListener: SessionPacketListener,
+                     private val sessionPacketListener: SessionListener,
 ) {
 
     private val bootstrap = ServerBootstrap()

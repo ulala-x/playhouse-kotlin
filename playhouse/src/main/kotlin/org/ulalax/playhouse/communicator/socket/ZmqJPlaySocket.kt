@@ -16,8 +16,8 @@ import org.zeromq.ZSocket
 
 
 
-class ZmqJPlaySocket  (override val id:String,
-        ) : PlaySocket {
+class ZmqJPlaySocket  (
+    socketConfig:SocketConfig, override val id:String) : PlaySocket {
 
     private val socket = ZSocket(SocketType.ROUTER)
     private val outputStream = PreAllocByteArrayOutputStream(ByteArray(ConstOption.MAX_PACKET_SIZE))
@@ -26,15 +26,15 @@ class ZmqJPlaySocket  (override val id:String,
         socket.routingId(id.toByteArray())
         socket.immediate(true)
         socket.routerHandOver(true)
-        socket.backlog(1000)
-        socket.linger(0)
+        socket.backlog(socketConfig.backLog)
+        socket.linger(socketConfig.linger)
         socket.tcpKeepAlive(1)
 //        socket.tcpKeepAliveCount(5)
 //        socket.tcpKeepAliveInterval(1)
-        socket.sendBufferSize(1024*1024)
-        socket.receiveBufferSize(1024*1024)
-        socket.receiveHighWaterMark(1000000)
-        socket.sendHighWaterMark(1000000)
+        socket.sendBufferSize(socketConfig.sendBufferSize)
+        socket.receiveBufferSize(socketConfig.receiveBufferSize)
+        socket.receiveHighWaterMark(socketConfig.receiveHighWatermark)
+        socket.sendHighWaterMark(socketConfig.sendHighWatermark)
         socket.routerMandatory(true)
    }
 

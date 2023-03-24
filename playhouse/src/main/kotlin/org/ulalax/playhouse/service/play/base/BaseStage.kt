@@ -53,7 +53,7 @@ class BaseStage(
                 val accountId = routePacket.accountId()
                 val baseUser = playService.findUser(accountId)
                 if(baseUser !=null){
-                    stage.onDispatch(baseUser.actor , Packet(routePacket.msgName(),routePacket.movePayload()))
+                    stage.onDispatch(baseUser.actor , Packet(routePacket.getMsgName(),routePacket.movePayload()))
                 }
             }
         }catch (e:Exception){

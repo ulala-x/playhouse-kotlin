@@ -18,13 +18,13 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
 
-class PlayService(val serviceId:String,
-                  val publicEndpoint:String,
-                  val playOption: PlayOption,
-                  val clientCommunicator: ClientCommunicator,
-                  val requestCache: RequestCache,
-                  val serverInfoCenter: ServerInfoCenter
-                  ) : Service {
+class PlayService(
+    override val serviceId:String,
+    private val publicEndpoint:String,
+    private val playOption: PlayOption,
+    private val clientCommunicator: ClientCommunicator,
+    private val requestCache: RequestCache,
+    private val serverInfoCenter: ServerInfoCenter) : Service {
 
     private var state = AtomicReference(ServerState.DISABLE)
     private val baseUsers:MutableMap<Long, BaseActor> = ConcurrentHashMap()
@@ -57,7 +57,7 @@ class PlayService(val serviceId:String,
             var routePacket = msgQueue.poll()
             while(routePacket!=null){
                 routePacket.use {
-                    val msgName = routePacket.msgName()
+                    val msgName = routePacket.getMsgName()
                     val isBase = routePacket.isBase()
                     val stageId = routePacket.routeHeader.stageId
                     val roomPacket = RoutePacket.moveOf(routePacket)
@@ -172,21 +172,18 @@ class PlayService(val serviceId:String,
 
     }
 
-    override fun weightPoint(): Int {
+    override fun getWeightPoint(): Int {
         return baseUsers.size
     }
 
-    override fun serverState(): ServerState {
+    override fun getServerState(): ServerState {
         return state.get()
     }
 
-    override fun serviceType(): ServiceType {
+    override fun getServiceType(): ServiceType {
         return ServiceType.Play
     }
 
-    override fun serviceId(): String {
-        return this.serviceId
-    }
 
     override fun pause() {
         this.state.set(ServerState.PAUSE)

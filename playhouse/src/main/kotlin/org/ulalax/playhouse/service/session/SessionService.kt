@@ -6,20 +6,20 @@ import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.communicator.message.ClientPacket
 import org.ulalax.playhouse.service.session.network.netty.SessionNetwork
-import org.ulalax.playhouse.service.session.network.netty.SessionPacketListener
+import org.ulalax.playhouse.service.session.network.netty.SessionListener
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
 
 
-class SessionService(private val serviceId:String,
-                     private val sessionOption: SessionOption,
-                     private val serverInfoCenter: XServerInfoCenter,
-                     private val clientCommunicator: ClientCommunicator,
-                     private val requestCache: RequestCache,
-                     private val sessionPort:Int,
-                     private val showQps:Boolean
-                     ) : Service, SessionPacketListener {
+class SessionService(
+    override val serviceId:String,
+    private val sessionOption: SessionOption,
+    private val serverInfoCenter: XServerInfoCenter,
+    private val clientCommunicator: ClientCommunicator,
+    private val requestCache: RequestCache,
+    private val sessionPort:Int,
+    private val showQps:Boolean) : Service, SessionListener {
 
     private val clients = ConcurrentHashMap<Int, SessionClient>()
     private var state = AtomicReference(ServerState.DISABLE)
@@ -76,7 +76,7 @@ class SessionService(private val serviceId:String,
 
                 routePacket.use {
                     val sessionId = routePacket.routeHeader.sid
-                    val packetName = routePacket.msgName()
+                    val packetName = routePacket.getMsgName()
                     val sessionClient = clients[sessionId]
                     if(sessionClient == null) {
                         LOG.error("sessionId is already disconnected  $sessionId,$packetName",this)
@@ -102,21 +102,18 @@ class SessionService(private val serviceId:String,
         sessionNetwork.shutdown()
     }
 
-    override fun weightPoint(): Int {
+    override fun getWeightPoint(): Int {
         return clients.size
     }
 
-    override fun serverState(): ServerState {
+    override fun getServerState(): ServerState {
         return state.get()
     }
 
-    override fun serviceType(): ServiceType {
+    override fun getServiceType(): ServiceType {
         return ServiceType.SESSION
     }
 
-    override fun serviceId(): String {
-        return serviceId
-    }
 
     override fun pause() {
         this.state.set(ServerState.PAUSE)

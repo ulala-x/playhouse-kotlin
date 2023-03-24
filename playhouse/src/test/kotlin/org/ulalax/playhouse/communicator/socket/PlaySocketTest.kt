@@ -11,8 +11,8 @@ import org.ulalax.playhouse.communicator.message.EmptyPayload
 
 class PlaySocketTest : FunSpec(){
     private val localIp = IpFinder.findLocalIp()
-    private val serverPort = 18888
-    private val clientPort = 17777
+    private val serverPort = IpFinder.findFreePort()
+    private val clientPort = IpFinder.findFreePort()
 
     private val serverBindEndpoint = "tcp://${localIp}:$serverPort"
     private val clientBindEndpoint = "tcp://${localIp}:$clientPort"
@@ -22,10 +22,10 @@ class PlaySocketTest : FunSpec(){
 
     init {
         beforeTest {
-            serverSocket = ZmqJPlaySocket(serverBindEndpoint)
+            serverSocket = ZmqJPlaySocket(SocketConfig(),serverBindEndpoint)
             serverSocket.bind()
 
-            clientSocket = ZmqJPlaySocket(clientBindEndpoint)
+            clientSocket = ZmqJPlaySocket(SocketConfig(),clientBindEndpoint)
             clientSocket.bind()
 
             Thread.sleep(100)

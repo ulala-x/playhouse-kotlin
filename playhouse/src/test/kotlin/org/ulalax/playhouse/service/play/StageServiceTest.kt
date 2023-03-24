@@ -126,7 +126,7 @@ class StageServiceTest : FunSpec() {
             resultList.shouldHaveSize(2)
 
             val createJoinStageRes = CreateJoinStageRes.parseFrom(resultList[1].data())
-            resultList[1].msgName().shouldBe(CreateJoinStageRes.getDescriptor().name)
+            resultList[1].getMsgName().shouldBe(CreateJoinStageRes.getDescriptor().name)
 
             createJoinStageRes.isCreated.shouldBeTrue()
             createJoinStageRes.createPayloadName.shouldBe("contentCreateRoom")
@@ -145,7 +145,7 @@ class StageServiceTest : FunSpec() {
             resultList.shouldHaveSize(3)
             val createJoinStageRes = CreateJoinStageRes.parseFrom(resultList[2].data())
 
-            resultList[2].msgName().shouldBe(CreateJoinStageRes.getDescriptor().name)
+            resultList[2].getMsgName().shouldBe(CreateJoinStageRes.getDescriptor().name)
             createJoinStageRes.isCreated.shouldBeFalse()
             createJoinStageRes.createPayloadName.shouldBeEmpty()
             createJoinStageRes.joinPayloadName.shouldBe("contentJoinRoom")

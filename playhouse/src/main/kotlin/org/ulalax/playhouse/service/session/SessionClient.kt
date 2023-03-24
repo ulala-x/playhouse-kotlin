@@ -116,7 +116,7 @@ class SessionClient(
 
     // from backend server
     fun onReceive(packet: RoutePacket) {
-        val msgName = packet.msgName()
+        val msgName = packet.getMsgName()
         val isBase = packet.isBase()
 //        val serviceId = packet.serviceId()
 //        val isBackend = packet.isBackend()
