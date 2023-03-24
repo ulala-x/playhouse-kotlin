@@ -20,8 +20,8 @@ class CacheTest : FunSpec() {
     init {
 
         test("Test ServerInfo update and get") {
-            val redisCacheClient = RedisCacheClient(redisContainer.host,redisContainer.getMappedPort(port))
-            redisCacheClient.connect()
+            val redisStorageClient = RedisStorageClient(redisContainer.host,redisContainer.getMappedPort(port))
+            redisStorageClient.connect()
 
             val endpoint1 ="127.0.0.1:8081"
             val endpoint2 ="127.0.0.1:8082"
@@ -36,10 +36,10 @@ class CacheTest : FunSpec() {
                     .setServerState(ServerState.RUNNING.name).setTimestamp(System.currentTimeMillis())
                     .setWeightingPoint(0).build()
 
-            redisCacheClient.updateServerInfo(XServerInfo.of(update1))
-            redisCacheClient.updateServerInfo(XServerInfo.of(update2))
+            redisStorageClient.updateServerInfo(XServerInfo.of(update1))
+            redisStorageClient.updateServerInfo(XServerInfo.of(update2))
 
-            val serverList = redisCacheClient.getServerList("")
+            val serverList = redisStorageClient.getServerList("")
 
 
             serverList shouldHaveSize 2
@@ -49,7 +49,7 @@ class CacheTest : FunSpec() {
                 it.any { baseServerInfo -> baseServerInfo.bindEndpoint == endpoint2 }
             }
 
-            redisCacheClient.close()
+            redisStorageClient.close()
         }
 
         test("test timeOver"){

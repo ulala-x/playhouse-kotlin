@@ -2,7 +2,7 @@ package org.ulalax.playhouse.service.session.network.Stream
 
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import org.ulalax.playhouse.Logger
+import Logger
 import org.ulalax.playhouse.communicator.message.ClientPacket
 import org.ulalax.playhouse.service.session.network.PacketParser
 import org.zeromq.SendFlag

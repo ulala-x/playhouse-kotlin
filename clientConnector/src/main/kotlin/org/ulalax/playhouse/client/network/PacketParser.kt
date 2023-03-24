@@ -3,7 +3,6 @@ package org.ulalax.playhouse.client.network
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.ulalax.playhouse.client.LOG
 import org.ulalax.playhouse.client.network.message.BytePayload
 import org.ulalax.playhouse.client.network.message.ClientPacket
 import org.ulalax.playhouse.protocol.Common

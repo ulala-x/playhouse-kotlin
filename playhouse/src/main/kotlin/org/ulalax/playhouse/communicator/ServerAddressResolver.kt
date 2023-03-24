@@ -1,7 +1,7 @@
 package org.ulalax.playhouse.communicator
 
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.ulalax.playhouse.LOG
+import LOG
 import java.util.*
 import kotlin.concurrent.timer
 

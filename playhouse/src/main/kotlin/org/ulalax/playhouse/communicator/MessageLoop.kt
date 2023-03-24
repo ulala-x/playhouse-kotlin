@@ -1,6 +1,6 @@
 package org.ulalax.playhouse.communicator;
 
-import org.ulalax.playhouse.LOG
+import LOG
 
 
 class MessageLoop(private val server: CommunicateServer,

@@ -1,7 +1,7 @@
 package org.ulalax.playhouse.service.session
 
 import io.netty.channel.Channel
-import org.ulalax.playhouse.LOG
+import LOG
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.communicator.message.ClientPacket

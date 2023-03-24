@@ -1,7 +1,7 @@
 package org.ulalax.playhouse.communicator
 
-import org.ulalax.playhouse.ConsoleLogger
-import org.ulalax.playhouse.Logger
+import ConsoleLogger
+import Logger
 
 object ConstOption {
 
@@ -14,5 +14,5 @@ object ConstOption {
     const val HEADER_SIZE = 256
     const val LENGTH_FIELD_SIZE = 3
 
-    val logger:Logger = ConsoleLogger()
+    val logger: Logger = ConsoleLogger()
 }

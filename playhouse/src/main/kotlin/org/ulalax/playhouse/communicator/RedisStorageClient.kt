@@ -8,7 +8,7 @@ import io.lettuce.core.codec.ByteArrayCodec
 import org.ulalax.playhouse.protocol.Server
 import java.nio.charset.StandardCharsets
 
-class RedisCacheClient(val redisIp: String,val redisBindPort: Int) : StorageClient {
+class RedisStorageClient(val redisIp: String, val redisBindPort: Int) : StorageClient {
 
     private lateinit var redisClient:RedisClient
     private lateinit var redisConnection: StatefulRedisConnection<ByteArray, ByteArray>

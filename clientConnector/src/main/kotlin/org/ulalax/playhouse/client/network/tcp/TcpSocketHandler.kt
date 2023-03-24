@@ -5,7 +5,6 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.handler.timeout.IdleState
 import io.netty.handler.timeout.IdleStateEvent
-import org.ulalax.playhouse.client.LOG
 import org.ulalax.playhouse.client.network.BasePacketListener
 import org.ulalax.playhouse.client.network.message.ClientPacket
 

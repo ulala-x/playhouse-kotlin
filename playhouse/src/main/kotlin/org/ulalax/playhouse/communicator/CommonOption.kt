@@ -1,7 +1,7 @@
 package org.ulalax.playhouse.communicator
 
-import org.ulalax.playhouse.ConsoleLogger
-import org.ulalax.playhouse.Logger
+import ConsoleLogger
+import Logger
 import org.ulalax.playhouse.service.CommonSender
 import org.ulalax.playhouse.service.ServerSystem
 import org.ulalax.playhouse.service.SystemPanel
@@ -14,5 +14,5 @@ class CommonOption {
     lateinit var serverSystem:(SystemPanel, CommonSender) -> ServerSystem
     var requestTimeoutSec:Long = 5
     var showQps:Boolean = false
-    var logger:Logger = ConsoleLogger()
+    var logger: Logger = ConsoleLogger()
 }

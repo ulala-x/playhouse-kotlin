@@ -1,8 +1,7 @@
 package org.ulalax.playhouse.communicator
 
 import org.apache.commons.lang3.time.StopWatch
-import org.ulalax.playhouse.LOG
-import org.ulalax.playhouse.Logger
+import LOG
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger

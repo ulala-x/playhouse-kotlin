@@ -2,7 +2,7 @@ package org.ulalax.playhouse.service.api
 
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.ulalax.playhouse.LOG
+import LOG
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.protocol.Common.*
 import org.ulalax.playhouse.protocol.Server.DisconnectNoticeMsg

@@ -4,7 +4,7 @@ import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.service.play.PlayService
 import org.ulalax.playhouse.service.play.base.BaseStage
 import org.ulalax.playhouse.service.play.base.BaseStageCmd
-import org.ulalax.playhouse.LOG
+import LOG
 
 class StageTimerCmd(override val playService: PlayService): BaseStageCmd {
 

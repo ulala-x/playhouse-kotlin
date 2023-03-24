@@ -8,7 +8,7 @@ import io.netty.channel.epoll.EpollServerSocketChannel
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.util.concurrent.DefaultThreadFactory
-import org.ulalax.playhouse.LOG
+import LOG
 
 object NettyConfigure {
 

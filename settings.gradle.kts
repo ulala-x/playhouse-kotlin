@@ -8,4 +8,4 @@
  */
 
 rootProject.name = "PlayHouse"
-include( "playhouse","clientConnector","protocol")
+include( "playhouse","clientConnector","common")

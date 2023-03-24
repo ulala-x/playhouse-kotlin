@@ -2,7 +2,7 @@ package org.ulalax.playhouse.service
 
 import org.ulalax.playhouse.communicator.ClientCommunicator
 import kotlinx.coroutines.CompletableDeferred
-import org.ulalax.playhouse.LOG
+import LOG
 import org.ulalax.playhouse.communicator.ReplyObject
 import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.communicator.message.*

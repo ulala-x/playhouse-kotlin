@@ -26,6 +26,6 @@ publishing {
 }
 
 dependencies {
-    api(project(":protocol"))
+    api(project(":common"))
     implementation("io.netty:netty-all:4.1.79.Final")
 }

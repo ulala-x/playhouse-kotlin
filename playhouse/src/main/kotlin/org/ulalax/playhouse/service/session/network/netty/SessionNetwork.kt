@@ -7,7 +7,7 @@ import io.netty.channel.Channel
 import io.netty.channel.ChannelOption
 import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
-import org.ulalax.playhouse.LOG
+import LOG
 import org.ulalax.playhouse.service.session.network.netty.tcp.TcpSocketServerInitializer
 import org.ulalax.playhouse.service.session.network.netty.websocket.WebSocketServerInitializer
 

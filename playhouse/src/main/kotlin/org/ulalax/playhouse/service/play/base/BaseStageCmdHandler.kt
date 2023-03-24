@@ -1,6 +1,6 @@
 package org.ulalax.playhouse.service.play.base
 
-import org.ulalax.playhouse.LOG
+import LOG
 import org.ulalax.playhouse.communicator.message.RoutePacket
 
 class BaseStageCmdHandler() {

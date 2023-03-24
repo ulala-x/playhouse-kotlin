@@ -1,7 +1,7 @@
 package org.ulalax.playhouse.communicator.socket
 
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.ulalax.playhouse.LOG
+import LOG
 import org.ulalax.playhouse.communicator.ConstOption
 import org.ulalax.playhouse.communicator.message.FramePayload
 import org.ulalax.playhouse.communicator.message.PreAllocByteArrayOutputStream

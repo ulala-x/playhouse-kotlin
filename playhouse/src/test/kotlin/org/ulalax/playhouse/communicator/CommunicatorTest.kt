@@ -3,7 +3,6 @@ package org.ulalax.playhouse.communicator
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.ConsoleLogger
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.communicator.socket.SocketConfig
 import org.ulalax.playhouse.communicator.socket.ZmqJPlaySocket

@@ -1,6 +1,6 @@
 package org.ulalax.playhouse.communicator;
 
-import org.ulalax.playhouse.LOG
+import LOG
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.service.*
 

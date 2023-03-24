@@ -6,7 +6,7 @@ import org.ulalax.playhouse.communicator.message.RoutePacket
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.ulalax.playhouse.LOG
+import LOG
 import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.communicator.message.ReplyPacket

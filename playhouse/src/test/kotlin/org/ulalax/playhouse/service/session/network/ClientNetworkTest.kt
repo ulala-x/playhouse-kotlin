@@ -3,7 +3,7 @@ package org.ulalax.playhouse.service.session.network
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.netty.channel.Channel
-import org.ulalax.playhouse.LOG
+import LOG
 import org.ulalax.playhouse.client.Connector
 import org.ulalax.playhouse.client.network.message.Packet
 import org.ulalax.playhouse.communicator.ConstOption

@@ -50,7 +50,7 @@ sourceSets {
 
 
 dependencies {
-    api(project(":protocol"))
+    api(project(":common"))
 //    implementation("org.zeromq:zmqj:4.3.4.1")
 //    api(project(":zmq"))
 //    implementation("org.zeromq:jmq:1.0")

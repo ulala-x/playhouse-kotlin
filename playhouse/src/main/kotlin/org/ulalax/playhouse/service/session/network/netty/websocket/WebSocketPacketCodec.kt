@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageCodec
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.ulalax.playhouse.LOG
+import LOG
 import org.ulalax.playhouse.communicator.ByteBufferAllocator
 import org.ulalax.playhouse.communicator.message.ClientPacket
 import org.ulalax.playhouse.service.session.network.PacketParser

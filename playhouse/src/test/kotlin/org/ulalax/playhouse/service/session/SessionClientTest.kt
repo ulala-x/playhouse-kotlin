@@ -10,7 +10,6 @@ import io.netty.channel.Channel
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.ulalax.playhouse.ConsoleLogger
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.communicator.message.ClientPacket
 import org.ulalax.playhouse.communicator.message.Packet

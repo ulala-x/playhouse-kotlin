@@ -3,7 +3,7 @@ package org.ulalax.playhouse.service.play
 import org.ulalax.playhouse.communicator.message.RouteHeader
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import kotlinx.coroutines.runBlocking
-import org.ulalax.playhouse.LOG
+import LOG
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.communicator.message.ProtoPayload
@@ -152,9 +152,10 @@ class PlayService(
                     timerManager.cancelTimer(timerId)
 
                 }
-                else -> {LOG.error("Invalid timer type $type",this)}
+                else -> {
+                    LOG.error("Invalid timer type $type",this)}
             }
-        }?:LOG.error("room for timer is not exist:$stageId, ${timerMsg.type}",this)
+        }?: LOG.error("room for timer is not exist:$stageId, ${timerMsg.type}",this)
     }
 
     override fun onReceive(routePacket: RoutePacket) {

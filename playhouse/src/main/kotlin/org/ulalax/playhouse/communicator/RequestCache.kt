@@ -4,7 +4,7 @@ import com.github.benmanes.caffeine.cache.*
 import org.ulalax.playhouse.protocol.Common.BaseErrorCode
 import kotlinx.coroutines.CompletableDeferred
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.ulalax.playhouse.LOG
+import LOG
 import org.ulalax.playhouse.communicator.message.ReplyCallback
 import org.ulalax.playhouse.communicator.message.ReplyPacket
 import org.ulalax.playhouse.communicator.message.RoutePacket

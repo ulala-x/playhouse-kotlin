@@ -1,5 +1,3 @@
-package org.ulalax.playhouse.client
-
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -57,54 +55,52 @@ class ConsoleLogger : Logger {
 }
 
 object LOG  {
-    private var log:Logger = ConsoleLogger()
-    private var logLevel:LogLevel = LogLevel.TRACE
+    private var log: Logger = ConsoleLogger()
+    private var logLevel: LogLevel = LogLevel.TRACE
 
-    fun setLogger(logger: Logger,logLevel: LogLevel = LogLevel.TRACE){
-        this.log = logger
-        this.logLevel = logLevel
+    fun setLogger(logger: Logger, logLevel: LogLevel = LogLevel.TRACE){
+        log = logger
+        LOG.logLevel = logLevel
     }
 
     fun trace(message: String, clazz: Any) {
         if( LogLevel.TRACE.intValue >= logLevel.intValue){
-            this.log.trace(message,clazz::class.simpleName)
+            log.trace(message,clazz::class.simpleName)
         }
     }
 
     fun debug(message: String, clazz: Any) {
         if(LogLevel.DEBUG.intValue >= logLevel.intValue){
-            this.log.debug(message,clazz::class.simpleName)
+            log.debug(message,clazz::class.simpleName)
         }
     }
 
     fun info(message: String, clazz: Any) {
         if(LogLevel.INFO.intValue >= logLevel.intValue){
-            this.log.info(message,clazz::class.simpleName)
+            log.info(message,clazz::class.simpleName)
         }
     }
 
     fun warn(message: String, clazz: Any) {
         if(LogLevel.WARNING.intValue >= logLevel.intValue){
-            this.log.warn(message,clazz::class.simpleName)
+            log.warn(message,clazz::class.simpleName)
         }
     }
 
     fun error(message: String, clazz: Any) {
         if(LogLevel.ERROR.intValue >= logLevel.intValue){
-            this.log.error(message,clazz::class.simpleName)
+            log.error(message,clazz::class.simpleName)
         }
     }
-
-    fun error(message: String, clazz: Any, ex: Throwable?) {
+    fun error(message: String, clazz: Any,ex: Throwable?) {
         if(LogLevel.ERROR.intValue >= logLevel.intValue){
-            this.log.error(message,clazz::class.simpleName,ex)
+            log.error(message,clazz::class.simpleName,ex)
         }
     }
-
 
     fun fatal(message: String, clazz: Any) {
         if(LogLevel.FATAL.intValue >= logLevel.intValue ){
-            this.log.warn(message,clazz::class.simpleName)
+            log.warn(message,clazz::class.simpleName)
         }
     }
 }

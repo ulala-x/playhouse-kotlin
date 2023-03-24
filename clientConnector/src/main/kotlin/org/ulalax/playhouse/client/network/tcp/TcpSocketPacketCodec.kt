@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageCodec
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.ulalax.playhouse.client.LOG
 
 import org.ulalax.playhouse.client.network.PacketParser
 import org.ulalax.playhouse.client.network.message.ClientPacket

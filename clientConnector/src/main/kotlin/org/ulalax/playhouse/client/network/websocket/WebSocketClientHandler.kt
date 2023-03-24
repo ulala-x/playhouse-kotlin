@@ -7,7 +7,6 @@ import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.websocketx.*
 import io.netty.util.CharsetUtil
-import org.ulalax.playhouse.client.LOG
 import org.ulalax.playhouse.client.network.BasePacketListener
 
 

@@ -1,8 +1,8 @@
 package org.ulalax.playhouse.service.play.contents
-import org.ulalax.playhouse.Logger
+import Logger
 import org.ulalax.playhouse.communicator.message.Packet
 
-class PacketHandler<S,A>(private val log:Logger) {
+class PacketHandler<S,A>(private val log: Logger) {
 
     private val messageMap = HashMap<String, PacketCmd<S, A>>()
     suspend fun dispatch(stage: S, actor: A, packet: Packet){

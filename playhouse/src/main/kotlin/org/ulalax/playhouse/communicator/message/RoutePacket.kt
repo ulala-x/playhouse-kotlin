@@ -1,7 +1,7 @@
 package org.ulalax.playhouse.communicator.message
 
 import com.google.protobuf.GeneratedMessageV3
-import org.ulalax.playhouse.LOG
+import LOG
 import org.ulalax.playhouse.communicator.CommunicatorException
 import org.ulalax.playhouse.communicator.ConstOption
 import org.ulalax.playhouse.protocol.Common.HeaderMsg
