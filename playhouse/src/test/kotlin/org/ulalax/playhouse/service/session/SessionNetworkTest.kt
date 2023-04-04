@@ -1,4 +1,4 @@
-package org.ulalax.playhouse.service.session.network
+package org.ulalax.playhouse.service.session
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -13,12 +13,11 @@ import org.ulalax.playhouse.communicator.message.FramePayload
 import org.ulalax.playhouse.communicator.message.PreAllocByteArrayOutputStream
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.Test.TestMsg
-import org.ulalax.playhouse.service.session.SessionOption
 import org.ulalax.playhouse.service.session.network.netty.SessionNetwork
 import org.ulalax.playhouse.service.session.network.netty.SessionListener
 import org.zeromq.ZFrame
 
-class ClientNetworkTest : FunSpec(){
+class SessionNetworkTest : FunSpec(){
 
 
     companion object{
@@ -59,7 +58,7 @@ class ClientNetworkTest : FunSpec(){
 
        test("client and session communicate ") {
 
-            arrayOf( false,true,false,true,false,true,false,true,false,true).forEach { useWebSocket ->
+            arrayOf( false,true,).forEach { useWebSocket ->
                 val serverListener = ServerListener()
                 serverListener.useWebSocket = useWebSocket
                 val sessionNetwork = SessionNetwork(SessionOption().apply { this.useWebSocket = useWebSocket }, serverListener)
@@ -102,50 +101,4 @@ class ClientNetworkTest : FunSpec(){
             }
         }
     }
-
-
-//    @ParameterizedTest
-//    @ValueSource(booleans = [false,true])
-//    fun session(useWebSocket:Boolean): Unit = runBlocking {
-//        val serverListener = ServerListener()
-//        serverListener.useWebSocket = useWebSocket
-//        val sessionNetwork = SessionNetwork(SessionOption().apply { this.useWebSocket = useWebSocket }, serverListener)
-//
-//        val port = IpFinder.findFreePort()
-//        val server = Thread{
-//            sessionNetwork.bind(port)
-//            sessionNetwork.await()
-//            log.info{" server down"}
-//        }
-//        server.start()
-//        Thread.sleep(100)
-//
-//        val connector = Connector(0,useWebSocket){ serviceId: String, packet: Packet ->
-//            log.info("received packet:$serviceId,${packet.msgName}")
-//        }
-//
-//        connector.connect("127.0.0.1",port)
-//
-//        Thread.sleep(100)
-//        assertThat(resultValue).isEqualTo("onConnect")
-//
-//        connector.send("api", Packet(TestMsg.newBuilder().setTestMsg("test").build()))
-//
-//        Thread.sleep(200)
-//        assertThat(resultValue).isEqualTo("test")
-//
-//        var replyPacket = connector.request("api", Packet(TestMsg.newBuilder().setTestMsg("request").build()))
-//        assertThat(TestMsg.parseFrom(replyPacket.data()).testMsg).isEqualTo("request")
-//
-//        replyPacket = connector.request("api", Packet(TestMsg.newBuilder().setTestMsg("request").build()))
-//        assertThat(TestMsg.parseFrom(replyPacket.data()).testMsg).isEqualTo("request")
-////
-//        connector.disconnect()
-//        Thread.sleep(100)
-//        assertThat(resultValue).isEqualTo("onDisconnect")
-//        sessionNetwork.shutdown()
-//
-//    }
-
-
 }

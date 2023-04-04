@@ -83,6 +83,7 @@ class SessionClient(
                 relayTo(serviceId, clientPacket)
             }else{
                 LOG.warn("client is not authenticated :${msgName}",this)
+                channel.disconnect()
             }
         }
     }

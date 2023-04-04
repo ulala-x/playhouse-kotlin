@@ -21,7 +21,7 @@ internal class SessionClientTest : FunSpec() {
     private lateinit var serviceCenter: ServerInfoCenter
     private lateinit var channel:Channel
     private lateinit var reqCache: RequestCache
-    private lateinit var IClientCommunicator: ClientCommunicator
+    private lateinit var clientCommunicator: ClientCommunicator
     private val serviceId = "session"
     private val resultList = mutableListOf<RoutePacket>()
     private val urls = arrayListOf<String>()
@@ -33,7 +33,7 @@ internal class SessionClientTest : FunSpec() {
             serviceCenter = mock()
             channel = mock()
             reqCache = RequestCache(0)
-            IClientCommunicator = SpyClientCommunicator(resultList)
+            clientCommunicator = SpyClientCommunicator(resultList)
         }
 
         afterTest {
@@ -42,7 +42,7 @@ internal class SessionClientTest : FunSpec() {
 
 
         test("without authenticate send packet ,socket should be disconnected" ){
-            val sessionClient = SessionClient(serviceId,sid,channel,serviceCenter,IClientCommunicator,urls,reqCache)
+            val sessionClient = SessionClient(serviceId,sid,channel,serviceCenter,clientCommunicator,urls,reqCache)
             val clientPacket = ClientPacket.toServerOf("api", Packet("test"))
             sessionClient.onReceive(clientPacket)
             verify(channel){channel.disconnect()}
@@ -56,7 +56,7 @@ internal class SessionClientTest : FunSpec() {
                     XServerInfo.of("tcp://127.0.0.1:0021", ServiceType.API,"api", ServerState.RUNNING,21,System.currentTimeMillis())
             )
 
-            val sessionClient = SessionClient(serviceId,sid,channel,serviceCenter,IClientCommunicator,urls,reqCache)
+            val sessionClient = SessionClient(serviceId,sid,channel,serviceCenter,clientCommunicator,urls,reqCache)
             val clientPacket = ClientPacket.toServerOf("api", Packet("test"))
             sessionClient.onReceive(clientPacket)
             resultList.shouldHaveSize(1)
@@ -74,7 +74,7 @@ internal class SessionClientTest : FunSpec() {
                     .setSessionInfo(sessionInfo).build()
             val routePacket = RoutePacket.sessionOf(sid, Packet(message), isBase = true, isBackend = true)
 
-            val sessionClient = SessionClient(serviceId,sid,channel,serviceCenter,IClientCommunicator,urls,reqCache)
+            val sessionClient = SessionClient(serviceId,sid,channel,serviceCenter,clientCommunicator,urls,reqCache)
             sessionClient.onReceive(routePacket)
 
             sessionClient.isAuthenticated.shouldBeTrue()
@@ -82,13 +82,4 @@ internal class SessionClientTest : FunSpec() {
         }
 
     }
-
-
-
-
-
-
-
-
-
 }
