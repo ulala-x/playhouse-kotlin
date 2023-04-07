@@ -2,8 +2,8 @@ package org.ulalax.playhouse.communicator.message
 
 import com.google.protobuf.ByteString
 import com.google.protobuf.GeneratedMessageV3
-import org.ulalax.playhouse.protocol.Common
-import org.zeromq.ZFrame
+import org.ulalax.playhouse.protocol.Server.*
+import java.nio.ByteBuffer
 
 interface   ReplyCallback{
     fun onReceive(replyPacket: ReplyPacket)
@@ -11,29 +11,29 @@ interface   ReplyCallback{
 
 interface BasePacket : AutoCloseable {
     fun movePayload(): Payload
-    fun data():ByteArray
+    fun data(): ByteBuffer
 
 }
 
-class Header constructor(var msgName:String="",var errorCode:Int = 0,var msgSeq:Int=0, var serviceId: String=""){
+class Header constructor(var serviceId: Short=0, var msgId:Int=0, var msgSeq:Short=0, var errorCode:Short = 0 ){
     companion object {
-        fun of(headerMsg: Common.HeaderMsg): Header {
-            return Header(headerMsg.msgName,headerMsg.errorCode,headerMsg.msgSeq,headerMsg.serviceId)
+        fun of(headerMsg: HeaderMsg): Header {
+            return Header(headerMsg.serviceId.toShort(),headerMsg.msgId,headerMsg.msgSeq.toShort(),headerMsg.errorCode.toShort())
         }
     }
-    fun toMsg(): Common.HeaderMsg {
-        return Common.HeaderMsg.newBuilder()
-                .setServiceId(this.serviceId)
-                .setMsgSeq(this.msgSeq)
-                .setMsgName(this.msgName)
-                .setErrorCode(this.errorCode).build()
+    fun toMsg(): HeaderMsg {
+        return HeaderMsg.newBuilder()
+            .setServiceId(this.serviceId.toInt())
+            .setMsgId(this.msgId)
+            .setMsgSeq(this.msgSeq.toInt())
+            .setErrorCode(this.errorCode.toInt()).build()
     }
 }
-data class Packet @JvmOverloads  constructor(val msgName:String="",var payload: Payload = EmptyPayload()) : BasePacket {
-    constructor(message: GeneratedMessageV3) : this(message.descriptorForType.name, ProtoPayload(message))
-    constructor( msgName: String, message:ByteString):this(msgName, ByteStringPayload(message))
+data class Packet @JvmOverloads  constructor(val msgId:Int=-1, var payload: Payload = EmptyPayload()) : BasePacket {
+    constructor(message: GeneratedMessageV3) : this(message.descriptorForType.index, ProtoPayload(message))
+    constructor(msgId: Int, message:ByteString):this(msgId, ByteStringPayload(message))
 
-    override fun data(): ByteArray {
+    override fun data(): ByteBuffer {
         return this.payload.data()
     }
 
@@ -46,16 +46,16 @@ data class Packet @JvmOverloads  constructor(val msgName:String="",var payload: 
         this.payload.close()
     }
 }
-data class ReplyPacket @JvmOverloads constructor(val errorCode: Int,val msgName:String="", private var payload: Payload = EmptyPayload()):
+data class ReplyPacket @JvmOverloads constructor(val errorCode: Short, val msgId:Int=-1, private var payload: Payload = EmptyPayload()):
     BasePacket {
 
-    constructor(message: GeneratedMessageV3) : this(0,message.descriptorForType.name, ProtoPayload(message))
-    constructor(errorCode: Int,message: GeneratedMessageV3) : this(errorCode,message.descriptorForType.name, ProtoPayload(message))
+    constructor(message: GeneratedMessageV3) : this(0,message.descriptorForType.index, ProtoPayload(message))
+    constructor(errorCode: Short,message: GeneratedMessageV3) : this(errorCode,message.descriptorForType.index, ProtoPayload(message))
     fun isSuccess():Boolean{
-        return errorCode == 0
+        return errorCode == 0.toShort()
     }
 
-    override fun data(): ByteArray {
+    override fun data(): ByteBuffer {
         return payload.data()
     }
 

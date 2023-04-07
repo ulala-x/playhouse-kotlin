@@ -14,7 +14,7 @@ import org.ulalax.playhouse.service.*
 import java.time.Duration
 
 class BaseStageSender(
-        private val serviceId:String,
+        private val serviceId:Short,
         private val stageId:Long,
         private val playService: PlayService,
         private val clientCommunicator: ClientCommunicator,
@@ -81,7 +81,7 @@ class BaseStageSender(
         timerIds.clear()
 
         val packet = RoutePacket.stageOf(stageId,0,
-            Packet(DestroyStage.getDescriptor().name),isBase = true,isBackend = false)
+            Packet(DestroyStage.getDescriptor().index),isBase = true,isBackend = false)
         playService.onReceive(packet)
     }
 

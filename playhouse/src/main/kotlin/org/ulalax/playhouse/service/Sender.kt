@@ -11,7 +11,7 @@ import java.time.Duration
 
 interface SystemPanel{
 
-    fun randomServerInfo(serviceId: String) : ServerInfo
+    fun randomServerInfo(serviceId: Short) : ServerInfo
     fun serverInfo(endpoint:String) : ServerInfo
     fun serverList(): List<ServerInfo>
     fun pause()
@@ -22,7 +22,7 @@ interface SystemPanel{
 
 }
 interface CommonSender {
-    fun serviceId():String
+    fun serviceId():Short
     fun reply(reply: ReplyPacket)
     fun sendToClient(sessionEndpoint: String,sid:Int,packet: Packet)
     fun sendToApi(apiEndpoint:String, sessionInfo: String,packet: Packet)
@@ -45,7 +45,7 @@ interface CommonSender {
 
 interface ApiCommonSender : CommonSender {
 
-    fun updateSession(sessionEndpoint: String,sid:Int,serviceId: String,sessionInfo:String)
+    fun updateSession(sessionEndpoint: String,sid:Int,serviceId: Short,sessionInfo:String)
 
     fun createStage(playEndpoint:String, StageType:String, packet: Packet): CreateStageResult
     fun joinStage(playEndpoint:String,
@@ -75,8 +75,8 @@ interface ApiSender : ApiCommonSender {
         sessionClose(sessionEndpoint(),sid())
     }
 
-    fun updateSession(serviceId: String,sessionInfo:String ){
-        updateSession(sessionEndpoint(),sid(),sessionInfo,serviceId)
+    fun updateSession(serviceId: Short,sessionInfo:String ){
+        updateSession(sessionEndpoint(),sid(),serviceId,sessionInfo)
     }
 
 

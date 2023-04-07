@@ -10,7 +10,7 @@ import org.ulalax.playhouse.service.BaseSystemPanel
 import java.util.concurrent.atomic.AtomicReference
 
 class ApiService(
-    override val serviceId: String,
+    override val serviceId: Short,
     private val apiOption: ApiOption,
     private val requestCache: RequestCache,
     private val clientCommunicator: ClientCommunicator,
@@ -39,14 +39,14 @@ class ApiService(
 
         try {
             if (routeHeader.isBase) {
-                return when (routeHeader.msgName()) {
-                    DisconnectNoticeMsg.getDescriptor().name -> {
+                return when (routeHeader.msgId()) {
+                    DisconnectNoticeMsg.getDescriptor().index -> {
                         val disconnectNoticeMsg = DisconnectNoticeMsg.parseFrom(routePacket.data())
                         apiCallBackHandler.onDisconnect(disconnectNoticeMsg.accountId, routeHeader.sessionInfo)
                     }
 
                     else -> {
-                        LOG.error("Invalid base Api packet:${routeHeader.msgName()}",this)
+                        LOG.error("Invalid base Api packet:${routeHeader.msgId()}",this)
                     }
                 }
             }
@@ -61,12 +61,12 @@ class ApiService(
                         apiSender
                     )
                 }catch (e:Exception){
-                    apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR.number)
+                    apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
                     LOG.error(ExceptionUtils.getStackTrace(e),this,e)
                 }
             }
         }catch (e:Exception){
-                apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR.number)
+                apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
                 LOG.error(ExceptionUtils.getStackTrace(e),this,e)
         }
     }

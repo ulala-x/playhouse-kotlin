@@ -10,7 +10,7 @@ enum class ServiceType {
 
 interface Service {
 
-    val serviceId:String
+    val serviceId:Short
     fun getWeightPoint():Int
     fun getServerState(): ServerState
     fun getServiceType(): ServiceType

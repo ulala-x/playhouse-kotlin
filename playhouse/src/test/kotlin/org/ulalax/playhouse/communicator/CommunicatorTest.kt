@@ -6,7 +6,8 @@ import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.communicator.socket.SocketConfig
 import org.ulalax.playhouse.communicator.socket.ZmqJPlaySocket
-import org.ulalax.playhouse.protocol.Common.HeaderMsg
+import org.ulalax.playhouse.protocol.Server
+import org.ulalax.playhouse.protocol.Server.HeaderMsg
 import java.lang.Thread.sleep
 
 
@@ -71,22 +72,22 @@ internal class CommunicatorTest : FunSpec() {
 
             val message = HeaderMsg.newBuilder().build()
 
-            sessionClient.send(apiEndpoint, RoutePacket.clientOf("session", 0, Packet(message)))
+            sessionClient.send(apiEndpoint, RoutePacket.clientOf(1, 0, Packet(message)))
             sleep(200)
 
             apiResults.size.shouldBe(1)
-            apiResults[0].getMsgName().shouldBe("HeaderMsg")
+            apiResults[0].msgId().shouldBe(HeaderMsg.getDescriptor().index)
 
             ////////// api to session ///////////////
 
             apiClient.connect(sessionEndpoint)
             sleep(100)
 
-            apiClient.send(sessionEndpoint, RoutePacket.clientOf("api", 0, Packet("apiPacket")))
+            apiClient.send(sessionEndpoint, RoutePacket.clientOf(2, 0, Packet(1)))
             sleep(200)
 
             sessionResults.size.shouldBe(1)
-            sessionResults[0].getMsgName().shouldBe("apiPacket")
+            sessionResults[0].msgId().shouldBe(1)
         }
     }
 

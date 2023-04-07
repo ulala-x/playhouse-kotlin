@@ -2,6 +2,8 @@ package org.ulalax.playhouse.communicator.socket
 
 import org.apache.commons.lang3.exception.ExceptionUtils
 import LOG
+import io.netty.buffer.ByteBuf
+import io.netty.buffer.Unpooled
 import org.ulalax.playhouse.communicator.ConstOption
 import org.ulalax.playhouse.communicator.message.FramePayload
 import org.ulalax.playhouse.communicator.message.PreAllocByteArrayOutputStream
@@ -20,7 +22,7 @@ class ZmqJPlaySocket  (
     socketConfig:SocketConfig, override val id:String) : PlaySocket {
 
     private val socket = ZSocket(SocketType.ROUTER)
-    private val outputStream = PreAllocByteArrayOutputStream(ByteArray(ConstOption.MAX_PACKET_SIZE))
+    private val buffer:ByteBuf = Unpooled.buffer(ConstOption.MAX_PACKET_SIZE)
 
     init {
         socket.routingId(id.toByteArray())
@@ -50,13 +52,13 @@ class ZmqJPlaySocket  (
         val frame:ZFrame = if (payload is FramePayload){
             payload.frame
         } else {
-            outputStream.reset()
+            buffer.clear()
             if (routePacket.forClient()) {
-                routePacket.writeClientPacketBytes(outputStream)
+                routePacket.writeClientPacketBytes(buffer)
             } else {
-                payload.output(outputStream)
+                buffer.writeBytes(payload.data())
             }
-            ZFrame(outputStream.array(), 0, outputStream.writtenDataLength())
+            ZFrame(buffer.array(), buffer.arrayOffset()+buffer.readerIndex(),buffer.readableBytes())
         }
 
 

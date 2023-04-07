@@ -27,5 +27,8 @@ publishing {
 
 dependencies {
     api(project(":common"))
-    implementation("io.netty:netty-all:4.1.79.Final")
+    implementation("io.netty:netty-all:4.1.90.Final")
+}
+repositories {
+    mavenCentral()
 }

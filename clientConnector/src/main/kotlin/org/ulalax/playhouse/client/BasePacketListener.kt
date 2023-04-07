@@ -7,8 +7,7 @@ import org.ulalax.playhouse.client.network.message.ClientPacket
 class BasePacketListener(private val requestCache: RequestCache,
                          private val clientPacketListener: ClientPacketListener,
 
-) :
-    BasePacketListener {
+) : BasePacketListener {
 
 
     override fun onConnect(channel: Channel) {
@@ -18,25 +17,23 @@ class BasePacketListener(private val requestCache: RequestCache,
     override fun onReceive(channel: Channel, clientPacket: ClientPacket) {
 
         clientPacket.use {
-            LOG.debug("onReceive - from server:${clientPacket.msgName()},${clientPacket.header.msgSeq}",this)
-
+            LOG.debug("onReceive - from server:${clientPacket.msgId()},${clientPacket.header.msgSeq}",this)
             val msgSeq = clientPacket.header.msgSeq
-            if (msgSeq != 0) {
+            if(msgSeq > 0){
                 requestCache.onReply(clientPacket)
                 return
             }
-            val packet = clientPacket.toPacket()
-
-            packet.use {
-
-                clientPacketListener.onReceive(clientPacket.serviceId(), packet)
-            }
-
         }
+
+        val packet = clientPacket.toPacket()
+        packet.use {
+            clientPacketListener.onReceive(clientPacket.serviceId(), packet)
+        }
+
     }
 
-     override fun onDisconnect(channel: Channel) {
-         LOG.info("Disconnected",this)
+    override fun onDisconnect(channel: Channel) {
+        LOG.info("Disconnected",this)
     }
-
 }
+

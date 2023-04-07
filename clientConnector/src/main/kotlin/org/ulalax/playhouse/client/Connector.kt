@@ -56,23 +56,23 @@ class Connector(private val reqTimeoutSec:Long,
         return clientNetwork.isConnect()
     }
 
-    fun send(serviceId:String, packet: Packet){
+    fun send(serviceId:Short, packet: Packet){
         val clientPacket = ClientPacket.toServerOf(serviceId,packet)
         clientNetwork.send(clientPacket)
     }
 
-    fun request(serviceId:String, packet: Packet, replyCallback: ReplyCallback){
+    fun request(serviceId:Short, packet: Packet, replyCallback: ReplyCallback){
         val seq = requestCache.getSequence()
 
         val clientPacket = ClientPacket.toServerOf(serviceId,packet).apply {
-            this.setMsgSeq(seq)
+            this.setMsgSeq(seq.toShort() )
         }
         clientNetwork.send(clientPacket)
         requestCache.put(seq, ReplyObject(callback = replyCallback))
     }
 
 
-    suspend fun request(serviceId:String, packet: Packet): ReplyPacket {
+    suspend fun request(serviceId:Short, packet: Packet): ReplyPacket {
         val seq = requestCache.getSequence()
 
         val clientPacket = ClientPacket.toServerOf(serviceId,packet).apply {

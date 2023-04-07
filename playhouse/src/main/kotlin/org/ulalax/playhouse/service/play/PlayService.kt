@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
 
 class PlayService(
-    override val serviceId:String,
+    override val serviceId:Short,
     private val publicEndpoint:String,
     private val playOption: PlayOption,
     private val clientCommunicator: ClientCommunicator,
@@ -48,7 +48,7 @@ class PlayService(
         this.baseUsers.remove(accountId)
     }
 
-    fun errorReply(routeHeader: RouteHeader, errorCode:Int){
+    fun errorReply(routeHeader: RouteHeader, errorCode:Short){
         this.baseSender.errorReply(routeHeader,errorCode)
     }
 
@@ -57,16 +57,16 @@ class PlayService(
             var routePacket = msgQueue.poll()
             while(routePacket!=null){
                 routePacket.use {
-                    val msgName = routePacket.getMsgName()
+                    val msgId = routePacket.msgId()
                     val isBase = routePacket.isBase()
                     val stageId = routePacket.routeHeader.stageId
                     val roomPacket = RoutePacket.moveOf(routePacket)
 
                     if(isBase){
-                        doBaseRoomPacket(msgName, roomPacket, stageId)
+                        doBaseRoomPacket(msgId, roomPacket, stageId)
                     }else{
                         baseRooms[stageId]?.run { this.send(roomPacket) }
-                            ?: LOG.error("stageId:$stageId is not exist, msgName:$msgName",this)
+                            ?: LOG.error("stageId:$stageId is not exist, msgName:$msgId",this)
                     }
                 }
                 routePacket = msgQueue.poll()
@@ -76,49 +76,49 @@ class PlayService(
     }
 
     private suspend fun doBaseRoomPacket(
-        msgName: String,
+        msgId: Int,
         routePacket: RoutePacket,
         stageId: Long,
     ) {
-        when (msgName) {
-            CreateStageReq.getDescriptor().name -> {
+        when (msgId) {
+            CreateStageReq.getDescriptor().index -> {
                 makeBaseRoom(StageIdMaker.makeId()).send(routePacket)
             }
 
-            CreateJoinStageReq.getDescriptor().name -> {
+            CreateJoinStageReq.getDescriptor().index -> {
                 baseRooms[stageId]?.send(routePacket)
                     ?: makeBaseRoom(stageId).send(routePacket)
             }
 
-            TimerMsg.getDescriptor().name -> {
+            TimerMsg.getDescriptor().index -> {
                 val timerId = routePacket.timerId
                 val protoPayload = routePacket.getPayload() as ProtoPayload
                 timerProcess(stageId, timerId, protoPayload.proto as TimerMsg, routePacket.timerCallback)
             }
 
-            DestroyStage.getDescriptor().name -> {
+            DestroyStage.getDescriptor().index -> {
                 baseRooms.remove(stageId)
             }
 
             else -> {
                 var room = baseRooms[stageId]
                 if (room == null) {
-                    LOG.error(" room is not exist :$stageId,$msgName",this)
-                    errorReply(routePacket.routeHeader, BaseErrorCode.STAGE_IS_NOT_EXIST.number)
+                    LOG.error(" room is not exist :$stageId,$msgId",this)
+                    errorReply(routePacket.routeHeader, BaseErrorCode.STAGE_IS_NOT_EXIST_VALUE.toShort())
                     return
                 }
 
-                when (msgName) {
-                    JoinStageReq.getDescriptor().name,
-                    StageTimer.getDescriptor().name,
-                    DisconnectNoticeMsg.getDescriptor().name,
-                    AsyncBlock.getDescriptor().name,
+                when (msgId) {
+                    JoinStageReq.getDescriptor().index,
+                    StageTimer.getDescriptor().index,
+                    DisconnectNoticeMsg.getDescriptor().index,
+                    AsyncBlock.getDescriptor().index,
                     -> {
                         room.send(routePacket)
                     }
 
                     else -> {
-                        LOG.error("$msgName is not base packet",this)
+                        LOG.error("$msgId is not base packet",this)
                     }
                 }
             }

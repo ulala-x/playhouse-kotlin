@@ -12,7 +12,7 @@ import org.ulalax.playhouse.communicator.message.ClientPacket
 import org.ulalax.playhouse.communicator.message.Packet
 
 class SessionClient(
-        serviceId: String,
+        serviceId: Short,
         private val sid: Int,
         private val channel: Channel,
         serviceInfoCenter: ServerInfoCenter,
@@ -27,22 +27,22 @@ class SessionClient(
 
     var isAuthenticated = false
     private val signInURIs = HashSet<String>()
-    private val sessionData = HashMap<String,String>()
+    private val sessionData = HashMap<Short,String>()
     private var accountId = 0L
     private var stageId:Long = 0L
     private var playEndpoint:String = ""
-    private var authenticateServiceId = ""
+    private var authenticateServiceId:Short = 0.toShort()
 
     init {
         signInURIs.addAll(urls)
     }
-    private fun authenticate(serviceId: String,accountId:Long,sessionInfo:String){
+    private fun authenticate(serviceId: Short,accountId:Long,sessionInfo:String){
         this.accountId = accountId
         updateSessionInfo(serviceId,sessionInfo)
         isAuthenticated = true
         authenticateServiceId = serviceId
     }
-    private fun updateSessionInfo(serviceId: String,sessionInfo:String) {
+    private fun updateSessionInfo(serviceId: Short,sessionInfo:String) {
         sessionData[serviceId] = sessionInfo
     }
 
@@ -73,7 +73,7 @@ class SessionClient(
     // from client
     fun onReceive(clientPacket: ClientPacket) {
         val serviceId = clientPacket.serviceId()
-        val msgName = clientPacket.msgName()
+        val msgName = clientPacket.msgId()
         if(isAuthenticated){
             relayTo(serviceId, clientPacket)
         }else{
@@ -88,7 +88,7 @@ class SessionClient(
         }
     }
 
-    private fun relayTo(serviceId: String, clientPacket: ClientPacket) {
+    private fun relayTo(serviceId: Short, clientPacket: ClientPacket) {
         val sessionInfo = getSessionInfo(serviceId)
         val serverInfo = targetServiceCache.findServer(serviceId)
         val endpoint = serverInfo.bindEndpoint
@@ -104,20 +104,20 @@ class SessionClient(
                 sessionSender.relayToRoom(endpoint,stageId,sid,accountId,sessionInfo,clientPacket,msgSeq)
             }
             else ->{
-                    LOG.error("Invalid Serive Type request $type,${clientPacket.msgName()}",this)
+                    LOG.error("Invalid Serive Type request $type,${clientPacket.msgId()}",this)
             }
         }
 
-        LOG.debug("session relayTo $type:${endpoint}, sessionInfo:$sessionInfo, msgName:${clientPacket.msgName()}",this)
+        LOG.debug("session relayTo $type:${endpoint}, sessionInfo:$sessionInfo, msgName:${clientPacket.msgId()}",this)
     }
 
-    fun getSessionInfo(serviceId: String):String  {
+    fun getSessionInfo(serviceId: Short):String  {
          return sessionData[serviceId] ?: ""
     }
 
     // from backend server
     fun onReceive(packet: RoutePacket) {
-        val msgName = packet.getMsgName()
+        val msgName = packet.msgId()
         val isBase = packet.isBase()
 //        val serviceId = packet.serviceId()
 //        val isBackend = packet.isBackend()
@@ -129,28 +129,28 @@ class SessionClient(
 
         if(isBase){
             when(msgName){
-                AuthenticateMsg.getDescriptor().name -> {
+                AuthenticateMsg.getDescriptor().index -> {
                     val authenticateMsg = AuthenticateMsg.parseFrom(packet.data())
-                    authenticate(authenticateMsg.serviceId,authenticateMsg.accountId,authenticateMsg.sessionInfo)
+                    authenticate(authenticateMsg.serviceId.toShort(),authenticateMsg.accountId,authenticateMsg.sessionInfo)
                     LOG.debug("$accountId is authenticated",this)
                 }
-                UpdateSessionInfoMsg.getDescriptor().name ->{
+                UpdateSessionInfoMsg.getDescriptor().index ->{
                     val updatedSessionInfo = UpdateSessionInfoMsg.parseFrom(packet.data())
-                    updateSessionInfo(updatedSessionInfo.serviceId,updatedSessionInfo.sessionInfo)
+                    updateSessionInfo(updatedSessionInfo.serviceId.toShort(),updatedSessionInfo.sessionInfo)
                     LOG.debug("sessionInfo of $accountId is updated with $updatedSessionInfo",this)
                 }
-                SessionCloseMsg.getDescriptor().name -> {
+                SessionCloseMsg.getDescriptor().index -> {
                     channel.disconnect()
                     LOG.debug("$accountId is required to session close",this)
                 }
-                JoinStageMsg.getDescriptor().name ->{
+                JoinStageMsg.getDescriptor().index ->{
                     val joinStageMsg = JoinStageMsg.parseFrom(packet.data())
                     val playEndpoint =joinStageMsg.playEndpoint
                     val stageId = joinStageMsg.stageId
                     updateRoomInfo(playEndpoint,stageId)
                     LOG.debug("$accountId is roomInfo updated:$playEndpoint,$stageId $",this)
                 }
-                LeaveStageMsg.getDescriptor().name->{
+                LeaveStageMsg.getDescriptor().index->{
                     clearRoomInfo()
                     LOG.debug("$accountId is roomInfo clear:$playEndpoint,$stageId $",this)
                 }

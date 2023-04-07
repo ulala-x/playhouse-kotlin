@@ -36,12 +36,12 @@ class BaseStage(
     var isCreated = false
 
     init {
-        msgHandler.register(CreateStageReq.getDescriptor().name, CreateStageCmd(playService))
-        msgHandler.register(JoinStageReq.getDescriptor().name, JoinStageCmd(playService))
-        msgHandler.register(CreateJoinStageReq.getDescriptor().name, CreateJoinStageCmd(playService))
-        msgHandler.register(StageTimer.getDescriptor().name, StageTimerCmd(playService))
-        msgHandler.register(DisconnectNoticeMsg.getDescriptor().name, DisconnectNoticeCmd(playService))
-        msgHandler.register(AsyncBlock.getDescriptor().name, AsyncBlockCmd<Any>(playService))
+        msgHandler.register(CreateStageReq.getDescriptor().index, CreateStageCmd(playService))
+        msgHandler.register(JoinStageReq.getDescriptor().index, JoinStageCmd(playService))
+        msgHandler.register(CreateJoinStageReq.getDescriptor().index, CreateJoinStageCmd(playService))
+        msgHandler.register(StageTimer.getDescriptor().index, StageTimerCmd(playService))
+        msgHandler.register(DisconnectNoticeMsg.getDescriptor().index, DisconnectNoticeCmd(playService))
+        msgHandler.register(AsyncBlock.getDescriptor().index, AsyncBlockCmd<Any>(playService))
     }
 
     private suspend fun dispatch(routePacket: RoutePacket) {
@@ -53,11 +53,11 @@ class BaseStage(
                 val accountId = routePacket.accountId()
                 val baseUser = playService.findUser(accountId)
                 if(baseUser !=null){
-                    stage.onDispatch(baseUser.actor , Packet(routePacket.getMsgName(),routePacket.movePayload()))
+                    stage.onDispatch(baseUser.actor , Packet(routePacket.msgId(),routePacket.movePayload()))
                 }
             }
         }catch (e:Exception){
-            stageSenderImpl.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR.number)
+            stageSenderImpl.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
             LOG.error(ExceptionUtils.getStackTrace(e),this,e)
         }finally {
             stageSenderImpl.clearCurrentPacketHeader()
@@ -77,7 +77,7 @@ class BaseStage(
                                 dispatch(item)
                             }
                         } catch (e: Exception) {
-                            stageSenderImpl.errorReply(routePacket.routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR.number)
+                            stageSenderImpl.errorReply(routePacket.routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR_VALUE.toShort())
                             LOG.error(ExceptionUtils.getStackTrace(e),this,e)
                         }
                     }

@@ -16,13 +16,13 @@ class JoinStageCmd(override val playService: PlayService): BaseStageCmd {
         val accountId = routePacket.accountId()
         val sessionEndpoint = request.sessionEndpoint
         val sid = request.sid
-        val packet = Packet(request.payloadName,request.payload)
+        val packet = Packet(request.payloadId,request.payload)
         val apiEndpoint = routePacket.routeHeader.from
 
         val outcome = baseStage.join(accountId,sessionEndpoint,sid,apiEndpoint,packet)
         val response = JoinStageRes.newBuilder()
             .setPayload(ByteString.copyFrom(outcome.data()))
-            .setPayloadName(outcome.msgName)
+            .setPayloadId(outcome.msgId)
             .build()
 
         baseStage.reply(ReplyPacket(outcome.errorCode,response))

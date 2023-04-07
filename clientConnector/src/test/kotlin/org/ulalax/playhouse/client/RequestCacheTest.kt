@@ -17,7 +17,7 @@ internal class RequestCacheTest : AnnotationSpec(){
         cache.put(1, ReplyObject(deferred = deferred))
 
         val result:ReplyPacket = deferred.await()
-        result.errorCode.shouldBe(Common.BaseErrorCode.REQUEST_TIMEOUT_VALUE)
+        result.errorCode.shouldBe(Common.BaseErrorCode.REQUEST_TIMEOUT_VALUE.toShort())
     }
 
     @Test

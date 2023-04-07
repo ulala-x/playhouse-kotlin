@@ -3,7 +3,7 @@ object Versions {
 
     val kotlin_logging_jvm="2.1.21"
     val kotlinx_coroutines_core="1.6.1"
-    val protobuf = "3.21.1"
+    val protobuf = "3.22.2"
     val protocVersion = protobuf
     val netty = "4.1.79.Final"
     val junit_jupiter="5.9.2"

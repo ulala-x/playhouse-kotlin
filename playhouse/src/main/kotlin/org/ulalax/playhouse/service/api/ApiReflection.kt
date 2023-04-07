@@ -24,7 +24,7 @@ import java.lang.reflect.Method
 import java.security.InvalidParameterException
 import kotlin.system.exitProcess
 
-data class ApiMethod(val msgName:String,val className: String,val method: Method)
+data class ApiMethod(val msgId:Int,val className: String,val method: Method)
 data class ApiInstance(val instance:Any)
 
 
@@ -32,8 +32,8 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
 
     val instances: MutableMap<String, ApiInstance> = HashMap()
     val initMethods:MutableList<ApiMethod> = mutableListOf()
-    val methods:MutableMap<String, ApiMethod> = HashMap()
-    val backendMethods:MutableMap<String, ApiMethod> = HashMap()
+    val methods:MutableMap<Int, ApiMethod> = HashMap()
+    val backendMethods:MutableMap<Int, ApiMethod> = HashMap()
 
     init {
         val reflections = Reflections(packageName, Scanners.MethodsAnnotated, Scanners.TypesAnnotated)
@@ -57,7 +57,7 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
         }
     }
     fun callMethod(routeHeader: RouteHeader, packet: Packet, isBackend :Boolean, apiSender: BaseApiSender) = packet.use{
-        val msgName = routeHeader.msgName()
+        val msgName = routeHeader.msgId()
         val sessionInfo = routeHeader.sessionInfo
         //val packet = Packet(msgName,routePacket.movePayload())
         //val isBackend = routePacket.isBackend()
@@ -80,7 +80,7 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
                 targetMethod.method.invoke(targetInstance.instance,sessionInfo,packet,apiSender as ApiSender)
             }
         }catch (e:Exception){
-            apiSender.errorReply(routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR.number)
+            apiSender.errorReply(routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR_VALUE.toShort())
             LOG.error(ExceptionUtils.getStackTrace(e),this,e)
         }
     }
@@ -108,10 +108,10 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
 //            if (parameterTypes[2] != ApiSender::class.java) throw InvalidParameterException("3nd parameter type is not ApiSender but ${parameterTypes[2]}")
 //            val apiHandler = method.getAnnotation(Init::class.java) as Init
             //if (methodMap.containsKey(apiHandler.msgName)) throw ApiException.DuplicateApiHandler(apiHandler.msgName)
-            methodList.add(ApiMethod("", method.declaringClass.name, method))
+            methodList.add(ApiMethod(-1, method.declaringClass.name, method))
         }
     }
-    private fun extractHandlerMethod(methods: Set<Method>, methodMap:MutableMap<String, ApiMethod>){
+    private fun extractHandlerMethod(methods: Set<Method>, methodMap:MutableMap<Int, ApiMethod>){
         methods.forEach { method ->
             if (method.parameterCount != 3) throw InvalidParameterException("${method.declaringClass.name} : invalid ApiHandler method parameter count ${method.parameterCount}, ApiHandler method has 3 parameters")
             val parameterTypes = method.parameterTypes
@@ -120,11 +120,11 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
             if (parameterTypes[2] != ApiSender::class.java) throw InvalidParameterException("${method.declaringClass.name} : 3nd parameter type is not ApiSender but ${parameterTypes[2]}")
             val apiHandler = method.getAnnotation(ApiHandler::class.java) as ApiHandler
 
-            if (methodMap.containsKey(apiHandler.msgName)) throw ApiException.DuplicateApiHandler(apiHandler.msgName)
-            methodMap[apiHandler.msgName] = ApiMethod(apiHandler.msgName, method.declaringClass.name, method)
+            if (methodMap.containsKey(apiHandler.msgId)) throw ApiException.DuplicateApiHandler(apiHandler.msgId.toString())
+            methodMap[apiHandler.msgId] = ApiMethod(apiHandler.msgId, method.declaringClass.name, method)
         }
     }
-    private fun extractBackendMethod(methods: Set<Method>,methodMap:MutableMap<String, ApiMethod>){
+    private fun extractBackendMethod(methods: Set<Method>,methodMap:MutableMap<Int, ApiMethod>){
         methods.forEach { method ->
             if (method.parameterCount != 3) throw InvalidParameterException("${method.declaringClass.name} : invalid ApiBackendHandler method parameter count ${method.parameterCount}, ApiBackendHandler method has 3 parameters")
             val parameterTypes = method.parameterTypes
@@ -133,8 +133,8 @@ class ApiReflection(packageName: String, private val applicationContext: Applica
             if (parameterTypes[2] != ApiBackendSender::class.java) throw InvalidParameterException("${method.declaringClass.name} : 3nd parameter type is not ApiBackendSender but ${parameterTypes[2]}")
             val apiHandler = method.getAnnotation(ApiBackendHandler::class.java) as ApiBackendHandler
 
-            if (methodMap.containsKey(apiHandler.msgName)) throw ApiException.DuplicateApiHandler(apiHandler.msgName)
-            methodMap[apiHandler.msgName] = ApiMethod(apiHandler.msgName, method.declaringClass.name, method)
+            if (methodMap.containsKey(apiHandler.msgId)) throw ApiException.DuplicateApiHandler(apiHandler.msgId.toString())
+            methodMap[apiHandler.msgId] = ApiMethod(apiHandler.msgId, method.declaringClass.name, method)
         }
     }
 

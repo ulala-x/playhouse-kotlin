@@ -1,41 +1,47 @@
 package org.ulalax.playhouse.client.network.message
+import com.google.protobuf.ByteString
+import com.google.protobuf.GeneratedMessageV3
 import io.netty.buffer.ByteBuf
+import io.netty.buffer.ByteBufOutputStream
 import io.netty.buffer.Unpooled
-import org.ulalax.playhouse.protocol.Common.*
+import org.ulalax.playhouse.THBuffer
+import org.ulalax.playhouse.client.network.ByteBufferAllocator
+import org.ulalax.playhouse.client.network.PacketParser
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.OutputStream
+import java.nio.ByteBuffer
 
-class Header constructor(var msgName:String="",var errorCode:Int = 0,var msgSeq:Int=0, var serviceId: String=""){
-    companion object {
-        fun of(headerMsg: HeaderMsg): Header {
-            return Header(headerMsg.msgName,headerMsg.errorCode,headerMsg.msgSeq,headerMsg.serviceId)
-        }
+class Header constructor(var serviceId: Short=-1, var msgId:Int=-1, var msgSeq:Short=0, var errorCode:Short = 0 )
+
+interface Payload : AutoCloseable {
+    fun data():ByteBuffer
+}
+
+class EmptyPayload :Payload {
+
+    private  var buffer:ByteBuf
+    init {
+        buffer= ByteBufferAllocator.getBuf(0)
     }
-    fun toMsg(): HeaderMsg {
-        return HeaderMsg.newBuilder()
-            .setServiceId(this.serviceId)
-            .setMsgSeq(this.msgSeq)
-            .setMsgName(this.msgName)
-            .setErrorCode(this.errorCode).build()
+    override fun data(): ByteBuffer {
+        return buffer.nioBuffer()
+    }
+    override fun close() {
+        buffer.release()
     }
 }
 
-interface Payload : AutoCloseable{
-    fun buffer():ByteBuf
-}
 
 
 class BytePayload : Payload {
 
     private  var buffer:ByteBuf
-
-    constructor(){
-        buffer = Unpooled.buffer()
+    constructor(buffer:ByteBuf){
+        this.buffer = buffer
     }
-    constructor(byteArray: ByteArray){
-        buffer = Unpooled.wrappedBuffer(byteArray)
-    }
-
-    override fun buffer(): ByteBuf {
-        return buffer
+    override fun data(): ByteBuffer{
+        return this.buffer.nioBuffer()
     }
 
     override fun close() {
@@ -57,61 +63,68 @@ class BytePayload : Payload {
 //}
 public
 
-//class ProtoPayload constructor() : Payload {
-//    private val log = logger()
-//    constructor(message: GeneratedMessageV3) : this() {
-//        this.proto = message
-//    }
-//
-//    private lateinit var proto:GeneratedMessageV3;
-//    override fun close() {
-//
-//    }
-//
-//    override fun buffer(): ByteBuf {
-//        return Unpooled.wrappedBuffer(proto.toByteArray())
-//    }
-//
-//    fun proto(): GeneratedMessageV3? {
-//        return proto
-//    }
-//
-//}
+class ProtoPayload(private val proto: GeneratedMessageV3) : Payload {
+
+    private var byteBuffer:ByteBuffer? = null
+    override fun data(): ByteBuffer {
+        if(byteBuffer==null){
+            val buffer = THBuffer.buffer()
+            val outputStream = ByteBufOutputStream(buffer)
+            proto.writeTo(outputStream)
+            byteBuffer = buffer.nioBuffer()
+        }
+        return byteBuffer!!
+    }
+
+    override fun close() {
+    }
+}
+
+class ByteStringPayload(private val byteString: ByteString): Payload{
+    override fun data(): ByteBuffer {
+        val buffer = THBuffer.buffer()
+        val outputStream = ByteBufOutputStream(buffer)
+        this.byteString.writeTo(outputStream)
+        return buffer.nioBuffer()
+    }
+    override fun close() {
+    }
+}
 
 class ClientPacket private constructor(val header: Header, private var payload: Payload) : BasePacket {
     companion object{
-        fun toServerOf(serviceId: String, packet: Packet): ClientPacket {
-            val header = Header(msgName = packet.msgName,serviceId = serviceId)
+        fun toServerOf(serviceId: Short, packet: Packet): ClientPacket {
+            val header = Header(msgId = packet.msgId,serviceId = serviceId)
 
             return  ClientPacket(header,packet.movePayload())
         }
 
-        fun of(headerMsg: HeaderMsg, payload: Payload): ClientPacket {
-            return ClientPacket(Header.of(headerMsg),payload)
+        fun of(header: Header, payload: Payload): ClientPacket {
+            return ClientPacket(header,payload)
         }
 
     }
 
     override fun movePayload(): Payload {
         val temp = payload
-        payload = BytePayload()
+        payload = EmptyPayload()
         return temp;
     }
 
-    override fun data(): ByteArray {
-        return payload.buffer().array()
+    override fun data(): ByteBuffer {
+        return payload.data()
     }
 
 
-    fun serviceId():String {
+    fun serviceId():Short {
         return header.serviceId
     }
-    fun msgName():String {
-        return header.msgName
+    fun msgId():Int {
+        return header.msgId
     }
 
     fun toReplyPacket(): ReplyPacket {
-        return ReplyPacket(header.errorCode,header.msgName,movePayload())
+        return ReplyPacket(header.errorCode,header.msgId,movePayload())
     }
 
     fun header(): Header {
@@ -119,32 +132,29 @@ class ClientPacket private constructor(val header: Header, private var payload: 
     }
 
     fun toByteBuf(buffer:ByteBuf) {
+        val body = payload.data()
+        val bodySize = body.limit()
 
-        val header = header.toMsg()
-        val headerSize = header.serializedSize
-        val body = payload.buffer()
-        val packetSize =1+2+headerSize+body.readableBytes()
+        if(bodySize > PacketParser.MAX_PACKET_SIZE){
+            throw IOException("body size is over : $bodySize");
+        }
+
+        val packetSize = PacketParser.HEADER_SIZE-2 + bodySize
 
         buffer.capacity(packetSize)
-
-        /*
-        1byte - header size
-        2byte - body size
-        header
-        body
-         */
-        buffer.writeByte(headerSize)
-        buffer.writeShort(body.readableBytes())
-        buffer.writeBytes(header.toByteArray())
-        buffer.writeBytes(body)
+        buffer.writeShort(bodySize)
+        buffer.writeShort(header.serviceId.toInt())
+        buffer.writeInt(header.msgId)
+        buffer.writeShort(header.msgSeq.toInt())
+        buffer.writeBytes(payload.data())
     }
 
-    fun setMsgSeq(msgSeq: Int) {
+    fun setMsgSeq(msgSeq: Short) {
         this.header.msgSeq = msgSeq
     }
 
     fun toPacket(): Packet {
-        return Packet(header.msgName,movePayload())
+        return Packet(header.msgId,movePayload())
     }
 
     override fun close() {

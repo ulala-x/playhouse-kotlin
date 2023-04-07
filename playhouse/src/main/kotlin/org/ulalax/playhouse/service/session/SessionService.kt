@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 
 class SessionService(
-    override val serviceId:String,
+    override val serviceId:Short,
     private val sessionOption: SessionOption,
     private val serverInfoCenter: XServerInfoCenter,
     private val clientCommunicator: ClientCommunicator,
@@ -53,10 +53,10 @@ class SessionService(
                 val clientPacket = message.second
 
                 clientPacket.use {
-                    LOG.debug("SessionService:onReceive ${clientPacket.header.msgName} : from client",this)
+                    LOG.debug("SessionService:onReceive ${clientPacket.header.msgId} : from client",this)
                     val sessionClient = clients[sessionId]
                     if (sessionClient == null) {
-                        LOG.error("sessionId is not exist $sessionId,${clientPacket.msgName()}",this)
+                        LOG.error("sessionId is not exist $sessionId,${clientPacket.msgId()}",this)
                     }else{
                         sessionClient.onReceive(clientPacket)
                     }
@@ -76,7 +76,7 @@ class SessionService(
 
                 routePacket.use {
                     val sessionId = routePacket.routeHeader.sid
-                    val packetName = routePacket.getMsgName()
+                    val packetName = routePacket.msgId()
                     val sessionClient = clients[sessionId]
                     if(sessionClient == null) {
                         LOG.error("sessionId is already disconnected  $sessionId,$packetName",this)

@@ -41,7 +41,7 @@ class XClientCommunicator(private val playSocket: PlaySocket) : ClientCommunicat
                     playSocket.send(endpoint,routePacket)
                 }
             }catch (e:Exception){
-                LOG.error("${playSocket.id} socket send error : $endpoint,${routePacket.getMsgName()}",this,e)
+                LOG.error("${playSocket.id} socket send error : $endpoint,${routePacket.msgId()}",this,e)
             }
         }
     }

@@ -8,14 +8,8 @@ plugins {
     id("org.ulalax.playhouse.kotlin-library-conventions")
 }
 
-
 group =  Versions.groupId
 version = Versions.version
-
-java {
-    withSourcesJar()
-    withJavadocJar()
-}
 
 publishing {
     publications {
@@ -32,22 +26,14 @@ protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:${Versions.protocVersion}"
     }
-}
-
-sourceSets {
-    main {
-        proto {
-            srcDir ("./proto")
-        }
-        java {
-            srcDirs(
-                "build/generated/source/proto/main/java"
-            )
+    generateProtoTasks {
+        all().forEach {
+            it.builtins {
+                id("kotlin")
+            }
         }
     }
 }
-
-
 
 dependencies {
     api(project(":common"))
@@ -57,8 +43,8 @@ dependencies {
     implementation(Depend.lettuce)
     implementation(Depend.commonsValidator)
     implementation("org.reflections:reflections:0.10.2")
-    implementation("io.netty:netty-all:4.1.87.Final")
-    implementation("org.springframework:spring-context:5.3.22")
+    implementation("io.netty:netty-all:4.1.90.Final")
+    implementation("org.springframework:spring-context:6.0.6")
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-reflect
     runtimeOnly("org.jetbrains.kotlin:kotlin-reflect:1.7.20")
 
@@ -75,11 +61,5 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     testImplementation("org.slf4j:slf4j-simple:2.0.6")
-
-
-
-
-
 }
-
 

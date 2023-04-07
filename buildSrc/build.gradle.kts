@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10")
-    implementation("com.google.protobuf:protobuf-gradle-plugin:0.8.19")
+    implementation("com.google.protobuf:protobuf-gradle-plugin:0.9.2")
 
 //    implementation("org.springframework.boot:spring-boot-gradle-plugin:2.7.3")
 //    implementation("io.spring.gradle:dependency-management-plugin:1.0.13.RELEASE")

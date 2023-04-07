@@ -10,7 +10,7 @@ class BaseSystemPanel(
 
     lateinit var communicator: Communicator
 
-    override fun randomServerInfo(serviceId:String): ServerInfo {
+    override fun randomServerInfo(serviceId:Short): ServerInfo {
         return serverInfoCenter.findRoundRobinServer(serviceId)
     }
 

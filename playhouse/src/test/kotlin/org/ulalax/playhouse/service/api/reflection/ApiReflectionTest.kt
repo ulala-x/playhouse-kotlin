@@ -24,7 +24,6 @@ import org.springframework.stereotype.Repository
 import org.springframework.stereotype.Service
 import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.communicator.message.Packet
-import org.ulalax.playhouse.protocol.Common.HeaderMsg
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.protocol.Test.ApiTestMsg1
 import org.ulalax.playhouse.service.api.ApiBaseSender
@@ -53,24 +52,26 @@ class ApiReflectionTest : FunSpec(){
         fun init(@Suppress("UNUSED_PARAMETER")systemPanel: SystemPanel,
                  @Suppress("UNUSED_PARAMETER")apiBaseSender: ApiCommonSender){}
 
-        @ApiHandler("ApiHandlerTestMsg1") fun test1(
+        @ApiHandler(1) fun test1(
                 @Suppress("UNUSED_PARAMETER")sessionInfo:String,
                 @Suppress("UNUSED_PARAMETER")packet: Packet,
                 @Suppress("UNUSED_PARAMETER")apiSender: ApiSender){}
 
-        @ApiHandler("ApiHandlerTestMsg2") fun test2(
+        @ApiHandler(2) fun test2(
                 @Suppress("UNUSED_PARAMETER")sessionInfo:String,
                 @Suppress("UNUSED_PARAMETER")packet: Packet,
                 @Suppress("UNUSED_PARAMETER")apiSender: ApiSender){}
 
-        @ApiBackendHandler("ApiBackendHandlerTestMsg2") fun test3(
+        @ApiBackendHandler(2) fun test3(
                 @Suppress("UNUSED_PARAMETER")sessionInfo:String,
                 @Suppress("UNUSED_PARAMETER")packet: Packet,
-                @Suppress("UNUSED_PARAMETER")apiSender: ApiBackendSender){}
+                @Suppress("UNUSED_PARAMETER")apiSender: ApiBackendSender){
+
+        }
     }
 
     companion object{
-        var resultValue = ""
+        var resultMessage:String =""
     }
 
     @Api
@@ -79,27 +80,27 @@ class ApiReflectionTest : FunSpec(){
 
         @Init
         fun init(@Suppress("UNUSED_PARAMETER")systemPanel: SystemPanel, apiBaseSender: ApiCommonSender){
-            resultValue = apiBaseSender.serviceId()
+            resultMessage = "init"
         }
-        @ApiHandler("ApiTestMsg1") fun test1(
+        @ApiHandler(11) fun test1(
                 @Suppress("UNUSED_PARAMETER") sessionInfo:String,
                 packet: Packet,
                 @Suppress("UNUSED_PARAMETER") apiSender: ApiSender){
             val message = ApiTestMsg1.parseFrom(packet.data())
-            resultValue = message.testMsg
+            resultMessage = message.testMsg
         }
 
-        @ApiHandler("ApiTestMsg2  ") fun test2(
+        @ApiHandler(12) fun test2(
                 @Suppress("UNUSED_PARAMETER") sessionInfo:String,
                 @Suppress("UNUSED_PARAMETER") packet: Packet,
                 @Suppress("UNUSED_PARAMETER") apiSender: ApiSender){}
 
-        @ApiBackendHandler("ApiTestMsg2") fun test3(
+        @ApiBackendHandler(13) fun test3(
                 @Suppress("UNUSED_PARAMETER")sessionInfo:String,
                 @Suppress("UNUSED_PARAMETER")packet: Packet,
                 @Suppress("UNUSED_PARAMETER")apiSender: ApiBackendSender){
-
-            resultValue = "message.ApiTestMsg2"
+            val message = ApiTestMsg1.parseFrom(packet.data())
+            resultMessage = message.testMsg
         }
     }
 
@@ -133,10 +134,10 @@ class ApiReflectionTest : FunSpec(){
             val serverInfoCenter: ServerInfoCenter = mock()
             val requestCache = RequestCache(5)
             var systemPanelImpl = BaseSystemPanel(serverInfoCenter,IClientCommunicator)
-            var apiBaseSenderImpl = ApiBaseSender("test", IClientCommunicator,requestCache)
+            var apiBaseSenderImpl = ApiBaseSender(1, IClientCommunicator,requestCache)
 
             apiReflection.callInitMethod(systemPanelImpl,apiBaseSenderImpl)
-            resultValue.shouldBe("test")
+            resultMessage.shouldBe("init")
         }
 
 
@@ -146,12 +147,12 @@ class ApiReflectionTest : FunSpec(){
 
             val routePacketMsg = RoutePacketMsg.newBuilder()
                     .setRouteHeaderMsg(RouteHeaderMsg.newBuilder().setSessionInfo("")
-                            .setHeaderMsg(HeaderMsg.newBuilder().setMsgName("ApiTestMsg2")).setIsBackend(true))
+                            .setHeaderMsg(HeaderMsg.newBuilder().setMsgId(13)).setIsBackend(true))
                     .setMessage(ApiTestMsg1.newBuilder().setTestMsg("reflection").build().toByteString())
                     .build()
 
             val routePacket = RoutePacket.of(routePacketMsg)
-            val apiSenderImpl = BaseApiSender("",object :ClientCommunicator{
+            val apiSenderImpl = BaseApiSender(1,object :ClientCommunicator{
                 override fun connect(endpoint: String) {}
                 override fun send(endpoint: String, routePacket: RoutePacket) {}
                 override fun communicate() {}
@@ -160,7 +161,7 @@ class ApiReflectionTest : FunSpec(){
             }, RequestCache(5))
 
             apiReflection.callMethod(routePacket.routeHeader,routePacket.toPacket(),routePacket.isBackend(),apiSenderImpl)
-            resultValue.shouldBe("message.ApiTestMsg2")
+            resultMessage.shouldBe("reflection")
         }
 
         test("checkSpringBean"){

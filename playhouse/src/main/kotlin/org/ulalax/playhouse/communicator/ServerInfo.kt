@@ -6,7 +6,7 @@ enum class ServerState {
 interface ServerInfo {
     fun  bindEndpoint():String
     fun serviceType(): ServiceType
-    fun serviceId():String
+    fun serviceId():Short
     fun state(): ServerState
     fun timeStamp():Long
 }

@@ -7,13 +7,13 @@ import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.service.*
 
-open class ApiBaseSender(serviceId:String,
+open class ApiBaseSender(serviceId:Short,
                          clientCommunicator: ClientCommunicator,
                          reqCache: RequestCache
 ): BaseSender(serviceId,clientCommunicator,reqCache), ApiCommonSender {
-    override fun updateSession(sessionEndpoint: String,sid:Int,serviceId: String,sessionInfo:String){
+    override fun updateSession(sessionEndpoint: String,sid:Int,serviceId: Short,sessionInfo:String){
         val message = UpdateSessionInfoMsg.newBuilder()
-            .setServiceId(serviceId)
+            .setServiceId(serviceId.toInt())
             .setSessionInfo(sessionInfo).build()
         sendToBaseSession(sessionEndpoint,sid, Packet(message))
     }
@@ -21,12 +21,12 @@ open class ApiBaseSender(serviceId:String,
     override fun createStage(playEndpoint:String, stageType:String, packet: Packet): CreateStageResult {
         val req = CreateStageReq.newBuilder()
             .setStageType(stageType)
-            .setPayloadName(packet.msgName)
+            .setPayloadId(packet.msgId)
             .setPayload(ByteString.copyFrom(packet.data())).build()
 
         val reply = callToBaseRoom(playEndpoint,0,0, Packet(req))
         val res = CreateStageRes.parseFrom(reply.data())
-        return CreateStageResult(reply.errorCode,res.stageId, Packet(res.payloadName,res.payload))
+        return CreateStageResult(reply.errorCode,res.stageId, Packet(res.payloadId,res.payload))
     }
 
     override fun joinStage(playEndpoint: String, stageId: Long,
@@ -36,13 +36,13 @@ open class ApiBaseSender(serviceId:String,
         val req = JoinStageReq.newBuilder()
             .setSessionEndpoint(sessionEndpoint)
             .setSid(sid)
-            .setPayloadName(packet.msgName)
+            .setPayloadId(packet.msgId)
             .setPayload(ByteString.copyFrom(packet.data())).build()
 
         val reply  = callToBaseRoom(playEndpoint,stageId,accountId, Packet(req))
         val res = JoinStageRes.parseFrom(reply.data())
 
-        return org.ulalax.playhouse.service.JoinStageResult(reply.errorCode, Packet(res.payloadName, res.payload))
+        return org.ulalax.playhouse.service.JoinStageResult(reply.errorCode, Packet(res.payloadId, res.payload))
 
     }
 
@@ -54,11 +54,11 @@ open class ApiBaseSender(serviceId:String,
     ): org.ulalax.playhouse.service.CreateJoinStageResult {
         val req = CreateJoinStageReq.newBuilder()
             .setStageType(stageType)
-            .setCreatePayloadName(createPacket.msgName)
+            .setCreatePayloadId(createPacket.msgId)
             .setCreatePayload(ByteString.copyFrom(createPacket.data()))
             .setSessionEndpoint(sessionEndpoint)
             .setSid(sid)
-            .setJoinPayloadName(joinPacket.msgName)
+            .setJoinPayloadId(joinPacket.msgId)
             .setJoinPayload(ByteString.copyFrom(joinPacket.data())).build()
 
         val reply = callToBaseRoom(playEndpoint,stageId,accountId, Packet(req))
@@ -66,14 +66,14 @@ open class ApiBaseSender(serviceId:String,
         return org.ulalax.playhouse.service.CreateJoinStageResult(
                 reply.errorCode,
                 res.isCreated,
-                Packet(res.createPayloadName, res.createPayload),
-                Packet(res.joinPayloadName, res.joinPayload)
+                Packet(res.createPayloadId, res.createPayload),
+                Packet(res.joinPayloadId, res.joinPayload)
         )
 
     }
 }
 
-class BaseApiSender (private val serviceId:String,
+class BaseApiSender (private val serviceId:Short,
                      private val clientCommunicator: ClientCommunicator,
                      private val reqCache: RequestCache
 ) : ApiBaseSender(serviceId,clientCommunicator,reqCache),
@@ -97,7 +97,7 @@ class BaseApiSender (private val serviceId:String,
 
     override fun authenticate(accountId:Long,sessionInfo:String){
         val message = AuthenticateMsg.newBuilder()
-            .setServiceId(serviceId)
+            .setServiceId(serviceId.toInt())
             .setAccountId(accountId)
             .setSessionInfo(sessionInfo).build()
 

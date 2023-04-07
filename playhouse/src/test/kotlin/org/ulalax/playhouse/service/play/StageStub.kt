@@ -15,11 +15,11 @@ class ActorStub(override val actorSender: ActorSender) : Actor {
 
 class StageStub(override val stageSender: StageSender) : Stage<ActorStub> {
     override suspend fun onCreate(packet: Packet): ReplyPacket {
-        return ReplyPacket(0,packet.msgName,packet.movePayload())
+        return ReplyPacket(0,packet.msgId,packet.movePayload())
     }
 
     override suspend fun onJoinStage(actor: ActorStub, packet: Packet): ReplyPacket {
-        return ReplyPacket(0,packet.msgName,packet.movePayload())
+        return ReplyPacket(0,packet.msgId,packet.movePayload())
     }
 
     override suspend fun onDispatch(actor: ActorStub, packet: Packet) {

@@ -8,9 +8,9 @@ annotation class Api()
 annotation class Init()
 
 @Target(AnnotationTarget.FUNCTION)
-annotation class ApiHandler(val msgName:String)
+annotation class ApiHandler(val msgId:Int)
 
 
 @Target(AnnotationTarget.FUNCTION)
-annotation class ApiBackendHandler(val msgName:String)
+annotation class ApiBackendHandler(val msgId:Int)
 

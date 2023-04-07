@@ -9,7 +9,7 @@ import org.ulalax.playhouse.communicator.message.*
 import org.ulalax.playhouse.protocol.Server.*
 import java.util.concurrent.CompletableFuture
 
-open class BaseSender(private val serviceId: String,
+open class BaseSender(private val serviceId: Short,
                       private val clientCommunicator: ClientCommunicator,
                       private val reqCache : RequestCache
 ) : CommonSender {
@@ -25,14 +25,14 @@ open class BaseSender(private val serviceId: String,
         this.currentHeader = null
     }
 
-    override fun serviceId(): String {
+    override fun serviceId(): Short {
         return this.serviceId
     }
 
     override fun reply(reply: ReplyPacket){
         this.currentHeader ?.run {
             val msgSeq = header.msgSeq
-            if(msgSeq != 0 ){
+            if(msgSeq != 0.toShort() ){
                 val sid = this.sid
                 val from = this.from
                 val routePacket = RoutePacket.replyOf(serviceId,msgSeq,reply).apply {
@@ -41,10 +41,10 @@ open class BaseSender(private val serviceId: String,
                 }
                 clientCommunicator.send(from,routePacket)
             }else{
-                LOG.error("not exist request packet ${reply.msgName},${header.msgName} is not request packet",this)
+                LOG.error("not exist request packet ${reply.msgId},${header.msgId} is not request packet",this)
             }
 
-        } ?: LOG.error("not exist request packet ${reply.msgName}",this)
+        } ?: LOG.error("not exist request packet ${reply.msgId}",this)
     }
 
 
@@ -72,14 +72,14 @@ open class BaseSender(private val serviceId: String,
         return deferred.await()
     }
 
-    private fun getSequence(): Int {
+    private fun getSequence(): Short {
         return reqCache.getSequence()
     }
     override fun sendToApi(apiEndpoint:String,sessionInfo: String,packet: Packet){
         val routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = true)
         clientCommunicator.send(apiEndpoint, routePacket)
     }
-    fun relayToApi(apiEndpoint: String, sid: Int, sessionInfo: String, packet: Packet, msgSeq: Int){
+    fun relayToApi(apiEndpoint: String, sid: Int, sessionInfo: String, packet: Packet, msgSeq: Short){
         val routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = false).apply {
             this.routeHeader.sid = sid
             this.routeHeader.header.msgSeq = msgSeq
@@ -207,11 +207,11 @@ open class BaseSender(private val serviceId: String,
 
 
 
-    fun errorReply(routeHeader: RouteHeader, errorCode: Int) {
+    fun errorReply(routeHeader: RouteHeader, errorCode: Short) {
         val msgSeq = routeHeader.header.msgSeq
         val from = routeHeader.from
         if(msgSeq >0) {
-          val reply =  RoutePacket.replyOf(this.serviceId, msgSeq, ReplyPacket(errorCode))
+          val reply =  RoutePacket.replyOf(this.serviceId, msgSeq, ReplyPacket(errorCode = errorCode))
           clientCommunicator.send(from,reply)
         }
     }
@@ -223,7 +223,7 @@ open class BaseSender(private val serviceId: String,
         accountId: Long,
         sessionInfo: String,
         packet: Packet,
-        msgSeq: Int
+        msgSeq: Short
     ) {
         val routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = false).apply {
             this.routeHeader.stageId = stageId

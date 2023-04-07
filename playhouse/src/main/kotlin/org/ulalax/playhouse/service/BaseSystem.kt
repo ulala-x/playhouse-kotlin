@@ -18,10 +18,10 @@ class BaseSystem(private val serverSystem: ServerSystem,
     private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
     private var running = true
 
-    private val START = "start"
-    private val PAUSE = "pause"
-    private val RESUME = "resume"
-    private val STOP = "stop"
+    private val START = -100;
+    private val PAUSE = -101;
+    private val RESUME = -102;
+    private val STOP = -103;
 
     fun start(){
         msgQueue.add(RoutePacket.systemOf(Packet(START),isBase = true))
@@ -44,7 +44,7 @@ class BaseSystem(private val serverSystem: ServerSystem,
                 routePacket.use {
                     try{
                         if (routePacket.isBase()) {
-                            when (routePacket.getMsgName()) {
+                            when (routePacket.msgId()) {
                                 START -> {
                                     serverSystem.onStart()
                                 }
@@ -58,16 +58,16 @@ class BaseSystem(private val serverSystem: ServerSystem,
                                     serverSystem.onStop()
                                 }
                                 else -> {
-                                    LOG.error("Invalid baseSystem packet ${routePacket.getMsgName()}",this)
+                                    LOG.error("Invalid baseSystem packet ${routePacket.msgId()}",this)
                                 }
                             }
                         } else {
                             baseSender.setCurrentPacketHeader(routePacket.routeHeader)
-                            serverSystem.onDispatch(Packet(routePacket.getMsgName(), routePacket.movePayload()))
+                            serverSystem.onDispatch(Packet(routePacket.msgId(), routePacket.movePayload()))
                         }
                     }catch (e:Exception){
                         LOG.error(ExceptionUtils.getStackTrace(e),this)
-                        baseSender.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE)
+                        baseSender.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
                     }finally {
                         baseSender.clearCurrentPacketHeader()
                     }

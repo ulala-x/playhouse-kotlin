@@ -43,7 +43,7 @@ class XServerInfoCenter : ServerInfoCenter {
         return serverInfo
     }
 
-    override fun findRoundRobinServer(serviceId:String): XServerInfo {
+    override fun findRoundRobinServer(serviceId:Short): XServerInfo {
         val list = serverInfoList
             .filter {
                        it.state.name == ServerState.RUNNING.name

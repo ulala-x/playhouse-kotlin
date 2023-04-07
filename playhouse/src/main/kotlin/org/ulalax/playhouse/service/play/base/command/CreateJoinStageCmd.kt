@@ -13,9 +13,9 @@ import org.ulalax.playhouse.service.play.base.BaseStageCmd
 class CreateJoinStageCmd(override val playService: PlayService) : BaseStageCmd {
     override suspend fun execute(baseStage: BaseStage, routePacket: RoutePacket) {
         val request = CreateJoinStageReq.parseFrom(routePacket.data())
-        val createStagePacket = Packet(request.createPayloadName,request.createPayload)
+        val createStagePacket = Packet(request.createPayloadId,request.createPayload)
         val stageType = request.stageType
-        val joinStagePacket = Packet(request.joinPayloadName,request.joinPayload)
+        val joinStagePacket = Packet(request.joinPayloadId,request.joinPayload)
         val accountId = routePacket.accountId()
         val stageId = routePacket.stageId()
         val sessionEndpoint = request.sessionEndpoint
@@ -26,20 +26,20 @@ class CreateJoinStageCmd(override val playService: PlayService) : BaseStageCmd {
         val responseBuilder = CreateJoinStageRes.newBuilder()
 
         if(!playService.isValidType(stageType)){
-            playService.errorReply(routePacket.routeHeader, BaseErrorCode.STAGE_TYPE_IS_INVALID.number)
+            playService.errorReply(routePacket.routeHeader, BaseErrorCode.STAGE_TYPE_IS_INVALID_VALUE.toShort())
             return
         }
 
         if(!baseStage.isCreated){
             createReply = baseStage.create(stageType,createStagePacket)
             responseBuilder
-                .setCreatePayloadName(createReply.msgName)
+                .setCreatePayloadId(createReply.msgId)
                 .setCreatePayload(ByteString.copyFrom(createReply.data()))
 
             if(!createReply.isSuccess()){
                 playService.removeRoom(stageId)
                 val response = CreateJoinStageRes.newBuilder()
-                                    .setCreatePayloadName(createReply.msgName)
+                                    .setCreatePayloadId(createReply.msgId)
                                     .setCreatePayload(ByteString.copyFrom(createReply.data())).build()
 
                 baseStage.reply(ReplyPacket(createReply.errorCode,response))
@@ -53,7 +53,7 @@ class CreateJoinStageCmd(override val playService: PlayService) : BaseStageCmd {
 
         val joinReply = baseStage.join(accountId,sessionEndpoint,sid,apiEndpoint,joinStagePacket)
         val response = responseBuilder
-            .setJoinPayloadName(joinReply.msgName)
+            .setJoinPayloadId(joinReply.msgId)
             .setJoinPayload(ByteString.copyFrom(joinReply.data()))
             .build()
 

@@ -3,15 +3,15 @@ package org.ulalax.playhouse.communicator
 import io.netty.buffer.*
 
 object ByteBufferAllocator {
-    private val allocator = PooledByteBufAllocator(true)
+    val allocator = PooledByteBufAllocator(false)
 //    val allocator = PooledByteBufAllocator(true)
 
-    private fun getBuf(defaultBufSize:Int, maxBufSize:Int):ByteBuf  {
-        return allocator.buffer(defaultBufSize,maxBufSize)
+    fun getBuf(defaultBufSize:Int, maxBufSize:Int):ByteBuf  {
+        return allocator.heapBuffer(defaultBufSize,maxBufSize)
     }
     fun getBuf(size: Int):ByteBuf {return getBuf(size,size) }
     fun getBuf():ByteBuf{
-        return allocator.buffer()
+        return allocator.heapBuffer()
     }
     fun warp(toByteArray: ByteArray): ByteBuf {
 

@@ -5,9 +5,9 @@ import org.ulalax.playhouse.communicator.ServerInfoCenter
 
 class TargetServiceCache(private val serverInfoCenter: ServerInfoCenter) {
 
-    private val targetedService = HashMap<String, XServerInfo>()
+    private val targetedService = HashMap<Short, XServerInfo>()
 
-    fun findServer(serviceId: String): XServerInfo {
+    fun findServer(serviceId: Short): XServerInfo {
         var findServer =  targetedService[serviceId]
         if(findServer != null && findServer.isValid()){
             return findServer

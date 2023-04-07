@@ -9,7 +9,7 @@ import org.ulalax.playhouse.service.BaseSender
 import org.ulalax.playhouse.service.SessionSender
 
 
-class XSessionSender(serviceId:String,private val clientCommunicator: ClientCommunicator, reqCache: RequestCache) :
+class XSessionSender(serviceId:Short,private val clientCommunicator: ClientCommunicator, reqCache: RequestCache) :
     BaseSender(serviceId,clientCommunicator,reqCache), SessionSender {
 
     fun relayToRoom(
@@ -19,7 +19,7 @@ class XSessionSender(serviceId:String,private val clientCommunicator: ClientComm
             accountId: Long,
             sessionInfo: String,
             packet: ClientPacket,
-            msgSeq: Int
+            msgSeq: Short
     ) {
         val routePacket = RoutePacket.apiOf(sessionInfo,packet.toPacket(), isBase = false, isBackend = false).apply {
             this.routeHeader.stageId = stageId
@@ -31,7 +31,7 @@ class XSessionSender(serviceId:String,private val clientCommunicator: ClientComm
         clientCommunicator.send(playEndpoint, routePacket)
     }
 
-    fun relayToApi(apiEndpoint: String, sid: Int, sessionInfo: String, packet: ClientPacket, msgSeq: Int){
+    fun relayToApi(apiEndpoint: String, sid: Int, sessionInfo: String, packet: ClientPacket, msgSeq: Short){
         val routePacket = RoutePacket.apiOf(sessionInfo,packet.toPacket(), isBase = false, isBackend = false).apply {
             this.routeHeader.sid = sid
             this.routeHeader.header.msgSeq = msgSeq

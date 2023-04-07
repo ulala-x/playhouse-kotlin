@@ -5,24 +5,24 @@ import org.ulalax.playhouse.communicator.message.RoutePacket
 
 class BaseStageCmdHandler() {
 
-    private val maps = HashMap<String, BaseStageCmd>()
-    fun register(msgName: String, baseStageCmd: BaseStageCmd){
-        if(msgName in maps){
-            throw RuntimeException("Already exist command : $msgName")
+    private val maps = HashMap<Int, BaseStageCmd>()
+    fun register(msgId: Int, baseStageCmd: BaseStageCmd){
+        if(msgId in maps){
+            throw RuntimeException("Already exist command : $msgId")
         }
-        maps[msgName] = baseStageCmd
+        maps[msgId] = baseStageCmd
     }
 
     suspend fun dispatch(baseStage: BaseStage, request: RoutePacket) {
-        val msgName = request.getMsgName()
+        val msgId = request.msgId()
         if(request.isBase()){
-            if(maps.containsKey(msgName)){
-                maps[msgName]?.execute(baseStage,request)
+            if(maps.containsKey(msgId)){
+                maps[msgId]?.execute(baseStage,request)
             }else{
-                LOG.error ("not registered message : $msgName",this)
+                LOG.error ("not registered message : $msgId",this)
             }
         }else{
-            LOG.error("Invalid packet : $msgName",this)
+            LOG.error("Invalid packet : $msgId",this)
         }
     }
 }

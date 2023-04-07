@@ -8,6 +8,8 @@ import io.netty.channel.ChannelOption
 import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
 import LOG
+import io.netty.buffer.UnpooledByteBufAllocator
+import org.ulalax.playhouse.communicator.ByteBufferAllocator
 import org.ulalax.playhouse.service.session.network.netty.tcp.TcpSocketServerInitializer
 import org.ulalax.playhouse.service.session.network.netty.websocket.WebSocketServerInitializer
 
@@ -33,7 +35,7 @@ class SessionNetwork(private val sessionOption: SessionOption,
             childOption(ChannelOption.TCP_NODELAY, true)
             childOption(ChannelOption.SO_RCVBUF, 64*1024)
             childOption(ChannelOption.SO_SNDBUF, 64*1024)
-//            option(ChannelOption.ALLOCATOR, ByteBufferAllocator.allocator)
+//            option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator(false))
 
 //            childHandler(object: ChannelInitializer<SocketChannel>() {
 //                override fun initChannel(ch: SocketChannel) {

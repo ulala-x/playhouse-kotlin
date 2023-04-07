@@ -10,7 +10,7 @@ class CommonOption {
     var port:Int = 0
     val redisIp:String = "localhost"
     var redisPort:Int = 6379
-    var serviceId:String = ""
+    var serviceId:Short = -1
     lateinit var serverSystem:(SystemPanel, CommonSender) -> ServerSystem
     var requestTimeoutSec:Long = 5
     var showQps:Boolean = false

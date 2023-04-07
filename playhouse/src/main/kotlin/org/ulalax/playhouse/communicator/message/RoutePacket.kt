@@ -2,12 +2,17 @@ package org.ulalax.playhouse.communicator.message
 
 import com.google.protobuf.GeneratedMessageV3
 import LOG
+import io.netty.buffer.ByteBuf
+import org.ulalax.playhouse.XBitConverter
 import org.ulalax.playhouse.communicator.CommunicatorException
 import org.ulalax.playhouse.communicator.ConstOption
-import org.ulalax.playhouse.protocol.Common.HeaderMsg
+import org.ulalax.playhouse.communicator.ConstOption.HEADER_SIZE
+import org.ulalax.playhouse.communicator.ConstOption.MAX_PACKET_SIZE
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.service.AsyncPostCallback
 import org.ulalax.playhouse.service.TimerCallback
+import java.io.IOException
+import java.nio.ByteBuffer
 import java.time.Duration
 
 
@@ -55,8 +60,8 @@ class RouteHeader private constructor(val header: Header,
         fun of(header: Header): RouteHeader {
             return RouteHeader(header)
         }
-        fun timerOf(stageId: Long,msgName:String): RouteHeader {
-            return RouteHeader(Header(msgName)).apply {
+        fun timerOf(stageId: Long, msgId:Short): RouteHeader {
+            return RouteHeader(Header(msgId)).apply {
                 this.stageId = stageId
             }
         }
@@ -67,8 +72,8 @@ class RouteHeader private constructor(val header: Header,
         return toMsg().toByteArray()
     }
 
-    fun msgName(): String {
-        return this.header.msgName
+    fun msgId(): Int {
+        return this.header.msgId
     }
 
 }
@@ -78,11 +83,11 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
     var timerId: Long = 0
     var timerCallback: TimerCallback = {}
 
-    fun getMsgName(): String {
-        return routeHeader.header.msgName
+    fun msgId(): Int {
+        return routeHeader.header.msgId
     }
 
-    fun serviceId(): String {
+    fun serviceId(): Short {
         return routeHeader.header.serviceId
     }
 
@@ -91,12 +96,12 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
     }
 
 
-    override fun data(): ByteArray {
+    override fun data(): ByteBuffer {
         return payload.data();
     }
 
     fun toReplyPacket(): ReplyPacket {
-        return ReplyPacket(routeHeader.header.errorCode, routeHeader.msgName(), movePayload())
+        return ReplyPacket(routeHeader.header.errorCode, routeHeader.msgId(), movePayload())
     }
 
     fun header(): Header {
@@ -107,11 +112,11 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
 //        val packetMsg = PacketMsg.newBuilder()
 //            .setHeaderMsg(routeHeader.header.toMsg())
 //            .setMessage(message).build()
-        return ClientPacket.of(routeHeader.header.toMsg(), movePayload())
+        return ClientPacket.of(routeHeader.header, movePayload())
     }
 
     fun toPacket(): Packet {
-        return Packet(getMsgName(), movePayload())
+        return Packet(msgId(), movePayload())
     }
 
     fun isBase(): Boolean {
@@ -122,12 +127,12 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         return routeHeader.accountId
     }
 
-    fun setMsgSeq(msgSeq: Int) {
+    fun setMsgSeq(msgSeq: Short) {
         routeHeader.header.msgSeq = msgSeq
     }
 
     fun isRequest(): Boolean {
-        return routeHeader.header.msgSeq != 0
+        return routeHeader.header.msgSeq != 0.toShort()
     }
 
     fun isReply(): Boolean {
@@ -174,7 +179,7 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         }
 
         fun systemOf(packet: Packet, isBase: Boolean): RoutePacket {
-            val header = Header(packet.msgName)
+            val header = Header(msgId= packet.msgId)
             val routeHeader = RouteHeader.of(header).apply {
                 this.isSystem = true
                 this.isBase = isBase
@@ -185,7 +190,7 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         fun apiOf(sessionInfo: String,
                   packet: Packet,
                   isBase: Boolean, isBackend: Boolean): RoutePacket {
-            val header = Header(packet.msgName)
+            val header = Header(msgId = packet.msgId)
             val routeHeader = RouteHeader.of(header).apply {
                 this.sessionInfo = sessionInfo
                 this.isBase = isBase
@@ -197,7 +202,7 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         fun sessionOf(sid: Int,
                       packet: Packet,
                       isBase: Boolean, isBackend: Boolean): RoutePacket {
-            val header = Header(packet.msgName)
+            val header = Header(msgId = packet.msgId)
             val routeHeader = RouteHeader.of(header).apply {
                 this.sid = sid
                 this.isBase = isBase
@@ -215,7 +220,7 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
                 period: Duration,
                 count: Int = 0
         ): RoutePacket {
-            val header = Header(TimerMsg.getDescriptor().name)
+            val header = Header(msgId = TimerMsg.getDescriptor().index)
             val routeHeader = RouteHeader.of(header).apply {
                 this.stageId = stageId
                 this.isBase = true
@@ -236,7 +241,7 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
                 timerId: Long,
                 timerCallback: TimerCallback
         ): RoutePacket {
-            val header = Header(StageTimer.getDescriptor().name)
+            val header = Header(msgId = StageTimer.getDescriptor().index)
             val routeHeader = RouteHeader.of(header)
             return RoutePacket(routeHeader, EmptyPayload()).apply {
                 this.routeHeader.stageId = stageId
@@ -251,7 +256,7 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
                 accountId: Long,
                 packet: Packet,
                 isBase: Boolean, isBackend: Boolean): RoutePacket {
-            val header = Header(packet.msgName)
+            val header = Header(msgId = packet.msgId)
             val routeHeader = RouteHeader.of(header).apply {
                 this.stageId = stageId
                 this.accountId = accountId
@@ -262,11 +267,11 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         }
 
         fun replyOf(
-                serviceId: String,
-                msgSeq: Int,
+                serviceId: Short,
+                msgSeq: Short,
                 reply: ReplyPacket
         ): RoutePacket {
-            val header = Header(reply.msgName).apply {
+            val header = Header(msgId = reply.msgId).apply {
                 this.serviceId = serviceId
                 this.msgSeq = msgSeq
                 this.errorCode = reply.errorCode
@@ -277,8 +282,8 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
             return RoutePacket(routeHeader, reply.movePayload())
         }
 
-        fun clientOf(serviceId: String, sid: Int, packet: Packet): RoutePacket {
-            val header = Header(packet.msgName).apply {
+        fun clientOf(serviceId: Short, sid: Int, packet: Packet): RoutePacket {
+            val header = Header(msgId = packet.msgId).apply {
                 this.serviceId = serviceId
             }
             val routeHeader = RouteHeader.of(header).apply {
@@ -288,32 +293,23 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
             return RoutePacket(routeHeader, packet.movePayload())
         }
 
-        fun writeClientPacketBytes(clientPacket: ClientPacket, outputStream: PreAllocByteArrayOutputStream) {
-            val header = clientPacket.header.toMsg()
-            val payload = clientPacket.payload
+        fun writeClientPacketBytes(clientPacket: ClientPacket, buffer: ByteBuf) {
+            val body = clientPacket.payload.data()
+            val bodySize = body.limit()
 
-            val headerSize = header.serializedSize
-
-            if (headerSize > ConstOption.HEADER_SIZE) {
-                throw CommunicatorException("header size is over $header")
+            if(bodySize > MAX_PACKET_SIZE){
+                throw IOException("body size is over : $bodySize");
             }
 
-            outputStream.writeByte(headerSize)
+            val packetSize = HEADER_SIZE + bodySize
 
-            //prepare body size
-            val index = outputStream.writeShort(0)
-            // header
-            header.writeTo(outputStream)
-            // body
-            payload.output(outputStream)
-
-            val bodySize = outputStream.writtenDataLength() - (1 + 2 + headerSize)
-
-            LOG.info("headerSize:${headerSize}, bodySize:${bodySize}",this)
-            // write body size
-            outputStream.replaceShort(index, bodySize)
-
-            LOG.info("body:${outputStream.array().joinToString(separator = ","){ String.format("%02X", it) }}",this)
+            buffer.capacity(packetSize)
+            buffer.writeShort(bodySize)
+            buffer.writeShort(clientPacket.serviceId().toInt())
+            buffer.writeInt(clientPacket.msgId())
+            buffer.writeShort(clientPacket.header.msgSeq.toInt())
+            buffer.writeShort(clientPacket.header.errorCode.toInt())
+            buffer.writeBytes(clientPacket.payload.data())
         }
     }
 
@@ -331,9 +327,9 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         return this.payload
     }
 
-    fun writeClientPacketBytes(outputStream: PreAllocByteArrayOutputStream) {
+    fun writeClientPacketBytes(buffer: ByteBuf) {
         val clientPacket = toClientPacket()
-        writeClientPacketBytes(clientPacket,outputStream)
+        writeClientPacketBytes(clientPacket,buffer)
     }
 
 }
@@ -350,7 +346,7 @@ class AsyncBlockPacket<T> private constructor(
             asyncPostCallback: AsyncPostCallback<T>,
             result:T
         ): RoutePacket {
-            val header = Header(AsyncBlock.getDescriptor().name)
+            val header = Header(msgId = AsyncBlock.getDescriptor().index)
             val routeHeader = RouteHeader.of(header)
             return AsyncBlockPacket(
                 asyncPostCallback,

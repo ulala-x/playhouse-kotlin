@@ -4,6 +4,7 @@ object Depend {
 
 
     val protoBuf by lazy {"com.google.protobuf:protobuf-java:${Versions.protobuf}"}
+    val protoBufKotlin by lazy {"com.google.protobuf:protobuf-kotlin:${Versions.protobuf}"}
     val commonMath3 by lazy {"org.apache.commons:commons-math3:${Versions.commons_math3}"}
     val commonLang3 by lazy {"org.apache.commons:commons-lang3:${Versions.commons_lang3}"}
     val commonsValidator by lazy {"commons-validator:commons-validator:${Versions.commons_validator}"}

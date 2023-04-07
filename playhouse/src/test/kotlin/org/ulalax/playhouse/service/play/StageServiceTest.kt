@@ -42,7 +42,7 @@ class StageServiceTest : FunSpec() {
 
             val serverInfoCenter: ServerInfoCenter = mock()
 
-            playService = PlayService("play", bindEndpoint, playOption, communicateClient, reqCache,serverInfoCenter)
+            playService = PlayService(2, bindEndpoint, playOption, communicateClient, reqCache,serverInfoCenter)
             playService.onStart()
         }
 
@@ -63,24 +63,10 @@ class StageServiceTest : FunSpec() {
             response.routeHeader.header.errorCode.shouldBe(BaseErrorCode.SUCCESS.number)
 
             val createStageRes = CreateStageRes.parseFrom(response.data())
-            createStageRes.payloadName.shouldBe("contentCreateRoom")
+            createStageRes.payloadId shouldBe 0
         }
 
-        test("create room should have valid data format") {
-            // given
-            val routePacket = createRoomPacket(StageType)
 
-            // when
-            playService.onReceive(routePacket)
-            Thread.sleep(200)
-
-            // then
-            val response = resultList[0]
-            val createStageRes = CreateStageRes.parseFrom(response.data())
-
-            createStageRes.payload.isEmpty.shouldBeTrue()
-            createStageRes.payloadName.shouldBe("contentCreateRoom")
-        }
 
         test("create room with Invalid Type should be get invalid error") {
             val routePacket = createRoomPacket("invalid type")
@@ -101,7 +87,7 @@ class StageServiceTest : FunSpec() {
 
             //then
             resultList.shouldHaveSize(3)
-            JoinStageRes.parseFrom(resultList[2].data()).payloadName.shouldBe("contentJoinRoom")
+            JoinStageRes.parseFrom(resultList[2].data()).payloadId.shouldBe(2)
         }
 
         //    @Test
@@ -126,11 +112,11 @@ class StageServiceTest : FunSpec() {
             resultList.shouldHaveSize(2)
 
             val createJoinStageRes = CreateJoinStageRes.parseFrom(resultList[1].data())
-            resultList[1].getMsgName().shouldBe(CreateJoinStageRes.getDescriptor().name)
+            resultList[1].msgId().shouldBe(CreateJoinStageRes.getDescriptor().index)
 
             createJoinStageRes.isCreated.shouldBeTrue()
-            createJoinStageRes.createPayloadName.shouldBe("contentCreateRoom")
-            createJoinStageRes.joinPayloadName.shouldBe("contentJoinRoom")
+            createJoinStageRes.createPayloadId.shouldBe(1)
+            createJoinStageRes.joinPayloadId.shouldBe(2)
 
         }
 
@@ -145,10 +131,10 @@ class StageServiceTest : FunSpec() {
             resultList.shouldHaveSize(3)
             val createJoinStageRes = CreateJoinStageRes.parseFrom(resultList[2].data())
 
-            resultList[2].getMsgName().shouldBe(CreateJoinStageRes.getDescriptor().name)
+            resultList[2].msgId().shouldBe(CreateJoinStageRes.getDescriptor().index)
             createJoinStageRes.isCreated.shouldBeFalse()
-            createJoinStageRes.createPayloadName.shouldBeEmpty()
-            createJoinStageRes.joinPayloadName.shouldBe("contentJoinRoom")
+            createJoinStageRes.createPayloadId.shouldBe(0)
+            createJoinStageRes.joinPayloadId.shouldBe(2)
         }
 
 
@@ -164,7 +150,7 @@ class StageServiceTest : FunSpec() {
                 }
             })
 
-            Thread.sleep(510)
+            Thread.sleep(450)
             resultCount.shouldBe(5)
         }
 
@@ -225,9 +211,7 @@ class StageServiceTest : FunSpec() {
     private fun createRoomPacket(StageType: String): RoutePacket {
         val packet = Packet(
             CreateStageReq.newBuilder()
-                .setStageType(StageType)
-                .setPayloadName("contentCreateRoom")
-                .setPayload(ByteString.EMPTY).build()
+                .setStageType(StageType).build()
         )
         return RoutePacket.stageOf(0, 0, packet, isBase = true, isBackend = true)
             .apply { setMsgSeq(1) }
@@ -237,7 +221,7 @@ class StageServiceTest : FunSpec() {
         val req = JoinStageReq.newBuilder()
             .setSessionEndpoint("tcp://127.0.0.1:5555")
             .setSid(1)
-            .setPayloadName("contentJoinRoom")
+            .setPayloadId(2)
             .setPayload(ByteString.EMPTY).build()
 
         val packet = Packet(req)
@@ -250,9 +234,9 @@ class StageServiceTest : FunSpec() {
             .setStageType(StageType)
             .setSessionEndpoint("tcp://127.0.0.1:5555")
             .setSid(1)
-            .setCreatePayloadName("contentCreateRoom")
+            .setCreatePayloadId(1)
             .setCreatePayload(ByteString.EMPTY)
-            .setJoinPayloadName("contentJoinRoom")
+            .setJoinPayloadId(2)
             .setJoinPayload(ByteString.EMPTY)
             .build()
 

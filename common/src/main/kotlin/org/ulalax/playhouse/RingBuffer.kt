@@ -5,8 +5,10 @@ import io.netty.buffer.PooledByteBufAllocator
 
 class RingBuffer(capacity :Int, private val maxCapacity: Int = capacity) {
     private var buffer: ByteBuf = PooledByteBufAllocator.DEFAULT.heapBuffer(capacity).retain()
-    private var readIndex = 0
-    private var writeIndex = 0
+    var readerIndex = 0
+        get() = field
+    var writerIndex = 0
+        get() = field
     private var size = 0
 
     val capacity: Int
@@ -19,8 +21,8 @@ class RingBuffer(capacity :Int, private val maxCapacity: Int = capacity) {
             resizeBuffer(buffer.capacity() * 2)
         }
 
-        buffer.setByte(writeIndex, item.toInt())
-        writeIndex = nextIndex(writeIndex)
+        buffer.setByte(writerIndex, item.toInt())
+        writerIndex = nextIndex(writerIndex)
 
         size++
     }
@@ -34,7 +36,7 @@ class RingBuffer(capacity :Int, private val maxCapacity: Int = capacity) {
             throw IllegalStateException("Ring buffer has reached maximum capacity")
         }
         val newBuffer = PooledByteBufAllocator.DEFAULT.heapBuffer(newCapacity)
-        writeIndex = size
+        writerIndex = size
         while (size != 0) {
             newBuffer.writeByte(dequeue().toInt())
         }
@@ -46,18 +48,18 @@ class RingBuffer(capacity :Int, private val maxCapacity: Int = capacity) {
 //        buffer.capacity(newCapacity)
 //        buffer.writeBytes(newBuffer)
 //        newBuffer.release()
-        readIndex = 0
-        size = writeIndex;
-        readIndex = 0;
+        readerIndex = 0
+        size = writerIndex;
+        readerIndex = 0;
     }
 
     fun dequeue(): Byte {
         if (size == 0) {
             throw IllegalStateException("Ring buffer is empty")
         }
-        val item = buffer.getByte(readIndex)
-        buffer.setByte(readIndex, 0)
-        readIndex = nextIndex(readIndex)
+        val item = buffer.getByte(readerIndex)
+        buffer.setByte(readerIndex, 0)
+        readerIndex = nextIndex(readerIndex)
         size--
         return item.toByte()
     }
@@ -70,12 +72,12 @@ class RingBuffer(capacity :Int, private val maxCapacity: Int = capacity) {
         if (size == 0) {
             throw IllegalStateException("Ring buffer is empty")
         }
-        return buffer.getByte(readIndex)
+        return buffer.getByte(readerIndex)
     }
 
     fun clear() {
-        readIndex = 0
-        writeIndex = 0
+        readerIndex = 0
+        writerIndex = 0
         size = 0
     }
 
@@ -84,7 +86,7 @@ class RingBuffer(capacity :Int, private val maxCapacity: Int = capacity) {
             throw IllegalArgumentException("Cannot clear more items than the current size of the ring buffer")
         }
         repeat(count) {
-            readIndex = nextIndex(readIndex)
+            readerIndex = nextIndex(readerIndex)
         }
         size -= count
     }
@@ -107,10 +109,10 @@ class RingBuffer(capacity :Int, private val maxCapacity: Int = capacity) {
     private fun isReadIndexValid(index: Int): Boolean {
         return if (size == 0) {
             false
-        } else if (writeIndex > readIndex) {
-            index in readIndex until writeIndex
-        } else if (writeIndex < readIndex) {
-            index >= readIndex || index < writeIndex
+        } else if (writerIndex > readerIndex) {
+            index in readerIndex until writerIndex
+        } else if (writerIndex < readerIndex) {
+            index >= readerIndex || index < writerIndex
         } else {
             // writeIndex와 readIndex가 같은 경우
             // writeIndex와 readIndex가 같아진 직후에는 dequeue 작업을 하지 않은 경우이므로, 값 get이 불가능합니다.
@@ -169,17 +171,17 @@ class RingBuffer(capacity :Int, private val maxCapacity: Int = capacity) {
     }
 
     fun readInt16(): Short {
-        val data = peekInt16(readIndex)
+        val data = peekInt16(readerIndex)
         val count = Short.SIZE_BYTES
-        readIndex = moveIndex(readIndex, count)
+        readerIndex = moveIndex(readerIndex, count)
         size -= count
         return data
     }
 
     fun readInt32(): Int {
-        val data = peekInt32(readIndex)
+        val data = peekInt32(readerIndex)
         val count = Int.SIZE_BYTES
-        readIndex = moveIndex(readIndex, count)
+        readerIndex = moveIndex(readerIndex, count)
         size -= count
         return data
     }
@@ -197,7 +199,7 @@ class RingBuffer(capacity :Int, private val maxCapacity: Int = capacity) {
         if (size + count > capacity) {
             resizeBuffer(buffer.capacity() * 2)
         }
-        val startIndex = writeIndex
+        val startIndex = writerIndex
         enqueue((value.toInt() ushr 8).toByte())
         enqueue((value.toInt() and 0xFF).toByte())
         return startIndex
@@ -208,7 +210,7 @@ class RingBuffer(capacity :Int, private val maxCapacity: Int = capacity) {
         if (size + count > capacity) {
             resizeBuffer(buffer.capacity() * 2)
         }
-        val startIndex = writeIndex
+        val startIndex = writerIndex
 
         enqueue(((value shr 24) and 0xFF).toByte()) // 상위 바이트 (1번째 바이트)
         enqueue(((value shr 16) and 0xFF).toByte()) // 2번째 바이트

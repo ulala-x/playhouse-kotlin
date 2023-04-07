@@ -2,12 +2,13 @@ package org.ulalax.playhouse.communicator.socket
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import org.ulalax.playhouse.protocol.Common.HeaderMsg
 import org.ulalax.playhouse.communicator.message.RouteHeader
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.Test.TestMsg
 import org.ulalax.playhouse.communicator.IpFinder
 import org.ulalax.playhouse.communicator.message.EmptyPayload
+import org.ulalax.playhouse.protocol.Server
+import org.ulalax.playhouse.protocol.Server.HeaderMsg
 
 class PlaySocketTest : FunSpec(){
     private val localIp = IpFinder.findLocalIp()
@@ -50,7 +51,7 @@ class PlaySocketTest : FunSpec(){
                 Thread.sleep(10)
             }
 
-            receiveRoutePacket.data().size.shouldBe(0)
+            receiveRoutePacket.data().position().shouldBe(0)
         }
 
         test("should send and receive a message") {
@@ -59,8 +60,8 @@ class PlaySocketTest : FunSpec(){
             val header = HeaderMsg.newBuilder()
                     .setErrorCode(0)
                     .setMsgSeq(1)
-                    .setServiceId("session")
-                    .setMsgName("TestMsg")
+                    .setServiceId(1)
+                    .setMsgId(TestMsg.getDescriptor().index)
                     .build()
 
             val routeHeader = RouteHeader.of(header)

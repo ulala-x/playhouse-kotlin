@@ -4,7 +4,7 @@ import org.ulalax.playhouse.protocol.Server
 
 class XServerInfo private constructor(val bindEndpoint: String,
                                       val serviceType: ServiceType,
-                                      val serviceId:String,
+                                      val serviceId:Short,
                                       var state: ServerState,
                                       var weightingPoint:Int,
                                       var lastUpdate:Long,
@@ -25,7 +25,7 @@ class XServerInfo private constructor(val bindEndpoint: String,
             return XServerInfo(
                 infoMsg.endpoint,
                 ServiceType.valueOf(infoMsg.serviceType),
-                infoMsg.serviceId,
+                infoMsg.serviceId.toShort(),
                 ServerState.valueOf(infoMsg.serverState),
                 infoMsg.weightingPoint,
                 infoMsg.timestamp,
@@ -35,7 +35,7 @@ class XServerInfo private constructor(val bindEndpoint: String,
         fun of(
             bindEndpoint: String,
             serviceType: ServiceType,
-            serviceId:String,
+            serviceId:Short,
             state: ServerState,
             weightingPoint:Int,
             timeStamp:Long,
@@ -46,7 +46,7 @@ class XServerInfo private constructor(val bindEndpoint: String,
 
     fun toMsg(): Server.ServerInfoMsg {
         return Server.ServerInfoMsg.newBuilder().setServiceType(this.serviceType.name)
-            .setServiceId(this.serviceId)
+            .setServiceId(this.serviceId.toInt())
             .setEndpoint(this.bindEndpoint)
             .setServerState(this.state.name)
             .setTimestamp(this.lastUpdate)
@@ -100,7 +100,7 @@ class XServerInfo private constructor(val bindEndpoint: String,
         return this.serviceType
     }
 
-    override fun serviceId(): String {
+    override fun serviceId(): Short {
         return this.serviceId
     }
 
