@@ -8,7 +8,7 @@ enum class ServiceType {
     Play
 }
 
-interface Service {
+interface Processor {
 
     val serviceId:Short
     fun getWeightPoint():Int

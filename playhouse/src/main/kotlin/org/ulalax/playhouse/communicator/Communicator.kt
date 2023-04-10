@@ -26,7 +26,7 @@ class CommunicatorOption(
 class Communicator(private val option: CommunicatorOption,
                    private val requestCache: RequestCache,
                    private val serverInfoCenter: ServerInfoCenter,
-                   private val service: Service,
+                   private val processor: Processor,
                    private var storageClient: StorageClient,
                    private val baseSender: BaseSender,
                    private val systemPanel: BaseSystemPanel,
@@ -40,7 +40,7 @@ class Communicator(private val option: CommunicatorOption,
         option.bindEndpoint,
         serverInfoCenter,
         communicateClient,
-        service,
+        processor,
         storageClient
     )
     private var baseSystem: BaseSystem = BaseSystem(option.serverSystem.invoke(systemPanel,baseSender),baseSender)
@@ -57,7 +57,7 @@ class Communicator(private val option: CommunicatorOption,
 
         communicateServer.bind(this)
 
-        service.onStart()
+        processor.onStart()
         performanceTester.start()
 
         LOG.info("============== server start ==============",this)
@@ -65,7 +65,7 @@ class Communicator(private val option: CommunicatorOption,
     }
 
     private fun updateDisable(){
-        storageClient.updateServerInfo(XServerInfo.of(option.bindEndpoint, service).apply {
+        storageClient.updateServerInfo(XServerInfo.of(option.bindEndpoint, processor).apply {
             state = ServerState.DISABLE
         })
     }
@@ -98,21 +98,21 @@ class Communicator(private val option: CommunicatorOption,
         if(routePacket.isSystem()){
             this.baseSystem.onReceive(routePacket)
         }else{
-            this.service.onReceive(routePacket)
+            this.processor.onReceive(routePacket)
         }
     }
 
     fun pause() {
-        this.service.pause()
+        this.processor.pause()
         this.baseSystem.pause()
     }
 
     fun resume() {
-        this.service.resume()
+        this.processor.resume()
         this.baseSystem.resume()
     }
 
     fun serverState(): ServerState {
-        return this.service.getServerState()
+        return this.processor.getServerState()
     }
 }

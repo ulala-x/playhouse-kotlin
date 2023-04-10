@@ -11,13 +11,13 @@ class XServerInfo private constructor(val bindEndpoint: String,
                                         ) : ServerInfo {
 
     companion object{
-        fun of(bindEndpoint: String, service: Service): XServerInfo {
+        fun of(bindEndpoint: String, processor: Processor): XServerInfo {
             return XServerInfo(
                 bindEndpoint,
-                service.getServiceType(),
-                service.serviceId,
-                service.getServerState(),
-                service.getWeightPoint(),
+                processor.getServiceType(),
+                processor.serviceId,
+                processor.getServerState(),
+                processor.getWeightPoint(),
                 System.currentTimeMillis()
             )
         }

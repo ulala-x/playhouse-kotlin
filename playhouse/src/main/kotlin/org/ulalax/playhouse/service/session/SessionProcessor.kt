@@ -12,14 +12,14 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
 
 
-class SessionService(
+class SessionProcessor(
     override val serviceId:Short,
     private val sessionOption: SessionOption,
     private val serverInfoCenter: XServerInfoCenter,
     private val clientCommunicator: ClientCommunicator,
     private val requestCache: RequestCache,
     private val sessionPort:Int,
-    private val showQps:Boolean) : Service, SessionListener {
+    private val showQps:Boolean) : Processor, SessionListener {
 
     private val clients = ConcurrentHashMap<Int, SessionClient>()
     private var state = AtomicReference(ServerState.DISABLE)

@@ -1,9 +1,9 @@
 package org.ulalax.playhouse.service.play.base
 
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.service.play.PlayService
+import org.ulalax.playhouse.service.play.PlayProcessor
 
 interface BaseStageCmd {
-    val playService: PlayService
+    val playService: PlayProcessor
     suspend fun execute(baseStage: BaseStage, routePacket: RoutePacket)
 }

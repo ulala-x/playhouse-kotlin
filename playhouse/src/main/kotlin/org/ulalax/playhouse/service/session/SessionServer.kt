@@ -4,7 +4,6 @@ import org.ulalax.playhouse.communicator.XServerCommunicator
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.communicator.socket.PlaySocketFactory
 import org.ulalax.playhouse.communicator.socket.SocketConfig
-import org.ulalax.playhouse.communicator.socket.ZmqJPlaySocket
 import org.ulalax.playhouse.service.*
 
 class SessionServer constructor(private val commonOption: CommonOption, private  val sessionOption: SessionOption) : Server {
@@ -37,7 +36,7 @@ class SessionServer constructor(private val commonOption: CommonOption, private 
         ControlContext.systemPanel = systemPanelImpl
 
 
-        val sessionService = SessionService(
+        val sessionService = SessionProcessor(
                 serviceId,
                 sessionOption,
                 serverInfoCenter,

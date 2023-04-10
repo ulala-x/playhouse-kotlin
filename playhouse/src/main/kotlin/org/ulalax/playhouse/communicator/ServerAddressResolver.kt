@@ -6,11 +6,11 @@ import java.util.*
 import kotlin.concurrent.timer
 
 class ServerAddressResolver (
-        private val bindEndpoint:String,
-        private val serverInfoCenter: ServerInfoCenter,
-        private val clientCommunicator: ClientCommunicator,
-        private val service: Service,
-        private val storageClient: StorageClient
+    private val bindEndpoint:String,
+    private val serverInfoCenter: ServerInfoCenter,
+    private val clientCommunicator: ClientCommunicator,
+    private val processor: Processor,
+    private val storageClient: StorageClient
 ){
     private lateinit var timer: Timer
     fun start(){
@@ -23,10 +23,10 @@ class ServerAddressResolver (
                 storageClient.updateServerInfo(
                     XServerInfo.of(
                         bindEndpoint,
-                        service.getServiceType(),
-                        service.serviceId,
-                        service.getServerState(),
-                        service.getWeightPoint(),
+                        processor.getServiceType(),
+                        processor.serviceId,
+                        processor.getServerState(),
+                        processor.getWeightPoint(),
                         System.currentTimeMillis()
                     )
                 )

@@ -18,13 +18,13 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
 
-class PlayService(
+class PlayProcessor(
     override val serviceId:Short,
     private val publicEndpoint:String,
     private val playOption: PlayOption,
     private val clientCommunicator: ClientCommunicator,
     private val requestCache: RequestCache,
-    private val serverInfoCenter: ServerInfoCenter) : Service {
+    private val serverInfoCenter: ServerInfoCenter) : Processor {
 
     private var state = AtomicReference(ServerState.DISABLE)
     private val baseUsers:MutableMap<Long, BaseActor> = ConcurrentHashMap()

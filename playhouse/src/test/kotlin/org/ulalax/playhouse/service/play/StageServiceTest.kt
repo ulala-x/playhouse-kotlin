@@ -6,7 +6,6 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldBeEmpty
 import org.ulalax.playhouse.communicator.ServerInfoCenter
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.service.SpyClientCommunicator
@@ -23,7 +22,7 @@ class StageServiceTest : FunSpec() {
     private val bindEndpoint = "tcp://127.0.0.1:8777"
     private val resultList = mutableListOf<RoutePacket>()
     private val StageType = "dungeon"
-    private lateinit var playService: PlayService
+    private lateinit var playService: PlayProcessor
     private val teststageId = 10000L
 
     init {
@@ -42,7 +41,7 @@ class StageServiceTest : FunSpec() {
 
             val serverInfoCenter: ServerInfoCenter = mock()
 
-            playService = PlayService(2, bindEndpoint, playOption, communicateClient, reqCache,serverInfoCenter)
+            playService = PlayProcessor(2, bindEndpoint, playOption, communicateClient, reqCache,serverInfoCenter)
             playService.onStart()
         }
 

@@ -1,11 +1,11 @@
 package org.ulalax.playhouse.service
 
-import org.ulalax.playhouse.communicator.Service
+import org.ulalax.playhouse.communicator.Processor
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import java.util.*
 import kotlin.collections.HashMap
 
-class  TimerManager(private val service: Service){
+class  TimerManager(private val processor: Processor){
     private val timerIds:MutableMap<Long, TimerTask> = HashMap();
     private val timer = Timer("PlayHoseTimer", false)
 
@@ -19,25 +19,25 @@ class  TimerManager(private val service: Service){
 
 
     class RepeatTimerTask(
-            private val service: Service,
-            private val stageId:Long,
-            private val timerId:Long,
-            private val timerCallback: TimerCallback
+        private val processor: Processor,
+        private val stageId:Long,
+        private val timerId:Long,
+        private val timerCallback: TimerCallback
     ) : TimerTask(){
 
         override fun run()  {
             val StageTimerPacket = RoutePacket.stageTimerOf(stageId, timerId, timerCallback)
-            service.onReceive(StageTimerPacket)
+            processor.onReceive(StageTimerPacket)
         }
     }
 
     class CounterTimerTask(
-            private val service: Service,
-            private val timerManager: TimerManager,
-            private val stageId:Long,
-            private var count:Int,
-            private val timerId:Long,
-            private val timerCallback: TimerCallback
+        private val processor: Processor,
+        private val timerManager: TimerManager,
+        private val stageId:Long,
+        private var count:Int,
+        private val timerId:Long,
+        private val timerCallback: TimerCallback
     ) : TimerTask(){
 
         //private val log = logger()
@@ -45,7 +45,7 @@ class  TimerManager(private val service: Service){
       //      log.info("counterTimerTask")
             if(count > 0 ){
                 val stageTimerPacket = RoutePacket.stageTimerOf(stageId, timerId, timerCallback)
-                service.onReceive(stageTimerPacket)
+                processor.onReceive(stageTimerPacket)
                 count--
             }else{
                 timerManager.cancelTimer(timerId)
@@ -56,14 +56,14 @@ class  TimerManager(private val service: Service){
 
 
     fun registerRepeatTimer(stageId:Long,timerId: Long, initialDelay: Long, period: Long, timerCallback: TimerCallback):Long {
-        val timerTask = RepeatTimerTask(this.service,stageId,timerId,timerCallback)
+        val timerTask = RepeatTimerTask(this.processor,stageId,timerId,timerCallback)
         timer.scheduleAtFixedRate(timerTask,initialDelay,period)
         timerIds[timerId] = timerTask
         return timerId
     }
 
     fun registerCountTimer(stageId:Long, timerId: Long, initialDelay: Long,count: Int, period: Long, timerCallback: TimerCallback):Long {
-        val timerTask = CounterTimerTask(this.service,this,stageId,count,timerId,timerCallback)
+        val timerTask = CounterTimerTask(this.processor,this,stageId,count,timerId,timerCallback)
         timer.scheduleAtFixedRate(timerTask,initialDelay,period)
         timerIds[timerId] = timerTask
         return timerId

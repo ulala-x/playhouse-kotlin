@@ -14,11 +14,11 @@ import org.ulalax.playhouse.service.*
 import java.time.Duration
 
 class BaseStageSender(
-        private val serviceId:Short,
-        private val stageId:Long,
-        private val playService: PlayService,
-        private val clientCommunicator: ClientCommunicator,
-        reqCache: RequestCache,
+    private val serviceId:Short,
+    private val stageId:Long,
+    private val playService: PlayProcessor,
+    private val clientCommunicator: ClientCommunicator,
+    reqCache: RequestCache,
 ) : BaseSender(serviceId, clientCommunicator,reqCache), StageSender {
 
     private val timerIds = HashSet<Long>()

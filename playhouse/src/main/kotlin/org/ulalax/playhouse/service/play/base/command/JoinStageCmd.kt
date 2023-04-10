@@ -2,14 +2,14 @@ package org.ulalax.playhouse.service.play.base.command
 
 import com.google.protobuf.ByteString
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.service.play.PlayService
+import org.ulalax.playhouse.service.play.PlayProcessor
 import org.ulalax.playhouse.service.play.base.BaseStage
 import org.ulalax.playhouse.service.play.base.BaseStageCmd
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.communicator.message.ReplyPacket
 import org.ulalax.playhouse.protocol.Server.*
 
-class JoinStageCmd(override val playService: PlayService): BaseStageCmd {
+class JoinStageCmd(override val playService: PlayProcessor): BaseStageCmd {
     override suspend fun execute(baseStage: BaseStage, routePacket: RoutePacket) {
 
         val request = JoinStageReq.parseFrom(routePacket.data())

@@ -6,11 +6,11 @@ import org.ulalax.playhouse.communicator.message.ReplyPacket
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.Common.BaseErrorCode
-import org.ulalax.playhouse.service.play.PlayService
+import org.ulalax.playhouse.service.play.PlayProcessor
 import org.ulalax.playhouse.service.play.base.BaseStage
 import org.ulalax.playhouse.service.play.base.BaseStageCmd
 
-class CreateJoinStageCmd(override val playService: PlayService) : BaseStageCmd {
+class CreateJoinStageCmd(override val playService: PlayProcessor) : BaseStageCmd {
     override suspend fun execute(baseStage: BaseStage, routePacket: RoutePacket) {
         val request = CreateJoinStageReq.parseFrom(routePacket.data())
         val createStagePacket = Packet(request.createPayloadId,request.createPayload)

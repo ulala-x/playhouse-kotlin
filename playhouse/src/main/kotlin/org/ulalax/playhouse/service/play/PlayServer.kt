@@ -4,7 +4,6 @@ import org.ulalax.playhouse.communicator.XServerCommunicator
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.communicator.socket.PlaySocketFactory
 import org.ulalax.playhouse.communicator.socket.SocketConfig
-import org.ulalax.playhouse.communicator.socket.ZmqJPlaySocket
 import org.ulalax.playhouse.service.*
 
 class PlayServer constructor(private val commonOption: CommonOption,
@@ -38,7 +37,7 @@ class PlayServer constructor(private val commonOption: CommonOption,
         ControlContext.baseSender = baseSenderImpl
         ControlContext.systemPanel = systemPanelImpl
 
-        val playService = PlayService(serviceId, bindEndpoint, playOption, communicateClient, requestCache,serverInfoCenter)
+        val playService = PlayProcessor(serviceId, bindEndpoint, playOption, communicateClient, requestCache,serverInfoCenter)
 
         communicator = Communicator(
             communicatorOption,

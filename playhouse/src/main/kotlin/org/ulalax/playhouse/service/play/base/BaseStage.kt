@@ -18,11 +18,11 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
 class BaseStage(
-        stageId:Long,
-        private val playService: PlayService,
-        clientCommunicator: ClientCommunicator,
-        reqCache: RequestCache,
-        private val serverInfoCenter: ServerInfoCenter
+    stageId:Long,
+    private val playService: PlayProcessor,
+    clientCommunicator: ClientCommunicator,
+    reqCache: RequestCache,
+    private val serverInfoCenter: ServerInfoCenter
     ) {
 
     private val msgHandler = BaseStageCmdHandler()
