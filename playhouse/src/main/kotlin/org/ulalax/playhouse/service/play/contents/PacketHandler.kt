@@ -14,7 +14,7 @@ class PacketHandler<S,A>(private val log: Logger) {
 
     fun add(msgId:Int, cmd: PacketCmd<S, A>){
         if(messageMap.contains(msgId)){
-            throw ApiException.DuplicateApiHandler("msgId:$msgId is already registered")
+            throw ApiException.DuplicatedMessageIndex("msgId:$msgId is already registered")
         }
         messageMap[msgId] = cmd
     }

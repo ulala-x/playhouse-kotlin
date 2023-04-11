@@ -32,9 +32,9 @@ class PlayServer constructor(private val commonOption: CommonOption,
         val storageClient = LettuceRedisClient(commonOption.redisIp,commonOption.redisPort).apply { this.connect() }
         val serverInfoCenter = XServerInfoCenter()
 
-        val baseSenderImpl = BaseSender(serviceId, communicateClient,requestCache)
+        val XSender = XSender(serviceId, communicateClient,requestCache)
         val systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicateClient)
-        ControlContext.baseSender = baseSenderImpl
+        ControlContext.baseSender = XSender
         ControlContext.systemPanel = systemPanelImpl
 
         val playService = PlayProcessor(serviceId, bindEndpoint, playOption, communicateClient, requestCache,serverInfoCenter)
@@ -45,7 +45,7 @@ class PlayServer constructor(private val commonOption: CommonOption,
             serverInfoCenter,
             playService,
             storageClient,
-            baseSenderImpl,
+            XSender,
             systemPanelImpl,
             communicateServer,
             communicateClient

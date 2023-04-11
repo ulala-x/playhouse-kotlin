@@ -8,7 +8,7 @@ import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.communicator.message.ProtoPayload
 import org.ulalax.playhouse.protocol.Common.BaseErrorCode
-import org.ulalax.playhouse.service.BaseSender
+import org.ulalax.playhouse.service.XSender
 import org.ulalax.playhouse.service.play.base.BaseStage
 import org.ulalax.playhouse.service.play.base.BaseActor
 import org.ulalax.playhouse.service.TimerCallback
@@ -32,7 +32,7 @@ class PlayProcessor(
     private lateinit var threadForCoroutine:Thread
     private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
     private val timerManager = TimerManager(this)
-    private val baseSender = BaseSender(serviceId, clientCommunicator ,requestCache)
+    private val XSender = XSender(serviceId, clientCommunicator ,requestCache)
 
     override fun onStart() {
         state.set(ServerState.RUNNING)
@@ -49,7 +49,7 @@ class PlayProcessor(
     }
 
     fun errorReply(routeHeader: RouteHeader, errorCode:Short){
-        this.baseSender.errorReply(routeHeader,errorCode)
+        this.XSender.errorReply(routeHeader,errorCode)
     }
 
     private fun messageLoop() = runBlocking {
@@ -214,7 +214,7 @@ class PlayProcessor(
         baseRooms[stageId]?.cancelTimer(timerId)
     }
 
-    fun createContentRoom(stageType:String, roomSender: BaseStageSender): Stage<Actor> {
+    fun createContentRoom(stageType:String, roomSender: XStageSender): Stage<Actor> {
         return  playOption.elementConfigurator.rooms[stageType]!!.invoke(roomSender)
     }
 

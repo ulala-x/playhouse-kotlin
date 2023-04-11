@@ -13,13 +13,13 @@ import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.service.*
 import java.time.Duration
 
-class BaseStageSender(
+class XStageSender(
     private val serviceId:Short,
     private val stageId:Long,
     private val playService: PlayProcessor,
     private val clientCommunicator: ClientCommunicator,
     reqCache: RequestCache,
-) : BaseSender(serviceId, clientCommunicator,reqCache), StageSender {
+) : XSender(serviceId, clientCommunicator,reqCache), StageSender {
 
     private val timerIds = HashSet<Long>()
     var stageType:String = ""

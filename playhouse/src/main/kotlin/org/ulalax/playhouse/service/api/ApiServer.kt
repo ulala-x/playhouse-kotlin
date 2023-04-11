@@ -31,19 +31,19 @@ class ApiServer(private val commonOption: CommonOption, private val apiOption: A
         val communicateServer = XServerCommunicator(PlaySocketFactory.createPlaySocket(SocketConfig(), bindEndpoint))
         val communicateClient = XClientCommunicator(PlaySocketFactory.createPlaySocket(SocketConfig(), bindEndpoint))
 
-        val apiBaseSenderImpl = ApiBaseSender(serviceId, communicateClient,requestCache)
+        val allApiSender = AllApiSender(serviceId, communicateClient,requestCache)
         val systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicateClient)
-        ControlContext.baseSender = apiBaseSenderImpl
+        ControlContext.baseSender = allApiSender
         ControlContext.systemPanel = systemPanelImpl
 
-        val service = ApiProcessor(serviceId, apiOption, requestCache, communicateClient,apiBaseSenderImpl,systemPanelImpl)
+        val service = ApiProcessor(serviceId, apiOption, requestCache, communicateClient,allApiSender,systemPanelImpl)
         communicator = Communicator(
             communicatorOption,
             requestCache,
             serverInfoCenter,
             service,
             storageClient,
-            apiBaseSenderImpl,
+            allApiSender,
             systemPanelImpl,
             communicateServer,
             communicateClient

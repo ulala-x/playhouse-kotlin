@@ -10,21 +10,21 @@ import org.ulalax.playhouse.service.BaseSystemPanel
 import java.util.concurrent.atomic.AtomicReference
 
 class ApiProcessor(
-    override val serviceId: Short,
-    private val apiOption: ApiOption,
-    private val requestCache: RequestCache,
-    private val clientCommunicator: ClientCommunicator,
-    private val apiBaseSenderImpl: ApiBaseSender,
-    private val systemPanelImpl: BaseSystemPanel
+        override val serviceId: Short,
+        private val apiOption: ApiOption,
+        private val requestCache: RequestCache,
+        private val clientCommunicator: ClientCommunicator,
+        private val allApiSender: AllApiSender,
+        private val systemPanelImpl: BaseSystemPanel
     ) : Processor {
 
 
     private val state = AtomicReference(ServerState.DISABLE)
-    private val apiReflection = ApiReflection(apiOption.apiPath,apiOption.applicationContext)
+    private val apiReflection = ApiReflection(apiOption.apiPath)
 
     override fun onStart() {
         state.set(ServerState.RUNNING)
-        apiReflection.callInitMethod(systemPanelImpl,apiBaseSenderImpl)
+        apiReflection.callInitMethod(systemPanelImpl,allApiSender)
     }
 
     override fun onReceive(routePacket: RoutePacket) = routePacket.use  {
@@ -33,7 +33,7 @@ class ApiProcessor(
         val apiCallBackHandler = apiOption.apiCallBackHandler
         val executorService = apiOption.executorService
 
-        val apiSender = BaseApiSender(serviceId,clientCommunicator,requestCache).apply {
+        val apiSender = AllApiSender(serviceId,clientCommunicator,requestCache).apply {
             setCurrentPacketHeader(routeHeader)
         }
 

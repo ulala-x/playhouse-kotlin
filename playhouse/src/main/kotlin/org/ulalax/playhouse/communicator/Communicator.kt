@@ -6,12 +6,12 @@ import org.ulalax.playhouse.service.*
 
 class CommunicatorOption(
         val bindEndpoint: String,
-        val serverSystem:(SystemPanel, CommonSender) -> ServerSystem,
+        val serverSystem:(SystemPanel, Sender) -> ServerSystem,
         val showQps:Boolean,
 ){
     class Builder {
         var port:Int = 0
-        lateinit var serverSystem: (SystemPanel, CommonSender) -> ServerSystem
+        lateinit var serverSystem: (SystemPanel, Sender) -> ServerSystem
         var showQps:Boolean = false
 
         fun build(): CommunicatorOption {
@@ -28,7 +28,7 @@ class Communicator(private val option: CommunicatorOption,
                    private val serverInfoCenter: ServerInfoCenter,
                    private val processor: Processor,
                    private var storageClient: StorageClient,
-                   private val baseSender: BaseSender,
+                   private val XSender: XSender,
                    private val systemPanel: BaseSystemPanel,
                    private val communicateServer: XServerCommunicator,
                    private val communicateClient: XClientCommunicator,
@@ -43,7 +43,7 @@ class Communicator(private val option: CommunicatorOption,
         processor,
         storageClient
     )
-    private var baseSystem: BaseSystem = BaseSystem(option.serverSystem.invoke(systemPanel,baseSender),baseSender)
+    private var baseSystem: BaseSystem = BaseSystem(option.serverSystem.invoke(systemPanel,XSender),XSender)
     private val performanceTester = PerformanceTester(option.showQps)
 
     fun start(){

@@ -10,7 +10,7 @@ import java.lang.Thread.sleep
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class BaseSystem(private val serverSystem: ServerSystem,
-                 private val baseSender: BaseSender
+                 private val XSender: XSender
 ) {
 
 
@@ -62,14 +62,14 @@ class BaseSystem(private val serverSystem: ServerSystem,
                                 }
                             }
                         } else {
-                            baseSender.setCurrentPacketHeader(routePacket.routeHeader)
+                            XSender.setCurrentPacketHeader(routePacket.routeHeader)
                             serverSystem.onDispatch(Packet(routePacket.msgId(), routePacket.movePayload()))
                         }
                     }catch (e:Exception){
                         LOG.error(ExceptionUtils.getStackTrace(e),this)
-                        baseSender.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
+                        XSender.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
                     }finally {
-                        baseSender.clearCurrentPacketHeader()
+                        XSender.clearCurrentPacketHeader()
                     }
                     routePacket = msgQueue.poll()
                 }

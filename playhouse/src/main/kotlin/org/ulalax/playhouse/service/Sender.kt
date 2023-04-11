@@ -19,9 +19,8 @@ interface SystemPanel{
     fun shutdown()
     fun serverState(): ServerState
 
-
 }
-interface CommonSender {
+interface Sender {
     fun serviceId():Short
     fun reply(reply: ReplyPacket)
     fun sendToClient(sessionEndpoint: String,sid:Int,packet: Packet)
@@ -43,23 +42,23 @@ interface CommonSender {
 
 }
 
-interface ApiCommonSender : CommonSender {
+interface ApiCommonSender : Sender {
 
     fun updateSession(sessionEndpoint: String,sid:Int,serviceId: Short,sessionInfo:String)
 
-    fun createStage(playEndpoint:String, StageType:String, packet: Packet): CreateStageResult
+    fun createStage(playEndpoint:String, stageType:String, packet: Packet): CreateStageResult
     fun joinStage(playEndpoint:String,
                   stageId:Long,
                   accountId: Long,
                   sessionEndpoint: String,
                   sid:Int,
                   packet: Packet
-    ): org.ulalax.playhouse.service.JoinStageResult
-    fun createJoinStage(playEndpoint:String, StageType:String, stageId:Long,
+    ): JoinStageResult
+    fun createJoinStage(playEndpoint:String, stageType:String, stageId:Long,
                         createPacket: Packet,
                         accountId: Long, sessionEndpoint: String, sid:Int,
                         joinPacket: Packet,
-    ): org.ulalax.playhouse.service.CreateJoinStageResult
+    ): CreateJoinStageResult
 }
 interface ApiSender : ApiCommonSender {
 
@@ -78,15 +77,13 @@ interface ApiSender : ApiCommonSender {
     fun updateSession(serviceId: Short,sessionInfo:String ){
         updateSession(sessionEndpoint(),sid(),serviceId,sessionInfo)
     }
-
-
 }
 
 typealias AsyncPreCallback<T> = suspend ()->T
 typealias AsyncPostCallback<T> = suspend (T)->Unit
 
 
-interface StageSender : CommonSender {
+interface StageSender : Sender {
 
     //fun reply(reply: ReplyPacket)
     fun stageId():Long
@@ -104,4 +101,4 @@ interface StageSender : CommonSender {
 interface ApiBackendSender : ApiCommonSender {
     fun getFromEndpoint():String
 }
-interface SessionSender : CommonSender {}
+interface SessionSender : Sender {}

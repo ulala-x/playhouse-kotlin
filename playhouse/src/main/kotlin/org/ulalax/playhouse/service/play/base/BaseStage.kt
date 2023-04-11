@@ -29,7 +29,7 @@ class BaseStage(
     private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
     private val baseStageCoroutineContext = ThreadPoolController.coroutineContext
     private var isUsing = AtomicBoolean(false)
-    val stageSenderImpl = BaseStageSender(playService.serviceId, stageId,playService,clientCommunicator ,reqCache)
+    val stageSenderImpl = XStageSender(playService.serviceId, stageId,playService,clientCommunicator ,reqCache)
 
 
     lateinit var stage: Stage<Actor>

@@ -4,8 +4,8 @@ open class ApiException :Exception{
     constructor(message: String,cause:Throwable) : super(message,cause)
     constructor(message: String) : super(message)
 
-    class DuplicateApiHandler: ApiException {
-        constructor(message: String = "Duplicate ApiHandler exist"):super(message)
+    class DuplicatedMessageIndex: ApiException {
+        constructor(message: String):super(message)
     }
 
     class NotRegisterApiMethod: ApiException {

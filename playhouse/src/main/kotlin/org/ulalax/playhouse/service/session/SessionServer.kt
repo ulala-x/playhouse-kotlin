@@ -29,10 +29,10 @@ class SessionServer constructor(private val commonOption: CommonOption, private 
         val storageClient = LettuceRedisClient(commonOption.redisIp,commonOption.redisPort).apply { this.connect() }
         val serverInfoCenter = XServerInfoCenter()
 
-        val baseSenderImpl = BaseSender(serviceId, communicateClient,requestCache)
+        val XSender = XSender(serviceId, communicateClient,requestCache)
         val systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicateClient)
 
-        ControlContext.baseSender = baseSenderImpl
+        ControlContext.baseSender = XSender
         ControlContext.systemPanel = systemPanelImpl
 
 
@@ -52,7 +52,7 @@ class SessionServer constructor(private val commonOption: CommonOption, private 
             serverInfoCenter,
             sessionService,
             storageClient,
-            baseSenderImpl,
+            XSender,
             systemPanelImpl,
             communicateServer,
             communicateClient

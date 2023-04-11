@@ -3,14 +3,13 @@ package org.ulalax.playhouse.service.session
 import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.communicator.message.ClientPacket
-import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.ulalax.playhouse.service.BaseSender
+import org.ulalax.playhouse.service.XSender
 import org.ulalax.playhouse.service.SessionSender
 
 
 class XSessionSender(serviceId:Short,private val clientCommunicator: ClientCommunicator, reqCache: RequestCache) :
-    BaseSender(serviceId,clientCommunicator,reqCache), SessionSender {
+    XSender(serviceId,clientCommunicator,reqCache), SessionSender {
 
     fun relayToRoom(
             playEndpoint: String,

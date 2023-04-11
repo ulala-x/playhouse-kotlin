@@ -9,10 +9,10 @@ import org.ulalax.playhouse.communicator.message.*
 import org.ulalax.playhouse.protocol.Server.*
 import java.util.concurrent.CompletableFuture
 
-open class BaseSender(private val serviceId: Short,
-                      private val clientCommunicator: ClientCommunicator,
-                      private val reqCache : RequestCache
-) : CommonSender {
+open class XSender(private val serviceId: Short,
+                   private val clientCommunicator: ClientCommunicator,
+                   private val reqCache : RequestCache
+) : Sender {
 
     protected var currentHeader: RouteHeader? = null
 
