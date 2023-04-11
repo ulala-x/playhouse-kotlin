@@ -49,6 +49,16 @@ class ApiReflection(packageName: String) {
             }
         }
     }
+
+//    private val continuation = object : Continuation<Unit> {
+//        override val context: CoroutineContext = EmptyCoroutineContext
+//
+//        override fun resumeWith(result: Result<Unit>) {
+//            LOG.trace("Coroutine completed with result: $result",this)
+//        }
+//
+//    }
+
     fun callMethod(routeHeader: RouteHeader, packet: Packet, isBackend :Boolean, apiSender: AllApiSender) = packet.use{
         val msgName = routeHeader.msgId()
         val sessionInfo = routeHeader.sessionInfo
@@ -71,11 +81,13 @@ class ApiReflection(packageName: String) {
                 targetMethod.method.invoke(targetInstance.instance,sessionInfo,packet,apiSender as ApiBackendSender)
             }else{
                 targetMethod.method.invoke(targetInstance.instance,sessionInfo,packet,apiSender as ApiSender)
+
             }
         }catch (e:Exception){
             apiSender.errorReply(routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR_VALUE.toShort())
             LOG.error(ExceptionUtils.getStackTrace(e),this,e)
         }
+
     }
 
     private fun extractHandlerMethod(reflections: Reflections) {

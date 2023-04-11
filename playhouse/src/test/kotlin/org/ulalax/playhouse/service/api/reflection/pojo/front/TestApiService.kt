@@ -1,5 +1,6 @@
 package org.ulalax.playhouse.service.api.reflection.pojo.front
 
+import kotlinx.coroutines.delay
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.protocol.Test
 import org.ulalax.playhouse.service.ApiSender
@@ -28,7 +29,7 @@ class TestApiService  : ApiService {
     }
 
     fun test1(
-            @Suppress("UNUSED_PARAMETER") sessionInfo:String,
+            @Suppress("UNUSED_PARAMETER")  sessionInfo:String,
             packet: Packet,
             @Suppress("UNUSED_PARAMETER") apiSender: ApiSender){
         val message = Test.ApiTestMsg1.parseFrom(packet.data())
@@ -39,6 +40,9 @@ class TestApiService  : ApiService {
             @Suppress("UNUSED_PARAMETER") sessionInfo:String,
             packet: Packet,
             @Suppress("UNUSED_PARAMETER") apiSender: ApiSender){
+
+//        delay(100)
+
         val message = Test.ApiTestMsg1.parseFrom(packet.data())
         ApiReflectionTest.resultMessage = message.testMsg
     }

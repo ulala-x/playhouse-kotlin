@@ -7,6 +7,7 @@ import org.ulalax.playhouse.communicator.socket.SocketConfig
 import org.ulalax.playhouse.service.ControlContext
 import org.ulalax.playhouse.service.Server
 import org.ulalax.playhouse.service.BaseSystemPanel
+import org.ulalax.playhouse.service.XSender
 
 class ApiServer(private val commonOption: CommonOption, private val apiOption: ApiOption): Server {
 
@@ -31,20 +32,20 @@ class ApiServer(private val commonOption: CommonOption, private val apiOption: A
         val communicateServer = XServerCommunicator(PlaySocketFactory.createPlaySocket(SocketConfig(), bindEndpoint))
         val communicateClient = XClientCommunicator(PlaySocketFactory.createPlaySocket(SocketConfig(), bindEndpoint))
 
-        val allApiSender = AllApiSender(serviceId, communicateClient,requestCache)
-        val systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicateClient)
-        ControlContext.baseSender = allApiSender
-        ControlContext.systemPanel = systemPanelImpl
+        val sender = XSender(serviceId, communicateClient,requestCache)
+        val systemPanel = BaseSystemPanel(serverInfoCenter,communicateClient)
+        ControlContext.baseSender = sender
+        ControlContext.systemPanel = systemPanel
 
-        val service = ApiProcessor(serviceId, apiOption, requestCache, communicateClient,allApiSender,systemPanelImpl)
+        val service = ApiProcessor(serviceId, apiOption, requestCache, communicateClient,sender,systemPanel)
         communicator = Communicator(
             communicatorOption,
             requestCache,
             serverInfoCenter,
             service,
             storageClient,
-            allApiSender,
-            systemPanelImpl,
+            sender,
+            systemPanel,
             communicateServer,
             communicateClient
         )

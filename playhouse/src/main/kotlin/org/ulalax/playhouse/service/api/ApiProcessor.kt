@@ -3,10 +3,18 @@ package org.ulalax.playhouse.service.api
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.apache.commons.lang3.exception.ExceptionUtils
 import LOG
+import com.github.benmanes.caffeine.cache.Cache
+import com.github.benmanes.caffeine.cache.Caffeine
+import com.github.benmanes.caffeine.cache.Scheduler
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.protocol.Common.*
-import org.ulalax.playhouse.protocol.Server.DisconnectNoticeMsg
 import org.ulalax.playhouse.service.BaseSystemPanel
+import org.ulalax.playhouse.service.Sender
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
 class ApiProcessor(
@@ -14,61 +22,80 @@ class ApiProcessor(
         private val apiOption: ApiOption,
         private val requestCache: RequestCache,
         private val clientCommunicator: ClientCommunicator,
-        private val allApiSender: AllApiSender,
-        private val systemPanelImpl: BaseSystemPanel
+        private val sender: Sender,
+        private val systemPanel: BaseSystemPanel
     ) : Processor {
-
 
     private val state = AtomicReference(ServerState.DISABLE)
     private val apiReflection = ApiReflection(apiOption.apiPath)
+    private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
+
+    private val cache: Cache<Long, AccountApiProcessor>
+    = Caffeine.newBuilder().scheduler(Scheduler.systemScheduler()).expireAfterWrite(5, TimeUnit.MINUTES).build()
 
     override fun onStart() {
         state.set(ServerState.RUNNING)
-        apiReflection.callInitMethod(systemPanelImpl,allApiSender)
+        apiReflection.callInitMethod(systemPanel,sender)
+        Thread({ messageLoop() },"api:message-loop").start()
     }
 
-    override fun onReceive(routePacket: RoutePacket) = routePacket.use  {
+    private fun messageLoop() = runBlocking {
+        val accountCoroutineDispatcher = apiOption.accountPacketExcutor.asCoroutineDispatcher()
+        val commonCoroutineDispatcher = apiOption.commonExcutor.asCoroutineDispatcher()
+        while(state.get() != ServerState.DISABLE){
+            var routePacket = msgQueue.poll()
+            while(routePacket!=null){
+                routePacket.use {
+                    val routeHeader = routePacket.routeHeader
 
-        val routeHeader = routePacket.routeHeader
-        val apiCallBackHandler = apiOption.apiCallBackHandler
-        val executorService = apiOption.executorService
+                    try {
+                        val accountId = routeHeader.accountId
+                        if( accountId != 0.toLong()){
+                            var accountApiProcessor = cache.getIfPresent(accountId)
+                            if(accountApiProcessor==null){
+                                accountApiProcessor = AccountApiProcessor(serviceId,
+                                        requestCache,
+                                        clientCommunicator,
+                                        apiReflection,
+                                        apiOption.apiCallBackHandler,
+                                        accountCoroutineDispatcher
+                                )
 
-        val apiSender = AllApiSender(serviceId,clientCommunicator,requestCache).apply {
-            setCurrentPacketHeader(routeHeader)
-        }
+                                cache.put(accountId,accountApiProcessor)
+                            }
+                            accountApiProcessor.dispatch(routePacket)
+                        }else{
 
-        try {
-            if (routeHeader.isBase) {
-                return when (routeHeader.msgId()) {
-                    DisconnectNoticeMsg.getDescriptor().index -> {
-                        val disconnectNoticeMsg = DisconnectNoticeMsg.parseFrom(routePacket.data())
-                        apiCallBackHandler.onDisconnect(disconnectNoticeMsg.accountId, routeHeader.sessionInfo)
-                    }
+                            val apiSender = AllApiSender(serviceId,clientCommunicator,requestCache).apply {
+                                setCurrentPacketHeader(routeHeader)
+                            }
 
-                    else -> {
-                        LOG.error("Invalid base Api packet:${routeHeader.msgId()}",this)
+                            launch(commonCoroutineDispatcher) {
+                                try{
+                                    apiReflection.callMethod(
+                                            routeHeader,
+                                            routePacket.toPacket(),
+                                            routePacket.isBackend(),
+                                            apiSender
+                                    )
+                                }catch (e:Exception){
+                                    apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
+                                    LOG.error(ExceptionUtils.getStackTrace(e),this,e)
+                                }
+                            }
+                        }
+                    }catch (e:Exception){
+                        LOG.error(ExceptionUtils.getStackTrace(e),this,e)
                     }
                 }
+                routePacket = msgQueue.poll()
             }
-            val packet = routePacket.toPacket()
-
-            executorService.execute {
-                try{
-                    apiReflection.callMethod(
-                        routeHeader,
-                        packet,
-                        routePacket.isBackend(),
-                        apiSender
-                    )
-                }catch (e:Exception){
-                    apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
-                    LOG.error(ExceptionUtils.getStackTrace(e),this,e)
-                }
-            }
-        }catch (e:Exception){
-                apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
-                LOG.error(ExceptionUtils.getStackTrace(e),this,e)
+            Thread.sleep(10)
         }
+    }
+
+    override fun onReceive(routePacket: RoutePacket)  {
+        this.msgQueue.add(routePacket)
     }
 
     override fun onStop() {

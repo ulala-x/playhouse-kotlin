@@ -64,10 +64,10 @@ class ApiReflectionTest : FunSpec(){
             val communicator: ClientCommunicator = mock()
             val serverInfoCenter: ServerInfoCenter = mock()
             val requestCache = RequestCache(5)
-            var systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicator)
+            var systemPanel = BaseSystemPanel(serverInfoCenter,communicator)
             var allApiSender = AllApiSender(1, communicator,requestCache)
 
-            apiReflection.callInitMethod(systemPanelImpl,allApiSender)
+            apiReflection.callInitMethod(systemPanel,allApiSender)
             resultMessage.shouldBe("init")
         }
         test("pojoBackendInitMethodCall"){
@@ -76,10 +76,10 @@ class ApiReflectionTest : FunSpec(){
             val communicator: ClientCommunicator = mock()
             val serverInfoCenter: ServerInfoCenter = mock()
             val requestCache = RequestCache(5)
-            var systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicator)
+            var systemPanel = BaseSystemPanel(serverInfoCenter,communicator)
             var allApiSender = AllApiSender(1, communicator,requestCache)
 
-            apiReflection.callInitMethod(systemPanelImpl,allApiSender)
+            apiReflection.callInitMethod(systemPanel,allApiSender)
             resultMessage.shouldBe("backend init")
         }
 
@@ -147,7 +147,7 @@ class ApiReflectionTest : FunSpec(){
                     .build()
 
             val routePacket = RoutePacket.of(routePacketMsg)
-            val apiSenderImpl = AllApiSender(1,object :ClientCommunicator{
+            val apiSender = AllApiSender(1,object :ClientCommunicator{
                 override fun connect(endpoint: String) {}
                 override fun send(endpoint: String, routePacket: RoutePacket) {}
                 override fun communicate() {}
@@ -155,7 +155,7 @@ class ApiReflectionTest : FunSpec(){
                 override fun stop() {}
             }, RequestCache(5))
 
-            apiReflection.callMethod(routePacket.routeHeader,routePacket.toPacket(),routePacket.isBackend(),apiSenderImpl)
+            apiReflection.callMethod(routePacket.routeHeader,routePacket.toPacket(),routePacket.isBackend(),apiSender)
             resultMessage.shouldBe("apiBackendMethodCall")
         }
 
@@ -169,7 +169,7 @@ class ApiReflectionTest : FunSpec(){
                     .build()
 
             val routePacket = RoutePacket.of(routePacketMsg)
-            val apiSenderImpl = AllApiSender(1,object :ClientCommunicator{
+            val apiSender = AllApiSender(1,object :ClientCommunicator{
                 override fun connect(endpoint: String) {}
                 override fun send(endpoint: String, routePacket: RoutePacket) {}
                 override fun communicate() {}
@@ -177,7 +177,7 @@ class ApiReflectionTest : FunSpec(){
                 override fun stop() {}
             }, RequestCache(5))
 
-            apiReflection.callMethod(routePacket.routeHeader,routePacket.toPacket(),routePacket.isBackend(),apiSenderImpl)
+            apiReflection.callMethod(routePacket.routeHeader,routePacket.toPacket(),routePacket.isBackend(),apiSender)
             resultMessage.shouldBe("beanApiMethodCall")
         }
         test("beanApiBackendMethodCall"){
@@ -190,7 +190,7 @@ class ApiReflectionTest : FunSpec(){
                     .build()
 
             val routePacket = RoutePacket.of(routePacketMsg)
-            val apiSenderImpl = AllApiSender(1,object :ClientCommunicator{
+            val apiSender = AllApiSender(1,object :ClientCommunicator{
                 override fun connect(endpoint: String) {}
                 override fun send(endpoint: String, routePacket: RoutePacket) {}
                 override fun communicate() {}
@@ -198,8 +198,10 @@ class ApiReflectionTest : FunSpec(){
                 override fun stop() {}
             }, RequestCache(5))
 
-            apiReflection.callMethod(routePacket.routeHeader,routePacket.toPacket(),routePacket.isBackend(),apiSenderImpl)
+            apiReflection.callMethod(routePacket.routeHeader,routePacket.toPacket(),routePacket.isBackend(),apiSender)
             resultMessage.shouldBe("beanApiBackendMethodCall")
         }
+
+
     }
 }
