@@ -219,7 +219,7 @@ class PlayProcessor(
     }
 
 
-    fun createContentUser(stageType: String, userSender: BaseActorSender): Actor {
+    fun createContentUser(stageType: String, userSender: XActorSender): Actor {
         return playOption.elementConfigurator.users[stageType]!!.invoke(userSender)
     }
 

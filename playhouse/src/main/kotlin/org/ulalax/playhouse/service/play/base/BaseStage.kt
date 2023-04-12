@@ -104,7 +104,7 @@ class BaseStage(
         var baseUser = playService.findUser(accountId)
 
         if (baseUser == null) {
-            val userSender = BaseActorSender(accountId, sessionEndpoint, sid,apiEndpoint,this,serverInfoCenter)
+            val userSender = XActorSender(accountId, sessionEndpoint, sid,apiEndpoint,this,serverInfoCenter)
             val user = playService.createContentUser(this.stageSenderImpl.stageType,userSender)
             baseUser = BaseActor(user, userSender)
             baseUser.actor.onCreate()

@@ -23,9 +23,6 @@ class AllApiSender (private val serviceId:Short,
         return this.currentHeader?.sid ?:0
     }
 
-    override fun accountId(): Long {
-        return this.currentHeader?.accountId ?: 0
-    }
 
     override fun authenticate(accountId:Long){
         val message = AuthenticateMsg.newBuilder()

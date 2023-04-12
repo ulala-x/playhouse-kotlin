@@ -6,12 +6,12 @@ import kotlinx.coroutines.CompletableDeferred
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.communicator.message.ReplyPacket
 
-class BaseActorSender(val accountId:Long,
-                      var sessionEndpoint:String,
-                      var sid:Int,
-                      var apiEndpoint:String,
-                      private val baseStage: BaseStage,
-                      private val serverInfoCenter: ServerInfoCenter,
+class XActorSender(val accountId:Long,
+                   var sessionEndpoint:String,
+                   var sid:Int,
+                   var apiEndpoint:String,
+                   private val baseStage: BaseStage,
+                   private val serverInfoCenter: ServerInfoCenter,
 ) : ActorSender {
     override fun sessionEndpoint(): String {
         return this.sessionEndpoint
@@ -41,7 +41,7 @@ class BaseActorSender(val accountId:Long,
         if( !serverInfo.isValid()){
             serverInfo = serverInfoCenter.findRoundRobinServer(serverInfo.serviceId)
         }
-        baseStage.stageSenderImpl.sendToApi(serverInfo.bindEndpoint,packet)
+        baseStage.stageSenderImpl.sendToApi(serverInfo.bindEndpoint,accountId,packet)
     }
 
     override suspend fun requestToApi(packet: Packet): ReplyPacket {
@@ -49,7 +49,7 @@ class BaseActorSender(val accountId:Long,
         if( !serverInfo.isValid()){
             serverInfo = serverInfoCenter.findRoundRobinServer(serverInfo.serviceId)
         }
-        return baseStage.stageSenderImpl.requestToApi(serverInfo.bindEndpoint,packet)
+        return baseStage.stageSenderImpl.requestToApi(serverInfo.bindEndpoint,accountId,packet)
     }
 
     override fun asyncToApi( packet: Packet): CompletableDeferred<ReplyPacket> {
@@ -57,7 +57,7 @@ class BaseActorSender(val accountId:Long,
         if( !serverInfo.isValid()){
             serverInfo = serverInfoCenter.findRoundRobinServer(serverInfo.serviceId)
         }
-        return baseStage.stageSenderImpl.asyncToApi(serverInfo.bindEndpoint,packet)
+        return baseStage.stageSenderImpl.asyncToApi(serverInfo.bindEndpoint,accountId,packet)
     }
 
     fun update(sessionEndpoint: String, sid: Int,apiEndpoint: String) {

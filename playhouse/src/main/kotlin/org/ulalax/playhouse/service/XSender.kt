@@ -76,7 +76,11 @@ open class XSender(private val serviceId: Short,
         return reqCache.getSequence()
     }
     override fun sendToApi(apiEndpoint:String,packet: Packet){
+        sendToApi(apiEndpoint,0,packet)
+    }
+    fun sendToApi(apiEndpoint:String,accountId:Long,packet: Packet){
         val routePacket = RoutePacket.apiOf(packet, isBase = false, isBackend = true)
+        routePacket.routeHeader.accountId = accountId
         clientCommunicator.send(apiEndpoint, routePacket)
     }
     fun relayToApi(apiEndpoint: String, sid: Int, packet: Packet, msgSeq: Short){
@@ -101,22 +105,37 @@ open class XSender(private val serviceId: Short,
     }
 
     override fun requestToApi(apiEndpoint:String, packet: Packet, replyCallback: ReplyCallback){
+        requestToApi(apiEndpoint,0,packet,replyCallback)
+    }
+
+    fun requestToApi(apiEndpoint:String, accountId: Long, packet: Packet, replyCallback: ReplyCallback){
         val seq = getSequence()
         reqCache.put(seq, ReplyObject(callback = replyCallback))
         var routePacket = RoutePacket.apiOf(packet, isBase = false, isBackend = true).apply {
             setMsgSeq(seq)
         }
+        routePacket.routeHeader.accountId = accountId
         clientCommunicator.send(apiEndpoint, routePacket)
     }
 
-
     override suspend fun requestToApi(apiEndpoint: String, packet: Packet): ReplyPacket {
         return asyncToApi(apiEndpoint,packet).await()
+    }
+    suspend fun requestToApi(apiEndpoint: String,accountId: Long, packet: Packet): ReplyPacket {
+        return asyncToApi(apiEndpoint,accountId,packet).await()
     }
 
     override fun asyncToApi(
         apiEndpoint: String,
         packet: Packet,
+    ): CompletableDeferred<ReplyPacket> {
+        return asyncToApi(apiEndpoint,0,packet)
+    }
+
+    fun asyncToApi(
+            apiEndpoint: String,
+            accountId: Long,
+            packet: Packet,
     ): CompletableDeferred<ReplyPacket> {
         val seq = getSequence()
         val deferred = CompletableDeferred<ReplyPacket>()
@@ -124,6 +143,7 @@ open class XSender(private val serviceId: Short,
         var routePacket = RoutePacket.apiOf(packet, isBase = false, isBackend = true).apply {
             setMsgSeq(seq)
         }
+        routePacket.routeHeader.accountId = accountId
         clientCommunicator.send(apiEndpoint, routePacket)
         return deferred
     }

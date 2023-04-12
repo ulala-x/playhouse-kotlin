@@ -19,6 +19,10 @@ open class XApiCommonSender(serviceId: Short,
 //        sendToBaseSession(sessionEndpoint,sid, Packet(message))
 //    }
 
+    override fun accountId(): Long {
+        return this.currentHeader?.accountId ?: 0
+    }
+
     override fun createStage(playEndpoint:String, stageType:String, packet: Packet): CreateStageResult {
         val req = Server.CreateStageReq.newBuilder()
                 .setStageType(stageType)

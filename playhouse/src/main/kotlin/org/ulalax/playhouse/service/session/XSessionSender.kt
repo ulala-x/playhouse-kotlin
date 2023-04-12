@@ -29,11 +29,12 @@ class XSessionSender(serviceId:Short,private val clientCommunicator: ClientCommu
         clientCommunicator.send(playEndpoint, routePacket)
     }
 
-    fun relayToApi(apiEndpoint: String, sid: Int, packet: ClientPacket, msgSeq: Short){
+    fun relayToApi(apiEndpoint: String, sid: Int,accountId: Long, packet: ClientPacket, msgSeq: Short){
         val routePacket = RoutePacket.apiOf(packet.toPacket(), isBase = false, isBackend = false).apply {
             this.routeHeader.sid = sid
             this.routeHeader.header.msgSeq = msgSeq
             this.routeHeader.forClient = true
+            this.routeHeader.accountId = accountId
         }
         clientCommunicator.send(apiEndpoint, routePacket)
     }

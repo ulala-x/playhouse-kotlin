@@ -44,6 +44,7 @@ interface Sender {
 
 interface ApiCommonSender : Sender {
 
+    fun accountId():Long
     fun createStage(playEndpoint:String, stageType:String, packet: Packet): CreateStageResult
     fun joinStage(playEndpoint:String,
                   stageId:Long,
@@ -64,7 +65,7 @@ interface ApiSender : ApiCommonSender {
     fun sessionEndpoint():String
     fun sid():Int
 
-    fun accountId():Long
+
     fun sendToClient(packet: Packet){
         sendToClient(sessionEndpoint(),sid(),packet)
     }

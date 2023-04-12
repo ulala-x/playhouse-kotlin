@@ -91,7 +91,7 @@ class SessionClient(
 
         when(type){
             ServiceType.API -> {
-                sessionSender.relayToApi(endpoint,sid,clientPacket,msgSeq)
+                sessionSender.relayToApi(endpoint,sid,accountId,clientPacket,msgSeq)
             }
             ServiceType.Play ->{
                 sessionSender.relayToRoom(endpoint,stageId,sid,accountId,clientPacket,msgSeq)
