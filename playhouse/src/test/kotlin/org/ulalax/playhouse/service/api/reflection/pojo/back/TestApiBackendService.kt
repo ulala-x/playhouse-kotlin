@@ -29,7 +29,6 @@ class TestApiBackendService : ApiBackendService {
         return TestApiBackendService()
     }
     fun test1(
-            @Suppress("UNUSED_PARAMETER") sessionInfo:String,
             packet: Packet,
             @Suppress("UNUSED_PARAMETER") apiBackendSender: ApiBackendSender){
         val message = Test.ApiTestMsg1.parseFrom(packet.data())
@@ -37,7 +36,6 @@ class TestApiBackendService : ApiBackendService {
     }
 
     fun test2(
-            @Suppress("UNUSED_PARAMETER") sessionInfo:String,
             packet: Packet,
             @Suppress("UNUSED_PARAMETER") apiBackendSender: ApiBackendSender){
         val message = Test.ApiTestMsg1.parseFrom(packet.data())

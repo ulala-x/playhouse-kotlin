@@ -75,19 +75,19 @@ open class XSender(private val serviceId: Short,
     private fun getSequence(): Short {
         return reqCache.getSequence()
     }
-    override fun sendToApi(apiEndpoint:String,sessionInfo: String,packet: Packet){
-        val routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = true)
+    override fun sendToApi(apiEndpoint:String,packet: Packet){
+        val routePacket = RoutePacket.apiOf(packet, isBase = false, isBackend = true)
         clientCommunicator.send(apiEndpoint, routePacket)
     }
-    fun relayToApi(apiEndpoint: String, sid: Int, sessionInfo: String, packet: Packet, msgSeq: Short){
-        val routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = false).apply {
+    fun relayToApi(apiEndpoint: String, sid: Int, packet: Packet, msgSeq: Short){
+        val routePacket = RoutePacket.apiOf(packet, isBase = false, isBackend = false).apply {
             this.routeHeader.sid = sid
             this.routeHeader.header.msgSeq = msgSeq
         }
         clientCommunicator.send(apiEndpoint, routePacket)
     }
-    fun sendToBaseApi(apiEndpoint:String,sessionInfo: String,packet: Packet){
-        val routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = true, isBackend = true)
+    fun sendToBaseApi(apiEndpoint:String,packet: Packet){
+        val routePacket = RoutePacket.apiOf(packet, isBase = true, isBackend = true)
         clientCommunicator.send(apiEndpoint, routePacket)
     }
 
@@ -100,29 +100,28 @@ open class XSender(private val serviceId: Short,
         clientCommunicator.send(playEndpoint, routePacket)
     }
 
-    override fun requestToApi(apiEndpoint:String, packet: Packet, sessionInfo: String, replyCallback: ReplyCallback){
+    override fun requestToApi(apiEndpoint:String, packet: Packet, replyCallback: ReplyCallback){
         val seq = getSequence()
         reqCache.put(seq, ReplyObject(callback = replyCallback))
-        var routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = true).apply {
+        var routePacket = RoutePacket.apiOf(packet, isBase = false, isBackend = true).apply {
             setMsgSeq(seq)
         }
         clientCommunicator.send(apiEndpoint, routePacket)
     }
 
 
-    override suspend fun requestToApi(apiEndpoint: String, sessionInfo: String, packet: Packet): ReplyPacket {
-        return asyncToApi(apiEndpoint,sessionInfo,packet).await()
+    override suspend fun requestToApi(apiEndpoint: String, packet: Packet): ReplyPacket {
+        return asyncToApi(apiEndpoint,packet).await()
     }
 
     override fun asyncToApi(
         apiEndpoint: String,
-        sessionInfo: String,
         packet: Packet,
     ): CompletableDeferred<ReplyPacket> {
         val seq = getSequence()
         val deferred = CompletableDeferred<ReplyPacket>()
         reqCache.put(seq, ReplyObject(deferred =  deferred))
-        var routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = true).apply {
+        var routePacket = RoutePacket.apiOf(packet, isBase = false, isBackend = true).apply {
             setMsgSeq(seq)
         }
         clientCommunicator.send(apiEndpoint, routePacket)
@@ -221,11 +220,10 @@ open class XSender(private val serviceId: Short,
         stageId: Long,
         sid:Int,
         accountId: Long,
-        sessionInfo: String,
         packet: Packet,
         msgSeq: Short
     ) {
-        val routePacket = RoutePacket.apiOf(sessionInfo,packet, isBase = false, isBackend = false).apply {
+        val routePacket = RoutePacket.apiOf(packet, isBase = false, isBackend = false).apply {
             this.routeHeader.stageId = stageId
             this.routeHeader.accountId = accountId
             this.routeHeader.header.msgSeq = msgSeq

@@ -13,9 +13,9 @@ interface ActorSender {
 
     fun sendToClient(packet: Packet)
 
-    fun sendToApi(sessionInfo: String,packet: Packet)
-    suspend fun requestToApi(sessionInfo: String, packet: Packet): ReplyPacket
-    fun asyncToApi(sessionInfo: String, packet: Packet): CompletableDeferred<ReplyPacket>
+    fun sendToApi(packet: Packet)
+    suspend fun requestToApi(packet: Packet): ReplyPacket
+    fun asyncToApi(packet: Packet): CompletableDeferred<ReplyPacket>
 
 
 }

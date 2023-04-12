@@ -27,7 +27,6 @@ class SessionClient(
 
     var isAuthenticated = false
     private val signInURIs = HashSet<String>()
-    private val sessionData = HashMap<Short,String>()
     private var accountId = 0L
     private var stageId:Long = 0L
     private var playEndpoint:String = ""
@@ -36,14 +35,10 @@ class SessionClient(
     init {
         signInURIs.addAll(urls)
     }
-    private fun authenticate(serviceId: Short,accountId:Long,sessionInfo:String){
+    private fun authenticate(serviceId: Short,accountId:Long){
         this.accountId = accountId
-        updateSessionInfo(serviceId,sessionInfo)
         isAuthenticated = true
         authenticateServiceId = serviceId
-    }
-    private fun updateSessionInfo(serviceId: Short,sessionInfo:String) {
-        sessionData[serviceId] = sessionInfo
     }
 
     fun disconnect() {
@@ -54,8 +49,7 @@ class SessionClient(
                 val discconectPacket = Packet(DisconnectNoticeMsg.newBuilder().setAccountId(accountId).build())
                 when(serverInfo.serviceType){
                     ServiceType.API ->{
-                        val sessionInfo = getSessionInfo(serverInfo.serviceId)
-                        sessionSender.sendToBaseApi(serverInfo.bindEndpoint,sessionInfo,discconectPacket)
+                        sessionSender.sendToBaseApi(serverInfo.bindEndpoint,discconectPacket)
                     }
                     ServiceType.Play ->{
                         sessionSender.sendToBaseStage(serverInfo.bindEndpoint,stageId,accountId,discconectPacket)
@@ -89,7 +83,6 @@ class SessionClient(
     }
 
     private fun relayTo(serviceId: Short, clientPacket: ClientPacket) {
-        val sessionInfo = getSessionInfo(serviceId)
         val serverInfo = targetServiceCache.findServer(serviceId)
         val endpoint = serverInfo.bindEndpoint
         val type = serverInfo.serviceType
@@ -98,47 +91,32 @@ class SessionClient(
 
         when(type){
             ServiceType.API -> {
-                sessionSender.relayToApi(endpoint,sid,sessionInfo,clientPacket,msgSeq)
+                sessionSender.relayToApi(endpoint,sid,clientPacket,msgSeq)
             }
             ServiceType.Play ->{
-                sessionSender.relayToRoom(endpoint,stageId,sid,accountId,sessionInfo,clientPacket,msgSeq)
+                sessionSender.relayToRoom(endpoint,stageId,sid,accountId,clientPacket,msgSeq)
             }
             else ->{
                     LOG.error("Invalid Serive Type request $type,${clientPacket.msgId()}",this)
             }
         }
 
-        LOG.debug("session relayTo $type:${endpoint}, sessionInfo:$sessionInfo, msgName:${clientPacket.msgId()}",this)
-    }
-
-    fun getSessionInfo(serviceId: Short):String  {
-         return sessionData[serviceId] ?: ""
+        LOG.debug("session relayTo $type:${endpoint},  msgName:${clientPacket.msgId()}",this)
     }
 
     // from backend server
     fun onReceive(packet: RoutePacket) {
         val msgName = packet.msgId()
         val isBase = packet.isBase()
-//        val serviceId = packet.serviceId()
-//        val isBackend = packet.isBackend()
-
-//        if(isBackend) {
-//            log.error("session do not process backend packet: $msgName")
-//            return
-//        }
 
         if(isBase){
             when(msgName){
                 AuthenticateMsg.getDescriptor().index -> {
                     val authenticateMsg = AuthenticateMsg.parseFrom(packet.data())
-                    authenticate(authenticateMsg.serviceId.toShort(),authenticateMsg.accountId,authenticateMsg.sessionInfo)
+                    authenticate(authenticateMsg.serviceId.toShort(),authenticateMsg.accountId)
                     LOG.debug("$accountId is authenticated",this)
                 }
-                UpdateSessionInfoMsg.getDescriptor().index ->{
-                    val updatedSessionInfo = UpdateSessionInfoMsg.parseFrom(packet.data())
-                    updateSessionInfo(updatedSessionInfo.serviceId.toShort(),updatedSessionInfo.sessionInfo)
-                    LOG.debug("sessionInfo of $accountId is updated with $updatedSessionInfo",this)
-                }
+
                 SessionCloseMsg.getDescriptor().index -> {
                     channel.disconnect()
                     LOG.debug("$accountId is required to session close",this)

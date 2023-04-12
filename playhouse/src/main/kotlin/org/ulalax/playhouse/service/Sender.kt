@@ -24,15 +24,15 @@ interface Sender {
     fun serviceId():Short
     fun reply(reply: ReplyPacket)
     fun sendToClient(sessionEndpoint: String,sid:Int,packet: Packet)
-    fun sendToApi(apiEndpoint:String, sessionInfo: String,packet: Packet)
+    fun sendToApi(apiEndpoint:String, packet: Packet)
     fun sendToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet)
 
-    fun requestToApi(apiEndpoint:String, packet: Packet, sessionInfo: String, replyCallback: ReplyCallback)
+    fun requestToApi(apiEndpoint:String, packet: Packet, replyCallback: ReplyCallback)
     fun requestToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet, replyCallback: ReplyCallback)
-    suspend fun requestToApi(apiEndpoint:String, sessionInfo: String, packet: Packet): ReplyPacket
+    suspend fun requestToApi(apiEndpoint:String,  packet: Packet): ReplyPacket
     suspend fun requestToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet): ReplyPacket
 
-    fun asyncToApi(apiEndpoint:String, sessionInfo: String, packet: Packet): CompletableDeferred<ReplyPacket>
+    fun asyncToApi(apiEndpoint:String, packet: Packet): CompletableDeferred<ReplyPacket>
     fun asyncToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet):CompletableDeferred<ReplyPacket>
 
     fun sendToSystem(endpoint: String, packet: Packet)
@@ -44,7 +44,7 @@ interface Sender {
 
 interface ApiCommonSender : Sender {
 
-    fun updateSession(sessionEndpoint: String,sid:Int,serviceId: Short,sessionInfo:String)
+//    fun updateSession(sessionEndpoint: String,sid:Int,serviceId: Short,sessionInfo:String)
 
     fun createStage(playEndpoint:String, stageType:String, packet: Packet): CreateStageResult
     fun joinStage(playEndpoint:String,
@@ -62,11 +62,11 @@ interface ApiCommonSender : Sender {
 }
 interface ApiSender : ApiCommonSender {
 
-    fun authenticate(accountId:Long,sessionInfo:String)
+    fun authenticate(accountId:Long)
     fun sessionEndpoint():String
     fun sid():Int
 
-    fun sessionInfo():String
+    fun accountId():Long
     fun sendToClient(packet: Packet){
         sendToClient(sessionEndpoint(),sid(),packet)
     }
@@ -74,9 +74,9 @@ interface ApiSender : ApiCommonSender {
         sessionClose(sessionEndpoint(),sid())
     }
 
-    fun updateSession(serviceId: Short,sessionInfo:String ){
-        updateSession(sessionEndpoint(),sid(),serviceId,sessionInfo)
-    }
+//    fun updateSession(serviceId: Short,sessionInfo:String ){
+//        updateSession(sessionEndpoint(),sid(),serviceId,sessionInfo)
+//    }
 }
 
 typealias AsyncPreCallback<T> = suspend ()->T

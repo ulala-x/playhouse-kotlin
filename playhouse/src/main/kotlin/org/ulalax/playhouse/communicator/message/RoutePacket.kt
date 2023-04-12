@@ -18,7 +18,6 @@ import java.time.Duration
 
 class RouteHeader private constructor(val header: Header,
                                       var sid:Int=-1,
-                                      var sessionInfo: String = "",
                                       var isSystem: Boolean = false,
                                       var isBase:Boolean = false,
                                       var isBackend:Boolean = false,
@@ -33,7 +32,6 @@ class RouteHeader private constructor(val header: Header,
         return RouteHeaderMsg.newBuilder()
             .setHeaderMsg(header.toMsg())
             .setSid(sid)
-            .setSessionInfo(sessionInfo)
             .setIsSystem(isSystem)
             .setIsBase(isBase)
             .setIsBackend(isBackend)
@@ -48,7 +46,7 @@ class RouteHeader private constructor(val header: Header,
         fun of(headerMsg: RouteHeaderMsg): RouteHeader {
             return RouteHeader(
                 Header.of(headerMsg.headerMsg),
-                headerMsg.sid, headerMsg.sessionInfo,
+                headerMsg.sid,
                 headerMsg.isSystem,headerMsg.isBase,headerMsg.isBackend,headerMsg.isReply,
                 headerMsg.accountId,headerMsg.stageId,headerMsg.forClient
             )
@@ -187,12 +185,11 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
             return RoutePacket(routeHeader, packet.movePayload())
         }
 
-        fun apiOf(sessionInfo: String,
+        fun apiOf(
                   packet: Packet,
                   isBase: Boolean, isBackend: Boolean): RoutePacket {
             val header = Header(msgId = packet.msgId)
             val routeHeader = RouteHeader.of(header).apply {
-                this.sessionInfo = sessionInfo
                 this.isBase = isBase
                 this.isBackend = isBackend
             }

@@ -23,23 +23,20 @@ class AllApiSender (private val serviceId:Short,
         return this.currentHeader?.sid ?:0
     }
 
-    override fun sessionInfo(): String {
-        return this.currentHeader?.sessionInfo ?: ""
+    override fun accountId(): Long {
+        return this.currentHeader?.accountId ?: 0
     }
 
-
-    override fun authenticate(accountId:Long,sessionInfo:String){
+    override fun authenticate(accountId:Long){
         val message = AuthenticateMsg.newBuilder()
             .setServiceId(serviceId.toInt())
-            .setAccountId(accountId)
-            .setSessionInfo(sessionInfo).build()
+            .setAccountId(accountId).build()
 
         this.currentHeader?.run {
             sendToBaseSession(from,sid, Packet(message))
         } ?: throw ApiException.NotExistApiHeaderInfoException()
 
     }
-
 
     fun clone(): AllApiSender {
         return AllApiSender(this.serviceId,this.clientCommunicator,this.reqCache)

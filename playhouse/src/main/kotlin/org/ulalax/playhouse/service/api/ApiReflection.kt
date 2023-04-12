@@ -61,7 +61,6 @@ class ApiReflection(packageName: String) {
 
     fun callMethod(routeHeader: RouteHeader, packet: Packet, isBackend :Boolean, apiSender: AllApiSender) = packet.use{
         val msgName = routeHeader.msgId()
-        val sessionInfo = routeHeader.sessionInfo
         //val packet = Packet(msgName,routePacket.movePayload())
         //val isBackend = routePacket.isBackend()
 
@@ -78,9 +77,9 @@ class ApiReflection(packageName: String) {
 
         try {
             if(isBackend){
-                targetMethod.method.invoke(targetInstance.instance,sessionInfo,packet,apiSender as ApiBackendSender)
+                targetMethod.method.invoke(targetInstance.instance,packet,apiSender as ApiBackendSender)
             }else{
-                targetMethod.method.invoke(targetInstance.instance,sessionInfo,packet,apiSender as ApiSender)
+                targetMethod.method.invoke(targetInstance.instance,packet,apiSender as ApiSender)
 
             }
         }catch (e:Exception){

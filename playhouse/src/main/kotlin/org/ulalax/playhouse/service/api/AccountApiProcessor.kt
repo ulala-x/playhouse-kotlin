@@ -37,7 +37,7 @@ class AccountApiProcessor(
                             when (routeHeader.msgId()) {
                                 Server.DisconnectNoticeMsg.getDescriptor().index -> {
                                     val disconnectNoticeMsg = Server.DisconnectNoticeMsg.parseFrom(routePacket.data())
-                                    apiCallBack.onDisconnect(disconnectNoticeMsg.accountId, routeHeader.sessionInfo)
+                                    apiCallBack.onDisconnect(disconnectNoticeMsg.accountId)
                                 }
                                 else -> {
                                     LOG.error("Invalid base Api packet:${routeHeader.msgId()}",this)

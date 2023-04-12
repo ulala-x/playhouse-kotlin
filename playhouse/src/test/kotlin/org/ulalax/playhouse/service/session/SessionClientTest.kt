@@ -73,14 +73,13 @@ internal class SessionClientTest : FunSpec() {
             val message = AuthenticateMsg.newBuilder()
                     .setServiceId(api.toInt())
                     .setAccountId(accountId)
-                    .setSessionInfo(sessionInfo).build()
+                    .build()
             val routePacket = RoutePacket.sessionOf(sid, Packet(message), isBase = true, isBackend = true)
 
             val sessionClient = SessionClient(serviceId,sid,channel,serviceCenter,clientCommunicator,urls,reqCache)
             sessionClient.onReceive(routePacket)
 
             sessionClient.isAuthenticated.shouldBeTrue()
-            sessionClient.getSessionInfo(api).shouldBe(sessionInfo)
         }
 
     }

@@ -38,14 +38,12 @@ open class TestApiBackendServiceSpringBeans : ApiBackendService {
     }
 
     fun test1(
-            @Suppress("UNUSED_PARAMETER")sessionInfo:String,
             @Suppress("UNUSED_PARAMETER")packet: Packet,
             @Suppress("UNUSED_PARAMETER")apiSender: ApiBackendSender){
         val message = Test.ApiTestMsg1.parseFrom(packet.data())
         ApiReflectionTest.resultMessage = message.testMsg
     }
     fun test2(
-            @Suppress("UNUSED_PARAMETER")sessionInfo:String,
             @Suppress("UNUSED_PARAMETER")packet: Packet,
             @Suppress("UNUSED_PARAMETER")apiSender: ApiBackendSender) {
 

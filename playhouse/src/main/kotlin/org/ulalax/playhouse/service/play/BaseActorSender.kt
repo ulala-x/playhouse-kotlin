@@ -36,28 +36,28 @@ class BaseActorSender(val accountId:Long,
         baseStage.stageSenderImpl.sendToClient(sessionEndpoint,sid,packet)
     }
 
-    override fun sendToApi(sessionInfo: String, packet: Packet) {
+    override fun sendToApi(packet: Packet) {
         var serverInfo = serverInfoCenter.findServer(apiEndpoint)
         if( !serverInfo.isValid()){
             serverInfo = serverInfoCenter.findRoundRobinServer(serverInfo.serviceId)
         }
-        baseStage.stageSenderImpl.sendToApi(serverInfo.bindEndpoint,sessionInfo,packet)
+        baseStage.stageSenderImpl.sendToApi(serverInfo.bindEndpoint,packet)
     }
 
-    override suspend fun requestToApi(sessionInfo: String, packet: Packet): ReplyPacket {
+    override suspend fun requestToApi(packet: Packet): ReplyPacket {
         var serverInfo = serverInfoCenter.findServer(apiEndpoint)
         if( !serverInfo.isValid()){
             serverInfo = serverInfoCenter.findRoundRobinServer(serverInfo.serviceId)
         }
-        return baseStage.stageSenderImpl.requestToApi(serverInfo.bindEndpoint,sessionInfo,packet)
+        return baseStage.stageSenderImpl.requestToApi(serverInfo.bindEndpoint,packet)
     }
 
-    override fun asyncToApi(sessionInfo: String, packet: Packet): CompletableDeferred<ReplyPacket> {
+    override fun asyncToApi( packet: Packet): CompletableDeferred<ReplyPacket> {
         var serverInfo = serverInfoCenter.findServer(apiEndpoint)
         if( !serverInfo.isValid()){
             serverInfo = serverInfoCenter.findRoundRobinServer(serverInfo.serviceId)
         }
-        return baseStage.stageSenderImpl.asyncToApi(serverInfo.bindEndpoint,sessionInfo,packet)
+        return baseStage.stageSenderImpl.asyncToApi(serverInfo.bindEndpoint,packet)
     }
 
     fun update(sessionEndpoint: String, sid: Int,apiEndpoint: String) {

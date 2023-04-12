@@ -12,12 +12,12 @@ open class XApiCommonSender(serviceId: Short,
                             reqCache : RequestCache)
     : XSender(serviceId,clientCommunicator,reqCache), ApiCommonSender {
 
-    override fun updateSession(sessionEndpoint: String,sid:Int,serviceId: Short,sessionInfo:String){
-        val message = Server.UpdateSessionInfoMsg.newBuilder()
-                .setServiceId(serviceId.toInt())
-                .setSessionInfo(sessionInfo).build()
-        sendToBaseSession(sessionEndpoint,sid, Packet(message))
-    }
+//    override fun updateSession(sessionEndpoint: String,sid:Int,serviceId: Short,sessionInfo:String){
+//        val message = Server.UpdateSessionInfoMsg.newBuilder()
+//                .setServiceId(serviceId.toInt())
+//                .setSessionInfo(sessionInfo).build()
+//        sendToBaseSession(sessionEndpoint,sid, Packet(message))
+//    }
 
     override fun createStage(playEndpoint:String, stageType:String, packet: Packet): CreateStageResult {
         val req = Server.CreateStageReq.newBuilder()
