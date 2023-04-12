@@ -129,7 +129,7 @@ open class XSender(private val serviceId: Short,
     }
 
 
-    override fun requestToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet, replyCallback: ReplyCallback){
+    override fun requestToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet, replyCallback: ReplyCallback){
         val seq = getSequence()
         reqCache.put(seq, ReplyObject(callback = replyCallback))
         var routePacket = RoutePacket.stageOf(stageId,accountId,packet, isBase = false, isBackend = true).apply {

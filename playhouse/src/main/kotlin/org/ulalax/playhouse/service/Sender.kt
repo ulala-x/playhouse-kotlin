@@ -28,7 +28,7 @@ interface Sender {
     fun sendToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet)
 
     fun requestToApi(apiEndpoint:String, packet: Packet, replyCallback: ReplyCallback)
-    fun requestToRoom(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet, replyCallback: ReplyCallback)
+    fun requestToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet, replyCallback: ReplyCallback)
     suspend fun requestToApi(apiEndpoint:String,  packet: Packet): ReplyPacket
     suspend fun requestToStage(playEndpoint:String, stageId:Long, accountId:Long, packet: Packet): ReplyPacket
 
@@ -43,8 +43,6 @@ interface Sender {
 }
 
 interface ApiCommonSender : Sender {
-
-//    fun updateSession(sessionEndpoint: String,sid:Int,serviceId: Short,sessionInfo:String)
 
     fun createStage(playEndpoint:String, stageType:String, packet: Packet): CreateStageResult
     fun joinStage(playEndpoint:String,
@@ -74,9 +72,6 @@ interface ApiSender : ApiCommonSender {
         sessionClose(sessionEndpoint(),sid())
     }
 
-//    fun updateSession(serviceId: Short,sessionInfo:String ){
-//        updateSession(sessionEndpoint(),sid(),serviceId,sessionInfo)
-//    }
 }
 
 typealias AsyncPreCallback<T> = suspend ()->T
