@@ -35,6 +35,8 @@ object AppContext {
 
 class ApiReflectionTest : FunSpec(){
 
+    private val nodeId = 1
+
     override suspend fun beforeSpec(spec: Spec) {
         // 테스트 실행 전에 수행할 코드 작성
         AppContext.applicationContext = AnnotationConfigApplicationContext(TestConfigure::class.java)
@@ -64,7 +66,7 @@ class ApiReflectionTest : FunSpec(){
             val communicator: ClientCommunicator = mockk(relaxed = true)
             val serverInfoCenter: ServerInfoCenter = mockk(relaxed = true)
             val requestCache = RequestCache(5)
-            var systemPanel = BaseSystemPanel(serverInfoCenter,communicator)
+            var systemPanel = XSystemPanel(serverInfoCenter,communicator,nodeId)
             var allApiSender = AllApiSender(1, communicator,requestCache)
 
             apiReflection.callInitMethod(systemPanel,allApiSender)
@@ -76,7 +78,7 @@ class ApiReflectionTest : FunSpec(){
             val communicator: ClientCommunicator = mockk(relaxed = true)
             val serverInfoCenter: ServerInfoCenter = mockk(relaxed = true)
             val requestCache = RequestCache(5)
-            var systemPanel = BaseSystemPanel(serverInfoCenter,communicator)
+            var systemPanel = XSystemPanel(serverInfoCenter,communicator,nodeId)
             var allApiSender = AllApiSender(1, communicator,requestCache)
 
             apiReflection.callInitMethod(systemPanel,allApiSender)
@@ -90,7 +92,7 @@ class ApiReflectionTest : FunSpec(){
             val communicator: ClientCommunicator = mockk(relaxed = true)
             val serverInfoCenter: ServerInfoCenter = mockk(relaxed = true)
             val requestCache = RequestCache(5)
-            var systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicator)
+            var systemPanelImpl = XSystemPanel(serverInfoCenter,communicator,nodeId)
             var allApiSender = AllApiSender(1, communicator,requestCache)
 
             apiReflection.callInitMethod(systemPanelImpl,allApiSender)
@@ -105,7 +107,7 @@ class ApiReflectionTest : FunSpec(){
             val requestCache = RequestCache(5)
             var allApiSender = AllApiSender(1, communicator,requestCache)
 
-            var systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicator)
+            var systemPanelImpl = XSystemPanel(serverInfoCenter,communicator,nodeId)
 
 
             apiReflection.callInitMethod(systemPanelImpl,allApiSender)

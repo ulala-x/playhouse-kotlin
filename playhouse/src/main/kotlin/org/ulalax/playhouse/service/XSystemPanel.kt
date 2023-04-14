@@ -2,13 +2,14 @@ package org.ulalax.playhouse.service
 
 import org.ulalax.playhouse.communicator.*
 
-class BaseSystemPanel(
+class XSystemPanel(
         private val serverInfoCenter: ServerInfoCenter,
         private val clientCommunicator: ClientCommunicator,
-
+        private val nodeId:Int
         ) : SystemPanel {
 
     lateinit var communicator: Communicator
+    private val idGenerator = UniqueIdGenerator(nodeId)
 
     override fun randomServerInfo(serviceId:Short): ServerInfo {
         return serverInfoCenter.findRoundRobinServer(serviceId)
@@ -36,6 +37,10 @@ class BaseSystemPanel(
 
     override fun serverState(): ServerState {
         return communicator.serverState()
+    }
+
+    override fun generateUUID(): Long {
+        return idGenerator.nextId()
     }
 
 

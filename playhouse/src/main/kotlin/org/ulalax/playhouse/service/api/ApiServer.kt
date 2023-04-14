@@ -6,7 +6,7 @@ import org.ulalax.playhouse.communicator.socket.PlaySocketFactory
 import org.ulalax.playhouse.communicator.socket.SocketConfig
 import org.ulalax.playhouse.service.ControlContext
 import org.ulalax.playhouse.service.Server
-import org.ulalax.playhouse.service.BaseSystemPanel
+import org.ulalax.playhouse.service.XSystemPanel
 import org.ulalax.playhouse.service.XSender
 
 class ApiServer(private val commonOption: CommonOption, private val apiOption: ApiOption): Server {
@@ -27,13 +27,18 @@ class ApiServer(private val commonOption: CommonOption, private val apiOption: A
 
         val requestCache = RequestCache(commonOption.requestTimeoutSec)
         val storageClient = LettuceRedisClient(commonOption.redisIp,commonOption.redisPort).apply { this.connect() }
+
         val serverInfoCenter = XServerInfoCenter()
 
         val communicateServer = XServerCommunicator(PlaySocketFactory.createPlaySocket(SocketConfig(), bindEndpoint))
         val communicateClient = XClientCommunicator(PlaySocketFactory.createPlaySocket(SocketConfig(), bindEndpoint))
 
         val sender = XSender(serviceId, communicateClient,requestCache)
-        val systemPanel = BaseSystemPanel(serverInfoCenter,communicateClient)
+
+        val nodeId = storageClient.getNodeId(bindEndpoint)
+
+
+        val systemPanel = XSystemPanel(serverInfoCenter,communicateClient,nodeId)
         ControlContext.baseSender = sender
         ControlContext.systemPanel = systemPanel
 

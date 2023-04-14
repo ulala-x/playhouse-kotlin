@@ -1,5 +1,6 @@
 package org.ulalax.playhouse.communicator
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.should
@@ -20,7 +21,7 @@ class CacheTest : FunSpec() {
     init {
 
         test("Test ServerInfo update and get") {
-            val redisStorageClient = RedisStorageClient(redisContainer.host,redisContainer.getMappedPort(port))
+            val redisStorageClient = LettuceRedisClient(redisContainer.host,redisContainer.getMappedPort(port))
             redisStorageClient.connect()
 
             val endpoint1 ="127.0.0.1:8081"
@@ -67,6 +68,20 @@ class CacheTest : FunSpec() {
             serverInfo.timeOver() shouldBe false
             serverInfo.lastUpdate = timestamp - 61000
             serverInfo.timeOver() shouldBe true
+        }
+
+        test("test get nodeId"){
+            val redisStorageClient = LettuceRedisClient(redisContainer.host,redisContainer.getMappedPort(port))
+            redisStorageClient.connect()
+
+            for( i in 0 until 4096){
+                redisStorageClient.getNodeId("$i") shouldBe i+1
+            }
+            val ex = shouldThrow<IllegalArgumentException> {
+                redisStorageClient.getNodeId("4096")
+            }
+            ex.message shouldBe "nodeId value exceeds maximum value"
+
         }
 
     }

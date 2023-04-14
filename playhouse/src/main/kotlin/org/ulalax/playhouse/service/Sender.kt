@@ -18,9 +18,11 @@ interface SystemPanel{
     fun resume()
     fun shutdown()
     fun serverState(): ServerState
+    fun generateUUID(): Long
 
 }
 interface Sender {
+
     fun serviceId():Short
     fun reply(reply: ReplyPacket)
     fun sendToClient(sessionEndpoint: String,sid:Int,packet: Packet)

@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.protocol.Common.*
-import org.ulalax.playhouse.service.BaseSystemPanel
+import org.ulalax.playhouse.service.XSystemPanel
 import org.ulalax.playhouse.service.Sender
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
@@ -23,7 +23,7 @@ class ApiProcessor(
         private val requestCache: RequestCache,
         private val clientCommunicator: ClientCommunicator,
         private val sender: Sender,
-        private val systemPanel: BaseSystemPanel
+        private val systemPanel: XSystemPanel
     ) : Processor {
 
     private val state = AtomicReference(ServerState.DISABLE)

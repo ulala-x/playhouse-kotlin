@@ -29,7 +29,7 @@ class Communicator(private val option: CommunicatorOption,
                    private val processor: Processor,
                    private var storageClient: StorageClient,
                    private val XSender: XSender,
-                   private val systemPanel: BaseSystemPanel,
+                   private val systemPanel: XSystemPanel,
                    private val communicateServer: XServerCommunicator,
                    private val communicateClient: XClientCommunicator,
 )  : CommunicateListener {

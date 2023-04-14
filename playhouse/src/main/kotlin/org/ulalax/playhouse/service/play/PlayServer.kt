@@ -33,7 +33,9 @@ class PlayServer constructor(private val commonOption: CommonOption,
         val serverInfoCenter = XServerInfoCenter()
 
         val XSender = XSender(serviceId, communicateClient,requestCache)
-        val systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicateClient)
+
+        val nodeId = storageClient.getNodeId(bindEndpoint)
+        val systemPanelImpl = XSystemPanel(serverInfoCenter,communicateClient,nodeId)
         ControlContext.baseSender = XSender
         ControlContext.systemPanel = systemPanelImpl
 

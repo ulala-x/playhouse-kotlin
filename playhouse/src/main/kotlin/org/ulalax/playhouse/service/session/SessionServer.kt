@@ -30,7 +30,9 @@ class SessionServer constructor(private val commonOption: CommonOption, private 
         val serverInfoCenter = XServerInfoCenter()
 
         val xSender = XSender(serviceId, communicateClient,requestCache)
-        val systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicateClient)
+
+        val nodeId = storageClient.getNodeId(bindEndpoint)
+        val systemPanelImpl = XSystemPanel(serverInfoCenter,communicateClient,nodeId)
 
         ControlContext.baseSender = xSender
         ControlContext.systemPanel = systemPanelImpl
