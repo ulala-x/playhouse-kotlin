@@ -47,7 +47,7 @@ interface Sender {
 interface ApiCommonSender : Sender {
 
     fun accountId():Long
-    fun createStage(playEndpoint:String, stageType:String, packet: Packet): CreateStageResult
+    fun createStage(playEndpoint:String, stageType:String, stageId:Long, packet: Packet): CreateStageResult
     fun joinStage(playEndpoint:String,
                   stageId:Long,
                   accountId: Long,

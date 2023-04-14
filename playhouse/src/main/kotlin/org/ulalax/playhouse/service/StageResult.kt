@@ -7,7 +7,6 @@ open class StageResult(open val errorCode: Short){
     fun isSuccess() = errorCode == BaseErrorCode.SUCCESS_VALUE.toShort()
 }
 data class CreateStageResult(override val errorCode: Short,
-                            val stageId:Long,
                             val createStageRes: Packet
 ): StageResult(errorCode)
 

@@ -23,4 +23,5 @@ enum BaseErrorCode{
 
   STAGE_TYPE_IS_INVALID = -101;
   STAGE_IS_NOT_EXIST =  -102;
+  ALREADY_EXIST_STAGE = -103;
 }

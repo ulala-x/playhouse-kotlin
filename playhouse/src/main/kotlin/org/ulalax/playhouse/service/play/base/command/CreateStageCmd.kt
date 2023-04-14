@@ -31,7 +31,6 @@ class CreateStageCmd(override val playService: PlayProcessor): BaseStageCmd {
         }
 
         val res = CreateStageRes.newBuilder()
-            .setStageId(stageId)
             .setPayload(ByteString.copyFrom(outcome.data()))
             .setPayloadId(outcome.msgId).build()
 

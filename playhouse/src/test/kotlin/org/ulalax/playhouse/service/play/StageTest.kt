@@ -73,7 +73,6 @@ class StageTest : FunSpec() {
             result.msgId() shouldBe Server.CreateStageRes.getDescriptor().index
             val createStageRes = Server.CreateStageRes.parseFrom(result.data())
 
-            createStageRes.stageId shouldBe  1
             createStageRes.payloadId shouldBe TestMsg.getDescriptor().index
 
             TestMsg.parseFrom(createStageRes.payload).testMsg shouldBe "onCreate"
@@ -212,7 +211,6 @@ class StageTest : FunSpec() {
 
         val createStageRes = Server.CreateStageRes.parseFrom(result.data())
 
-        createStageRes.stageId shouldBe stageId
     }
 
 

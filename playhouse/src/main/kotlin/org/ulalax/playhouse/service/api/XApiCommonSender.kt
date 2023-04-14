@@ -23,15 +23,15 @@ open class XApiCommonSender(serviceId: Short,
         return this.currentHeader?.accountId ?: 0
     }
 
-    override fun createStage(playEndpoint:String, stageType:String, packet: Packet): CreateStageResult {
+    override fun createStage(playEndpoint:String, stageType:String,stageId:Long,packet: Packet): CreateStageResult {
         val req = Server.CreateStageReq.newBuilder()
                 .setStageType(stageType)
                 .setPayloadId(packet.msgId)
                 .setPayload(ByteString.copyFrom(packet.data())).build()
 
-        val reply = callToBaseRoom(playEndpoint,0,0, Packet(req))
+        val reply = callToBaseRoom(playEndpoint,stageId,0, Packet(req))
         val res = Server.CreateStageRes.parseFrom(reply.data())
-        return CreateStageResult(reply.errorCode,res.stageId, Packet(res.payloadId,res.payload))
+        return CreateStageResult(reply.errorCode, Packet(res.payloadId,res.payload))
     }
 
     override fun joinStage(playEndpoint: String, stageId: Long,

@@ -84,7 +84,12 @@ class PlayProcessor(
     ) {
         when (msgId) {
             CreateStageReq.getDescriptor().index -> {
-                makeBaseRoom(StageIdMaker.makeId()).send(routePacket)
+                val stageId = routePacket.stageId()
+                if(baseRooms.contains(stageId)){
+                    errorReply(routePacket.routeHeader,BaseErrorCode.ALREADY_EXIST_STAGE_VALUE.toShort())
+                }else{
+                    makeBaseRoom(stageId).send(routePacket)
+                }
             }
 
             CreateJoinStageReq.getDescriptor().index -> {
