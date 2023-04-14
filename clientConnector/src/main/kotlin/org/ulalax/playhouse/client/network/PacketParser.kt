@@ -11,7 +11,7 @@ import java.io.IOException
 open class PacketParser {
     companion object {
         const val MAX_PACKET_SIZE = 65535
-        const val HEADER_SIZE = 10
+        const val HEADER_SIZE = 11
     }
 
     open fun parse(buf:ByteBuf): ArrayDeque<ClientPacket> {
@@ -36,6 +36,7 @@ open class PacketParser {
                 val serviceId = buf.readShort()
                 val msgId = buf.readInt()
                 val msgSeq = buf.readShort()
+                val stageIndex = buf.readByte()
                 val errorCode = buf.readShort()
 
                 val body = ByteBufferAllocator.getBuf(bodySize)
@@ -44,7 +45,7 @@ open class PacketParser {
                 body.writerIndex(bodySize)
 
 
-                val clientPacket = ClientPacket.of(Header(serviceId,msgId,msgSeq, errorCode), BytePayload(body))
+                val clientPacket = ClientPacket.of(Header(serviceId,msgId,msgSeq, errorCode,stageIndex), BytePayload(body))
                 packets.add(clientPacket)
             }catch (e:Exception){
                 LOG.error(ExceptionUtils.getStackTrace(e),this,e)

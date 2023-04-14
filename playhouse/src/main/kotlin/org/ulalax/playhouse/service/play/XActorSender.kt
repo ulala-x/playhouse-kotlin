@@ -33,31 +33,31 @@ class XActorSender(val accountId:Long,
     }
 
     override fun sendToClient(packet: Packet) {
-        baseStage.stageSenderImpl.sendToClient(sessionEndpoint,sid,packet)
+        baseStage.stageSender.sendToClient(sessionEndpoint,sid,packet)
     }
 
     override fun sendToApi(packet: Packet) {
         var serverInfo = serverInfoCenter.findServer(apiEndpoint)
         if( !serverInfo.isValid()){
-            serverInfo = serverInfoCenter.findRoundRobinServer(serverInfo.serviceId)
+            serverInfo = serverInfoCenter.findServerByAccountId(serverInfo.serviceId,accountId)
         }
-        baseStage.stageSenderImpl.sendToApi(serverInfo.bindEndpoint,accountId,packet)
+        baseStage.stageSender.sendToApi(serverInfo.bindEndpoint,accountId,packet)
     }
 
     override suspend fun requestToApi(packet: Packet): ReplyPacket {
         var serverInfo = serverInfoCenter.findServer(apiEndpoint)
         if( !serverInfo.isValid()){
-            serverInfo = serverInfoCenter.findRoundRobinServer(serverInfo.serviceId)
+            serverInfo = serverInfoCenter.findServerByAccountId(serverInfo.serviceId,accountId)
         }
-        return baseStage.stageSenderImpl.requestToApi(serverInfo.bindEndpoint,accountId,packet)
+        return baseStage.stageSender.requestToApi(serverInfo.bindEndpoint,accountId,packet)
     }
 
     override fun asyncToApi( packet: Packet): CompletableDeferred<ReplyPacket> {
         var serverInfo = serverInfoCenter.findServer(apiEndpoint)
         if( !serverInfo.isValid()){
-            serverInfo = serverInfoCenter.findRoundRobinServer(serverInfo.serviceId)
+            serverInfo = serverInfoCenter.findServerByAccountId(serverInfo.serviceId,accountId)
         }
-        return baseStage.stageSenderImpl.asyncToApi(serverInfo.bindEndpoint,accountId,packet)
+        return baseStage.stageSender.asyncToApi(serverInfo.bindEndpoint,accountId,packet)
     }
 
     fun update(sessionEndpoint: String, sid: Int,apiEndpoint: String) {

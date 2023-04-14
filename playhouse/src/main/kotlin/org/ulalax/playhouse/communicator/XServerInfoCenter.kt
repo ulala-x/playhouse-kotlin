@@ -55,8 +55,10 @@ class XServerInfoCenter : ServerInfoCenter {
         }
 
         var next = offset.incrementAndGet()
+
         if(next < 0){
-            next *= next*(-1)
+            offset.set(0)
+            next = 0
         }
 
         val index = next % list.size
@@ -67,5 +69,29 @@ class XServerInfoCenter : ServerInfoCenter {
         return serverInfoList
     }
 
+    override fun findServerByAccountId(serviceId: Short, accountId: Long): XServerInfo {
 
+        val list = serverInfoList
+                .filter {
+                    it.state.name == ServerState.RUNNING.name
+                            && it.serviceId == serviceId
+                }
+
+        if(list.isEmpty()){
+            throw CommunicatorException.NotExistServerInfo()
+        }
+        val index:Int = (accountId % list.size).toInt()
+        return list[index]
+
+    }
+
+    override fun findServerType(serviceId: Short) : ServiceType {
+        val list = serverInfoList
+                .filter { it.serviceId == serviceId }
+
+        if(list.isEmpty()){
+            throw CommunicatorException.NotExistServerInfo()
+        }
+        return list.first().serviceType
+    }
 }

@@ -22,14 +22,15 @@ class BaseStage(
     private val playService: PlayProcessor,
     clientCommunicator: ClientCommunicator,
     reqCache: RequestCache,
-    private val serverInfoCenter: ServerInfoCenter
+    private val serverInfoCenter: ServerInfoCenter,
+    val stageSender:XStageSender = XStageSender(playService.serviceId, stageId,playService,clientCommunicator ,reqCache)
     ) {
 
     private val msgHandler = BaseStageCmdHandler()
     private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
     private val baseStageCoroutineContext = ThreadPoolController.coroutineContext
     private var isUsing = AtomicBoolean(false)
-    val stageSenderImpl = XStageSender(playService.serviceId, stageId,playService,clientCommunicator ,reqCache)
+
 
 
     lateinit var stage: Stage<Actor>
@@ -45,7 +46,7 @@ class BaseStage(
     }
 
     private suspend fun dispatch(routePacket: RoutePacket) {
-        stageSenderImpl.setCurrentPacketHeader(routePacket.routeHeader)
+        stageSender.setCurrentPacketHeader(routePacket.routeHeader)
         try{
             if(routePacket.isBase()){
                 msgHandler.dispatch(this,routePacket)
@@ -57,10 +58,10 @@ class BaseStage(
                 }
             }
         }catch (e:Exception){
-            stageSenderImpl.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
+            stageSender.errorReply(routePacket.routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
             LOG.error(ExceptionUtils.getStackTrace(e),this,e)
         }finally {
-            stageSenderImpl.clearCurrentPacketHeader()
+            stageSender.clearCurrentPacketHeader()
         }
 
     }
@@ -77,7 +78,7 @@ class BaseStage(
                                 dispatch(item)
                             }
                         } catch (e: Exception) {
-                            stageSenderImpl.errorReply(routePacket.routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR_VALUE.toShort())
+                            stageSender.errorReply(routePacket.routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR_VALUE.toShort())
                             LOG.error(ExceptionUtils.getStackTrace(e),this,e)
                         }
                     }
@@ -90,22 +91,22 @@ class BaseStage(
 
 
 
-    suspend fun create(StageType:String, packet: Packet): ReplyPacket {
+    suspend fun create(stageType:String, packet: Packet): ReplyPacket {
 
-        this.stage = playService.createContentRoom(StageType,stageSenderImpl)
-        this.stageSenderImpl.stageType = StageType
+        this.stage = playService.createContentRoom(stageType,stageSender)
+        this.stageSender.stageType = stageType
         val outcome  = this.stage.onCreate(packet)
         this.isCreated = true
         return outcome
     }
 
-    suspend fun join(accountId: Long, sessionEndpoint: String, sid: Int,apiEndpoint:String, packet: Packet): ReplyPacket {
+    suspend fun join(accountId: Long, sessionEndpoint: String, sid: Int,apiEndpoint:String, packet: Packet): Pair<ReplyPacket,Int> {
 
         var baseUser = playService.findUser(accountId)
 
         if (baseUser == null) {
             val userSender = XActorSender(accountId, sessionEndpoint, sid,apiEndpoint,this,serverInfoCenter)
-            val user = playService.createContentUser(this.stageSenderImpl.stageType,userSender)
+            val user = playService.createContentUser(this.stageSender.stageType,userSender)
             baseUser = BaseActor(user, userSender)
             baseUser.actor.onCreate()
             playService.addUser(baseUser)
@@ -113,41 +114,45 @@ class BaseStage(
             baseUser.actorSender.update(sessionEndpoint, sid,apiEndpoint)
         }
         val outcome =  stage.onJoinStage(baseUser.actor , packet)
+        var stageIndex = 0
         if(!outcome.isSuccess()){
             playService.removeUser(accountId)
         }else{
-            updateSessionRoomInfo(sessionEndpoint, sid)
+            stageIndex= updateSessionRoomInfo(sessionEndpoint, sid)
         }
-        return outcome
+        return Pair(outcome,stageIndex)
     }
 
-    private fun updateSessionRoomInfo(sessionEndpoint: String, sid: Int) {
-        val joinStageMsg = JoinStageMsg.newBuilder()
+    private suspend fun updateSessionRoomInfo(sessionEndpoint: String, sid: Int): Int{
+        val joinStageInfoUpdateReq = JoinStageInfoUpdateReq.newBuilder()
             .setStageId(stageId()).setPlayEndpoint(playService.endpoint()).build()
 
-        this.stageSenderImpl.sendToBaseSession(sessionEndpoint,sid,  Packet(joinStageMsg))
+        val res = this.stageSender.requestToBaseSession(sessionEndpoint,sid,  Packet(joinStageInfoUpdateReq))
+        val result = JoinStageInfoUpdateRes.parseFrom(res.data())
+        return result.stageIdx
+
     }
 
     fun reply(packet: ReplyPacket) {
-        this.stageSenderImpl.reply(packet)
+        this.stageSender.reply(packet)
     }
 
     fun leaveStage(accountId: Long, sessionEndpoint: String, sid: Int) {
         playService.removeUser(accountId)
         val request = LeaveStageMsg.newBuilder().build()
-        this.stageSenderImpl.sendToBaseSession(sessionEndpoint,sid, Packet(request))
+        this.stageSender.sendToBaseSession(sessionEndpoint,sid, Packet(request))
     }
 
     fun stageId(): Long {
-       return this.stageSenderImpl.stageId()
+       return this.stageSender.stageId()
     }
 
     fun cancelTimer(timerId: Long) {
-        this.stageSenderImpl.cancelTimer(timerId)
+        this.stageSender.cancelTimer(timerId)
     }
 
     fun hasTimer(timerId: Long): Boolean {
-        return this.stageSenderImpl.hasTimer(timerId)
+        return this.stageSender.hasTimer(timerId)
     }
 
     suspend fun onPostCreate() {

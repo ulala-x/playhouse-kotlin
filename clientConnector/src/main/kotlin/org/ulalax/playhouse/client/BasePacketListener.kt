@@ -27,9 +27,11 @@ class BasePacketListener(private val requestCache: RequestCache,
 
         val packet = clientPacket.toPacket()
         packet.use {
-            clientPacketListener.onReceive(clientPacket.serviceId(), packet)
+            clientPacketListener.onReceive(
+                TargetId(clientPacket.serviceId(),clientPacket.header.stageIndex.toInt()),
+                packet
+            )
         }
-
     }
 
     override fun onDisconnect(channel: Channel) {

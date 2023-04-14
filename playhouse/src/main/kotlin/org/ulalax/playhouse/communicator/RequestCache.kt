@@ -30,7 +30,7 @@ data class ReplyObject (
     }
 }
 
-class RequestCache(timeout:Long) {
+open class RequestCache(timeout:Long) {
 
     private val sequence = AtomicShort()
     private val cache:Cache<Short, ReplyObject>

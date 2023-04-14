@@ -4,15 +4,14 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.netty.channel.Channel
 import LOG
-import io.kotest.common.runBlocking
 import io.netty.buffer.Unpooled
 import org.ulalax.playhouse.client.Connector
+import org.ulalax.playhouse.client.TargetId
 import org.ulalax.playhouse.client.network.message.Packet
 import org.ulalax.playhouse.communicator.ConstOption
 import org.ulalax.playhouse.communicator.IpFinder
 import org.ulalax.playhouse.communicator.message.ClientPacket
 import org.ulalax.playhouse.communicator.message.FramePayload
-import org.ulalax.playhouse.communicator.message.PreAllocByteArrayOutputStream
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.Test.TestMsg
 import org.ulalax.playhouse.service.session.network.netty.SessionNetwork
@@ -77,27 +76,25 @@ class SessionNetworkTest : FunSpec(){
                 server.start()
                 Thread.sleep(100)
 
-                val connector = Connector(0, useWebSocket) { serviceId: Short, packet: Packet ->
-                    LOG.info("client: received packet:$serviceId,${packet.msgId}",this)
+                val connector = Connector(0, useWebSocket) { targetId: TargetId, packet: Packet ->
+                    LOG.info("client: received packet:$targetId,${packet.msgId}",this)
                 }
 
                 connector.connect("127.0.0.1", port)
 
                 Thread.sleep(100)
                 resultValue shouldBe "onConnect"
-//
-                //val frame = ZFrame(byteArrayOf(5))
-                connector.send(api, Packet(TestMsg.newBuilder().setTestMsg("test").build()))
-//                connector.send("api", Packet(TestMsg.newBuilder().setTestMsg("test").build()))
-//
+
+                connector.send(TargetId(api), Packet(TestMsg.newBuilder().setTestMsg("test").build()))
+
                 Thread.sleep(200)
                 resultValue shouldBe "test"
 
-                var replyPacket = connector.request(api, Packet(TestMsg.newBuilder().setTestMsg("request").build()))
+                var replyPacket = connector.request(TargetId(api), Packet(TestMsg.newBuilder().setTestMsg("request").build()))
                 LOG.info("message payload size: ${replyPacket.data().limit()},${replyPacket.msgId}",this)
                 TestMsg.parseFrom(replyPacket.data()).testMsg shouldBe "request"
-//
-                replyPacket = connector.request(api, Packet(TestMsg.newBuilder().setTestMsg("request").build()))
+
+                replyPacket = connector.request(TargetId(api), Packet(TestMsg.newBuilder().setTestMsg("request").build()))
                 TestMsg.parseFrom(replyPacket.data()).testMsg shouldBe "request"
 
                 connector.disconnect()

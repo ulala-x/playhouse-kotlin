@@ -7,6 +7,7 @@ message HeaderMsg {
   int32 msg_id = 2;
   int32 msg_seq = 3;
   int32 error_code = 4;
+  int32 stage_index = 5;
 }
 message RouteHeaderMsg {
   HeaderMsg header_msg = 1;
@@ -75,6 +76,7 @@ message CreateJoinStageRes {
   bytes create_payload = 3;
   int32 join_payload_id =4;
   bytes join_payload = 5;
+  int32 stage_idx = 6;
 }
 
 message CreateStageReq {
@@ -99,19 +101,21 @@ message JoinStageReq {
   bytes payload = 4;
 }
 
-message JoinStageMsg{
-  string playEndpoint = 1;
-  int64 stage_id = 2;
-
-
-}
-
 message JoinStageRes {
   int32 payload_id = 1;
   bytes payload = 2;
+  int32 stage_idx = 3;
 }
 
+message JoinStageInfoUpdateReq{
+  string playEndpoint = 1;
+  int64 stage_id = 2;
+}
+message JoinStageInfoUpdateRes{
+  int32 stage_idx = 1;
+}
 message LeaveStageMsg {
+  int64 stage_id = 1;
 }
 
 //message LeaveStageRes {

@@ -11,7 +11,7 @@ object ConstOption {
     const val REDIS_CACHE_KEY:String = "playhouse_serverinfos"
 
     const val MAX_PACKET_SIZE = 65535
-    const val HEADER_SIZE = 10
+    const val HEADER_SIZE = 9
 
     val logger: Logger = ConsoleLogger()
 }

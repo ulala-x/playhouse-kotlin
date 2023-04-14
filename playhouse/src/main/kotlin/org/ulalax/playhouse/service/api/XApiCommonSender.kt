@@ -47,7 +47,7 @@ open class XApiCommonSender(serviceId: Short,
         val reply  = callToBaseRoom(playEndpoint,stageId,accountId, Packet(req))
         val res = Server.JoinStageRes.parseFrom(reply.data())
 
-        return JoinStageResult(reply.errorCode, Packet(res.payloadId, res.payload))
+        return JoinStageResult(reply.errorCode,res.stageIdx, Packet(res.payloadId,res.payload))
 
     }
 

@@ -48,13 +48,16 @@ class CreateJoinStageCmd(override val playService: PlayProcessor) : BaseStageCmd
                 baseStage.onPostCreate()
                 responseBuilder.isCreated = true
             }
-
         }
 
-        val joinReply = baseStage.join(accountId,sessionEndpoint,sid,apiEndpoint,joinStagePacket)
+        val joinResult = baseStage.join(accountId,sessionEndpoint,sid,apiEndpoint,joinStagePacket)
+        val joinReply = joinResult.first
+        val stageIndex = joinResult.second
+
         val response = responseBuilder
             .setJoinPayloadId(joinReply.msgId)
             .setJoinPayload(ByteString.copyFrom(joinReply.data()))
+            .setStageIdx(stageIndex)
             .build()
 
         baseStage.reply(ReplyPacket(joinReply.errorCode,response))

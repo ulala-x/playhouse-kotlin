@@ -12,7 +12,8 @@ data class CreateStageResult(override val errorCode: Short,
 ): StageResult(errorCode)
 
 data class JoinStageResult(override val errorCode: Short,
-                          val joinStageRes: Packet
+                           val stageIndex:Int,
+                           val joinStageRes: Packet
 ) : StageResult(errorCode)
 data class CreateJoinStageResult(override val errorCode:Short,
                                 val isCreate:Boolean,

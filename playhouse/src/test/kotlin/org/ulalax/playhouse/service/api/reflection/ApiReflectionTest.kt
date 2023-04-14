@@ -4,12 +4,12 @@ import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.mockk.mockk
 import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.ulalax.playhouse.communicator.ServerInfoCenter
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.service.*
 import org.ulalax.playhouse.service.api.*
-import org.mockito.kotlin.mock
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
@@ -61,8 +61,8 @@ class ApiReflectionTest : FunSpec(){
         test("pojoInitMethodCall"){
             val apiReflection = ApiReflection(TestApiService::class.java.packageName)
 
-            val communicator: ClientCommunicator = mock()
-            val serverInfoCenter: ServerInfoCenter = mock()
+            val communicator: ClientCommunicator = mockk(relaxed = true)
+            val serverInfoCenter: ServerInfoCenter = mockk(relaxed = true)
             val requestCache = RequestCache(5)
             var systemPanel = BaseSystemPanel(serverInfoCenter,communicator)
             var allApiSender = AllApiSender(1, communicator,requestCache)
@@ -73,8 +73,8 @@ class ApiReflectionTest : FunSpec(){
         test("pojoBackendInitMethodCall"){
             val apiReflection = ApiReflection(TestApiBackendService::class.java.packageName)
 
-            val communicator: ClientCommunicator = mock()
-            val serverInfoCenter: ServerInfoCenter = mock()
+            val communicator: ClientCommunicator = mockk(relaxed = true)
+            val serverInfoCenter: ServerInfoCenter = mockk(relaxed = true)
             val requestCache = RequestCache(5)
             var systemPanel = BaseSystemPanel(serverInfoCenter,communicator)
             var allApiSender = AllApiSender(1, communicator,requestCache)
@@ -87,8 +87,8 @@ class ApiReflectionTest : FunSpec(){
         test("apiSpringBeanInitMethodCall"){
             val apiReflection = ApiReflection(TestApiServiceSpringBeans::class.java.packageName)
 
-            val communicator: ClientCommunicator = mock()
-            val serverInfoCenter: ServerInfoCenter = mock()
+            val communicator: ClientCommunicator = mockk(relaxed = true)
+            val serverInfoCenter: ServerInfoCenter = mockk(relaxed = true)
             val requestCache = RequestCache(5)
             var systemPanelImpl = BaseSystemPanel(serverInfoCenter,communicator)
             var allApiSender = AllApiSender(1, communicator,requestCache)
@@ -100,8 +100,8 @@ class ApiReflectionTest : FunSpec(){
         test("backendApiSpringBeanInitMethodCall"){
             val apiReflection = ApiReflection(TestApiBackendServiceSpringBeans::class.java.packageName)
 
-            val communicator: ClientCommunicator = mock()
-            val serverInfoCenter: ServerInfoCenter = mock()
+            val communicator: ClientCommunicator = mockk(relaxed = true)
+            val serverInfoCenter: ServerInfoCenter = mockk(relaxed = true)
             val requestCache = RequestCache(5)
             var allApiSender = AllApiSender(1, communicator,requestCache)
 

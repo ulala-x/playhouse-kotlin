@@ -13,7 +13,7 @@ import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.service.*
 import java.time.Duration
 
-class XStageSender(
+open class XStageSender(
     private val serviceId:Short,
     private val stageId:Long,
     private val playService: PlayProcessor,

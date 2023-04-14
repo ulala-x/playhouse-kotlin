@@ -73,8 +73,12 @@ dependencies {
 //    // https://mvnrepository.com/artifact/org.assertj/assertj-core
 //    testImplementation("org.assertj:assertj-core:3.23.1")
 //    // https://mvnrepository.com/artifact/org.mockito.kotlin/mockito-kotlin
-    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
-    testImplementation("org.mockito:mockito-inline:5.1.1")
+//    testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+    testImplementation("io.mockk:mockk:1.13.5")
+
+
+//
+//    testImplementation("org.mockito:mockito-inline:5.1.1")
 
 
 }

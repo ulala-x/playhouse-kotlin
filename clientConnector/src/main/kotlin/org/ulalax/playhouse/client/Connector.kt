@@ -8,6 +8,14 @@ import org.ulalax.playhouse.client.network.message.ReplyCallback
 import org.ulalax.playhouse.client.network.message.ReplyPacket
 import java.net.URI
 
+data class TargetId(val serviceId:Short,val stageIndex:Int = 0){
+    init {
+        if(stageIndex > Byte.MAX_VALUE){
+            throw ArithmeticException("stageIndex overflow")
+        }
+    }
+}
+
 class Connector(private val reqTimeoutSec:Long,
                 private val useWebsocket: Boolean=false,
                 clientPacketListener: ClientPacketListener
@@ -56,15 +64,18 @@ class Connector(private val reqTimeoutSec:Long,
         return clientNetwork.isConnect()
     }
 
-    fun send(serviceId:Short, packet: Packet){
-        val clientPacket = ClientPacket.toServerOf(serviceId,packet)
+
+
+    fun send(targetId:TargetId, packet: Packet){
+        val clientPacket = ClientPacket.toServerOf(targetId,packet)
         clientNetwork.send(clientPacket)
     }
 
-    fun request(serviceId:Short, packet: Packet, replyCallback: ReplyCallback){
+
+    fun request(targetId:TargetId, packet: Packet, replyCallback: ReplyCallback){
         val seq = requestCache.getSequence()
 
-        val clientPacket = ClientPacket.toServerOf(serviceId,packet).apply {
+        val clientPacket = ClientPacket.toServerOf(targetId,packet).apply {
             this.setMsgSeq(seq.toShort() )
         }
         clientNetwork.send(clientPacket)
@@ -72,10 +83,10 @@ class Connector(private val reqTimeoutSec:Long,
     }
 
 
-    suspend fun request(serviceId:Short, packet: Packet): ReplyPacket {
+    suspend fun request(targetId:TargetId, packet: Packet): ReplyPacket {
         val seq = requestCache.getSequence()
 
-        val clientPacket = ClientPacket.toServerOf(serviceId,packet).apply {
+        val clientPacket = ClientPacket.toServerOf(targetId,packet).apply {
             this.setMsgSeq(seq)
         }
         clientNetwork.send(clientPacket)

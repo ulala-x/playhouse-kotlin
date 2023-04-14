@@ -5,4 +5,6 @@ interface ServerInfoCenter {
     fun findServer(endpoint: String): XServerInfo
     fun findRoundRobinServer(serviceId:Short): XServerInfo
     fun getServerList(): List<XServerInfo>
+    fun findServerByAccountId(serviceId: Short, accountId: Long): XServerInfo
+    fun findServerType(serviceId: Short) : ServiceType
 }

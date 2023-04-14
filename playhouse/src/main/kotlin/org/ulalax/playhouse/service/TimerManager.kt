@@ -24,10 +24,8 @@ class  TimerManager(private val processor: Processor){
         private val timerId:Long,
         private val timerCallback: TimerCallback
     ) : TimerTask(){
-
         override fun run()  {
-            val StageTimerPacket = RoutePacket.stageTimerOf(stageId, timerId, timerCallback)
-            processor.onReceive(StageTimerPacket)
+            processor.onReceive(RoutePacket.stageTimerOf(stageId, timerId, timerCallback))
         }
     }
 
@@ -39,13 +37,9 @@ class  TimerManager(private val processor: Processor){
         private val timerId:Long,
         private val timerCallback: TimerCallback
     ) : TimerTask(){
-
-        //private val log = logger()
         override fun run()  {
-      //      log.info("counterTimerTask")
             if(count > 0 ){
-                val stageTimerPacket = RoutePacket.stageTimerOf(stageId, timerId, timerCallback)
-                processor.onReceive(stageTimerPacket)
+                processor.onReceive(RoutePacket.stageTimerOf(stageId, timerId, timerCallback))
                 count--
             }else{
                 timerManager.cancelTimer(timerId)
@@ -53,18 +47,16 @@ class  TimerManager(private val processor: Processor){
         }
     }
 
-
-
     fun registerRepeatTimer(stageId:Long,timerId: Long, initialDelay: Long, period: Long, timerCallback: TimerCallback):Long {
         val timerTask = RepeatTimerTask(this.processor,stageId,timerId,timerCallback)
-        timer.scheduleAtFixedRate(timerTask,initialDelay,period)
+        timer.schedule(timerTask,initialDelay,period)
         timerIds[timerId] = timerTask
         return timerId
     }
 
     fun registerCountTimer(stageId:Long, timerId: Long, initialDelay: Long,count: Int, period: Long, timerCallback: TimerCallback):Long {
         val timerTask = CounterTimerTask(this.processor,this,stageId,count,timerId,timerCallback)
-        timer.scheduleAtFixedRate(timerTask,initialDelay,period)
+        timer.schedule(timerTask,initialDelay,period)
         timerIds[timerId] = timerTask
         return timerId
     }

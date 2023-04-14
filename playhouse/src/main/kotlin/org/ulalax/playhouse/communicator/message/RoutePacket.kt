@@ -298,14 +298,16 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
                 throw IOException("body size is over : $bodySize");
             }
 
-            val packetSize = HEADER_SIZE + bodySize
+            val packetSize = HEADER_SIZE+2 + bodySize
 
             buffer.capacity(packetSize)
             buffer.writeShort(bodySize)
             buffer.writeShort(clientPacket.serviceId().toInt())
             buffer.writeInt(clientPacket.msgId())
             buffer.writeShort(clientPacket.header.msgSeq.toInt())
+            buffer.writeByte(clientPacket.header.stageIndex.toInt())
             buffer.writeShort(clientPacket.header.errorCode.toInt())
+
             buffer.writeBytes(clientPacket.payload.data())
         }
     }

@@ -58,9 +58,7 @@ open class XSender(private val serviceId: Short,
         clientCommunicator.send(sessionEndpoint,routePacket)
     }
 
-    // 현재 session 은 request 를 사용할일이 없음
     suspend fun requestToBaseSession(sessionEndpoint: String, sid: Int, packet: Packet): ReplyPacket {
-
         val seq = getSequence()
         val deferred = CompletableDeferred<ReplyPacket>()
         reqCache.put(seq, ReplyObject(deferred =  deferred))

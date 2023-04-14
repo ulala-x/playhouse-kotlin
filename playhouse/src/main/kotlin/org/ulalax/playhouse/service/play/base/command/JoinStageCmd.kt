@@ -19,10 +19,14 @@ class JoinStageCmd(override val playService: PlayProcessor): BaseStageCmd {
         val packet = Packet(request.payloadId,request.payload)
         val apiEndpoint = routePacket.routeHeader.from
 
-        val outcome = baseStage.join(accountId,sessionEndpoint,sid,apiEndpoint,packet)
+        val joinResult = baseStage.join(accountId,sessionEndpoint,sid,apiEndpoint,packet)
+
+        val outcome = joinResult.first
+        val stageIndex = joinResult.second
         val response = JoinStageRes.newBuilder()
             .setPayload(ByteString.copyFrom(outcome.data()))
             .setPayloadId(outcome.msgId)
+            .setStageIdx(stageIndex)
             .build()
 
         baseStage.reply(ReplyPacket(outcome.errorCode,response))

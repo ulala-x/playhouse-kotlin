@@ -24,15 +24,17 @@ class PlayProcessor(
     private val playOption: PlayOption,
     private val clientCommunicator: ClientCommunicator,
     private val requestCache: RequestCache,
-    private val serverInfoCenter: ServerInfoCenter) : Processor {
+    private val serverInfoCenter: ServerInfoCenter,
 
+) : Processor {
     private var state = AtomicReference(ServerState.DISABLE)
     private val baseUsers:MutableMap<Long, BaseActor> = ConcurrentHashMap()
     private val baseRooms:MutableMap<Long, BaseStage> = ConcurrentHashMap()
     private lateinit var threadForCoroutine:Thread
     private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
     private val timerManager = TimerManager(this)
-    private val XSender = XSender(serviceId, clientCommunicator ,requestCache)
+    private val sender :XSender = XSender(serviceId, clientCommunicator ,requestCache)
+
 
     override fun onStart() {
         state.set(ServerState.RUNNING)
@@ -49,7 +51,7 @@ class PlayProcessor(
     }
 
     fun errorReply(routeHeader: RouteHeader, errorCode:Short){
-        this.XSender.errorReply(routeHeader,errorCode)
+        this.sender.errorReply(routeHeader,errorCode)
     }
 
     private fun messageLoop() = runBlocking {

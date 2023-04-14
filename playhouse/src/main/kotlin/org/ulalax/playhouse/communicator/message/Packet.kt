@@ -15,7 +15,7 @@ interface BasePacket : AutoCloseable {
 
 }
 
-class Header constructor(var serviceId: Short=0, var msgId:Int=0, var msgSeq:Short=0, var errorCode:Short = 0 ){
+class Header constructor(var serviceId: Short=0, var msgId:Int=0, var msgSeq:Short=0, var errorCode:Short = 0,val stageIndex:Byte = 0 ){
     companion object {
         fun of(headerMsg: HeaderMsg): Header {
             return Header(headerMsg.serviceId.toShort(),headerMsg.msgId,headerMsg.msgSeq.toShort(),headerMsg.errorCode.toShort())
@@ -26,6 +26,7 @@ class Header constructor(var serviceId: Short=0, var msgId:Int=0, var msgSeq:Sho
             .setServiceId(this.serviceId.toInt())
             .setMsgId(this.msgId)
             .setMsgSeq(this.msgSeq.toInt())
+            .setStageIndex(this.stageIndex.toInt())
             .setErrorCode(this.errorCode.toInt()).build()
     }
 }

@@ -1,5 +1,4 @@
 package org.ulalax.playhouse.communicator.message
-import io.netty.buffer.ByteBuf
 import java.nio.ByteBuffer
 
 

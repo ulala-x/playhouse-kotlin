@@ -2,20 +2,29 @@ package org.ulalax.playhouse.service.session
 
 import io.netty.channel.Channel
 import LOG
+import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.Server.*
-import org.ulalax.playhouse.communicator.ClientCommunicator
-import org.ulalax.playhouse.communicator.RequestCache
-import org.ulalax.playhouse.communicator.ServerInfoCenter
-import org.ulalax.playhouse.communicator.ServiceType
 import org.ulalax.playhouse.communicator.message.ClientPacket
 import org.ulalax.playhouse.communicator.message.Packet
+import org.ulalax.playhouse.communicator.message.ReplyPacket
+
+data class TargetAddress(val endpoint:String, val stageId: Long = 0)
+
+class StageIndexGenerator
+{
+    private var byteValue: Byte = 0
+    fun incrementByte():Byte {
+        byteValue = ((byteValue + 1) and 0xff).toByte()
+        return byteValue
+    }
+}
 
 class SessionClient(
         serviceId: Short,
         private val sid: Int,
         private val channel: Channel,
-        serviceInfoCenter: ServerInfoCenter,
+        private val serviceInfoCenter: ServerInfoCenter,
         clientCommunicator: ClientCommunicator,
         urls: ArrayList<String>,
         reqCache: RequestCache,
@@ -27,41 +36,32 @@ class SessionClient(
 
     var isAuthenticated = false
     private val signInURIs = HashSet<String>()
-    private var accountId = 0L
-    private var stageId:Long = 0L
-    private var playEndpoint:String = ""
+    private var accountId:Long = 0L
+    private var playEndpoints = hashMapOf<Byte,TargetAddress>()
     private var authenticateServiceId:Short = 0.toShort()
+    private var authServerEndpoint:String = ""
+    private val stageIndexGenerator = StageIndexGenerator()
 
     init {
         signInURIs.addAll(urls)
     }
-    private fun authenticate(serviceId: Short,accountId:Long){
+    private fun authenticate(serviceId: Short,apiEndpoint:String, accountId:Long){
         this.accountId = accountId
         isAuthenticated = true
         authenticateServiceId = serviceId
+        this.authServerEndpoint = apiEndpoint
     }
 
     fun disconnect() {
         if(isAuthenticated){
-
-            targetServiceCache.getTargetedServers().forEach { serverInfo ->
-
-                val discconectPacket = Packet(DisconnectNoticeMsg.newBuilder().setAccountId(accountId).build())
-                when(serverInfo.serviceType){
-                    ServiceType.API ->{
-                        sessionSender.sendToBaseApi(serverInfo.bindEndpoint,discconectPacket)
-                    }
-                    ServiceType.Play ->{
-                        sessionSender.sendToBaseStage(serverInfo.bindEndpoint,stageId,accountId,discconectPacket)
-                    }
-                    else -> {
-                        LOG.error("has invalid type session data : ${serverInfo.serviceType}",this)
-                    }
-                }
-
+            val serverInfo = findSuitableServer(authenticateServiceId,authServerEndpoint)
+            val disconnectPacket = Packet(DisconnectNoticeMsg.newBuilder().setAccountId(accountId).build())
+            sessionSender.sendToBaseApi(serverInfo.bindEndpoint(),disconnectPacket)
+            playEndpoints.forEach{ (_, targetId) ->
+                val targetServer = serviceInfoCenter.findServer(targetId.endpoint)
+                sessionSender.sendToBaseStage(targetServer.bindEndpoint,targetId.stageId,accountId,disconnectPacket)
             }
         }
-
     }
 
     // from client
@@ -82,26 +82,46 @@ class SessionClient(
         }
     }
 
-    private fun relayTo(serviceId: Short, clientPacket: ClientPacket) {
-        val serverInfo = targetServiceCache.findServer(serviceId)
-        val endpoint = serverInfo.bindEndpoint
-        val type = serverInfo.serviceType
-        val msgSeq = clientPacket.header.msgSeq
+    private fun findSuitableServer(serviceId: Short, endpoint: String):ServerInfo{
+        var serverInfo:ServerInfo
+        serverInfo = serviceInfoCenter.findServer(endpoint)
+        if(serverInfo.state() != ServerState.RUNNING){
+            serverInfo = serviceInfoCenter.findServerByAccountId(serviceId,accountId)
+        }
+        return serverInfo
+    }
 
+
+    private fun relayTo(serviceId: Short, clientPacket: ClientPacket) {
+        
+        val type = targetServiceCache.findTypeBy(serviceId)
+
+        var serverInfo:ServerInfo
 
         when(type){
             ServiceType.API -> {
-                sessionSender.relayToApi(endpoint,sid,accountId,clientPacket,msgSeq)
+                if(authServerEndpoint.isEmpty()){
+                    serverInfo = serviceInfoCenter.findRoundRobinServer(serviceId)
+                }else{
+                    serverInfo = findSuitableServer(serviceId,authServerEndpoint)
+                }
+                
+                sessionSender.relayToApi(serverInfo.bindEndpoint(),sid,accountId,clientPacket)
             }
             ServiceType.Play ->{
-                sessionSender.relayToRoom(endpoint,stageId,sid,accountId,clientPacket,msgSeq)
+
+                val targetId = playEndpoints[clientPacket.header.stageIndex]
+                if(targetId == null){
+                    LOG.error("Target Stage is not exist - service type:$type, msgId:${clientPacket.msgId()}",this)
+                }else{
+                    serverInfo = serviceInfoCenter.findServer(targetId.endpoint)
+                    sessionSender.relayToRoom(serverInfo.bindEndpoint(),targetId.stageId,sid,accountId,clientPacket)
+                }
             }
             else ->{
-                    LOG.error("Invalid Serive Type request $type,${clientPacket.msgId()}",this)
+                    LOG.error("Invalid Service Type request - service type:$type, msgId:${clientPacket.msgId()}",this)
             }
         }
-
-        LOG.debug("session relayTo $type:${endpoint},  msgName:${clientPacket.msgId()}",this)
     }
 
     // from backend server
@@ -113,24 +133,31 @@ class SessionClient(
             when(msgName){
                 AuthenticateMsg.getDescriptor().index -> {
                     val authenticateMsg = AuthenticateMsg.parseFrom(packet.data())
-                    authenticate(authenticateMsg.serviceId.toShort(),authenticateMsg.accountId)
-                    LOG.debug("$accountId is authenticated",this)
+                    val apiEndpoint = packet.routeHeader.from
+                    authenticate(authenticateMsg.serviceId.toShort(),apiEndpoint, authenticateMsg.accountId)
+                    LOG.debug("authenticated - accountId:$accountId ,from:$apiEndpoint",this)
                 }
 
                 SessionCloseMsg.getDescriptor().index -> {
                     channel.disconnect()
-                    LOG.debug("$accountId is required to session close",this)
+                    LOG.debug("session close - accountId:$accountId ",this)
                 }
-                JoinStageMsg.getDescriptor().index ->{
-                    val joinStageMsg = JoinStageMsg.parseFrom(packet.data())
+
+                JoinStageInfoUpdateReq.getDescriptor().index ->{
+                    val joinStageMsg = JoinStageInfoUpdateReq.parseFrom(packet.data())
                     val playEndpoint =joinStageMsg.playEndpoint
                     val stageId = joinStageMsg.stageId
-                    updateRoomInfo(playEndpoint,stageId)
-                    LOG.debug("$accountId is roomInfo updated:$playEndpoint,$stageId $",this)
+                    val stageIndex = updateRoomInfo(playEndpoint,stageId)
+
+                    sessionSender.reply(
+                        ReplyPacket(JoinStageInfoUpdateRes.newBuilder().setStageIdx(stageIndex.toInt()).build()))
+
+                    LOG.debug("stage info updated - accountId:$accountId, endpoint:$playEndpoint, stageId:$stageId $",this)
                 }
                 LeaveStageMsg.getDescriptor().index->{
-                    clearRoomInfo()
-                    LOG.debug("$accountId is roomInfo clear:$playEndpoint,$stageId $",this)
+                    val stageId = LeaveStageMsg.parseFrom(packet.data()).stageId
+                    clearRoomInfo(stageId)
+                    LOG.debug("stage info clear -  accountId:$accountId, stageId:$stageId" ,this)
                 }
                 else ->{
                     LOG.error("Invalid Packet $msgName",this)
@@ -142,13 +169,33 @@ class SessionClient(
 
     }
 
-    private fun updateRoomInfo(playEndpoint: String, stageId: Long) {
-        this.playEndpoint = playEndpoint
-        this.stageId = stageId
+    private fun updateRoomInfo(playEndpoint: String, stageId: Long): Byte {
+
+        var stageIndex:Byte? = null
+        this.playEndpoints.forEach{action->
+            if(action.value.stageId == stageId){
+                stageIndex = action.key
+            }
+        }
+        if(stageIndex ==null){
+            stageIndex = stageIndexGenerator.incrementByte()
+        }
+
+        this.playEndpoints[stageIndex!!] = TargetAddress(playEndpoint,stageId)
+
+        return stageIndex!!
     }
-    private fun clearRoomInfo(){
-        this.playEndpoint=""
-        this.stageId=0
+    private fun clearRoomInfo(stageId: Long){
+        var stageIndex:Byte? = null
+        this.playEndpoints.forEach{action->
+            if(action.value.stageId == stageId){
+                stageIndex = action.key
+            }
+        }
+
+        stageIndex?.apply {
+            playEndpoints.remove(stageIndex)
+        }
     }
 
     private fun sendToClient(clientPacket: ClientPacket){
