@@ -47,18 +47,18 @@ interface Sender {
 interface ApiCommonSender : Sender {
 
     fun accountId():Long
-    fun createStage(playEndpoint:String, stageType:String, stageId:Long, packet: Packet): CreateStageResult
-    fun joinStage(playEndpoint:String,
-                  stageId:Long,
-                  accountId: Long,
-                  sessionEndpoint: String,
-                  sid:Int,
-                  packet: Packet
+    suspend fun createStage(playEndpoint:String, stageType:String, stageId:Long, packet: Packet): CreateStageResult
+    suspend fun joinStage(playEndpoint:String,
+                          stageId:Long,
+                          accountId: Long,
+                          sessionEndpoint: String,
+                          sid:Int,
+                          packet: Packet
     ): JoinStageResult
-    fun createJoinStage(playEndpoint:String, stageType:String, stageId:Long,
-                        createPacket: Packet,
-                        accountId: Long, sessionEndpoint: String, sid:Int,
-                        joinPacket: Packet,
+    suspend fun createJoinStage(playEndpoint:String, stageType:String, stageId:Long,
+                                createPacket: Packet,
+                                accountId: Long, sessionEndpoint: String, sid:Int,
+                                joinPacket: Packet,
     ): CreateJoinStageResult
 }
 interface ApiSender : ApiCommonSender {

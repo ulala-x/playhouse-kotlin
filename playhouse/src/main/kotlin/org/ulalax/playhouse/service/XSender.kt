@@ -7,7 +7,6 @@ import org.ulalax.playhouse.communicator.ReplyObject
 import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.communicator.message.*
 import org.ulalax.playhouse.protocol.Server.*
-import java.util.concurrent.CompletableFuture
 
 open class XSender(private val serviceId: Short,
                    private val clientCommunicator: ClientCommunicator,
@@ -156,17 +155,17 @@ open class XSender(private val serviceId: Short,
         clientCommunicator.send(playEndpoint,routePacket )
     }
 
-    fun callToBaseRoom(playEndpoint: String, stageId: Long, accountId: Long, packet: Packet): ReplyPacket {
-        val seq = getSequence()
-        val future = CompletableFuture<ReplyPacket>()
-        reqCache.put(seq, ReplyObject(future = future))
-        var routePacket = RoutePacket.stageOf(stageId,accountId,packet, isBase = true, isBackend = true).apply {
-            setMsgSeq(seq)
-        }
-        clientCommunicator.send(playEndpoint,routePacket )
-
-        return future.get()
-    }
+//    fun callToBaseRoom(playEndpoint: String, stageId: Long, accountId: Long, packet: Packet): ReplyPacket {
+//        val seq = getSequence()
+//        val future = CompletableFuture<ReplyPacket>()
+//        reqCache.put(seq, ReplyObject(future = future))
+//        var routePacket = RoutePacket.stageOf(stageId,accountId,packet, isBase = true, isBackend = true).apply {
+//            setMsgSeq(seq)
+//        }
+//        clientCommunicator.send(playEndpoint,routePacket )
+//
+//        return future.get()
+//    }
 
 
     override fun asyncToStage(
@@ -193,7 +192,7 @@ open class XSender(private val serviceId: Short,
         return asyncToStage(playEndpoint,stageId,accountId,packet).await()
     }
 
-    suspend fun requestToBaseRoom(
+    suspend fun requestToBaseStage(
         playEndpoint: String,
         stageId: Long,
         accountId: Long,

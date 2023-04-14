@@ -23,20 +23,20 @@ open class XApiCommonSender(serviceId: Short,
         return this.currentHeader?.accountId ?: 0
     }
 
-    override fun createStage(playEndpoint:String, stageType:String,stageId:Long,packet: Packet): CreateStageResult {
+    override suspend fun createStage(playEndpoint:String, stageType:String, stageId:Long, packet: Packet): CreateStageResult {
         val req = Server.CreateStageReq.newBuilder()
                 .setStageType(stageType)
                 .setPayloadId(packet.msgId)
                 .setPayload(ByteString.copyFrom(packet.data())).build()
 
-        val reply = callToBaseRoom(playEndpoint,stageId,0, Packet(req))
+        val reply = requestToBaseStage(playEndpoint,stageId,0, Packet(req))
         val res = Server.CreateStageRes.parseFrom(reply.data())
         return CreateStageResult(reply.errorCode, Packet(res.payloadId,res.payload))
     }
 
-    override fun joinStage(playEndpoint: String, stageId: Long,
-                           accountId: Long, sessionEndpoint: String, sid:Int,
-                           packet: Packet
+    override suspend fun joinStage(playEndpoint: String, stageId: Long,
+                                   accountId: Long, sessionEndpoint: String, sid:Int,
+                                   packet: Packet
     ): JoinStageResult {
         val req = Server.JoinStageReq.newBuilder()
                 .setSessionEndpoint(sessionEndpoint)
@@ -44,14 +44,14 @@ open class XApiCommonSender(serviceId: Short,
                 .setPayloadId(packet.msgId)
                 .setPayload(ByteString.copyFrom(packet.data())).build()
 
-        val reply  = callToBaseRoom(playEndpoint,stageId,accountId, Packet(req))
+        val reply  = requestToBaseStage(playEndpoint,stageId,accountId, Packet(req))
         val res = Server.JoinStageRes.parseFrom(reply.data())
 
         return JoinStageResult(reply.errorCode,res.stageIdx, Packet(res.payloadId,res.payload))
 
     }
 
-    override fun createJoinStage(
+    override suspend fun createJoinStage(
             playEndpoint: String, stageType: String, stageId: Long,
             createPacket: Packet,
             accountId: Long, sessionEndpoint: String, sid:Int,
@@ -66,7 +66,7 @@ open class XApiCommonSender(serviceId: Short,
                 .setJoinPayloadId(joinPacket.msgId)
                 .setJoinPayload(ByteString.copyFrom(joinPacket.data())).build()
 
-        val reply = callToBaseRoom(playEndpoint,stageId,accountId, Packet(req))
+        val reply = requestToBaseStage(playEndpoint,stageId,accountId, Packet(req))
         val res = Server.CreateJoinStageRes.parseFrom(reply.data())
         return CreateJoinStageResult(
                 reply.errorCode,
