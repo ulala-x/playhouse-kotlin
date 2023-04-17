@@ -6,8 +6,10 @@ import io.lettuce.core.api.async.RedisAsyncCommands
 import io.lettuce.core.codec.ByteArrayCodec
 import io.lettuce.core.masterreplica.MasterReplica
 import io.lettuce.core.masterreplica.StatefulRedisMasterReplicaConnection
+import io.netty.buffer.ByteBuf
 import org.ulalax.playhouse.XBitConverter
 import org.ulalax.playhouse.protocol.Server
+import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
 
 
@@ -38,10 +40,10 @@ class LettuceRedisClient(redisIp:String,redisBindPort:Int) : StorageClient {
             XBitConverter.byteArrayToInt(nodeIdBytes,0,nodeIdBytes.size)
         } else {
             var nodeId = asyncCommands.incr(redisNodeSequenceKey.toByteArray()).get(1, TimeUnit.SECONDS).toInt()
-
-            if(nodeId > 4096){
+            if(nodeId > 4095){
                 throw IllegalArgumentException("nodeId value exceeds maximum value")
             }
+            asyncCommands.hset(redisNodeIdKey.toByteArray(), key, ByteBuffer.allocate(Int.SIZE_BYTES).putInt(nodeId).array())
             nodeId
         }
     }

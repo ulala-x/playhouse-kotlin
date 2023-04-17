@@ -120,7 +120,7 @@ class ApiReflectionTest : FunSpec(){
             val apiReflection = ApiReflection(TestApiService::class.java.packageName)
 
             val routePacketMsg = RoutePacketMsg.newBuilder()
-                    .setRouteHeaderMsg(RouteHeaderMsg.newBuilder().setSessionInfo("")
+                    .setRouteHeaderMsg(RouteHeaderMsg.newBuilder()
                             .setHeaderMsg(HeaderMsg.newBuilder().setMsgId(1)).setIsBackend(false))
                     .setMessage(ApiTestMsg1.newBuilder().setTestMsg("apiMethodCall").build().toByteString())
                     .build()
@@ -143,7 +143,7 @@ class ApiReflectionTest : FunSpec(){
             val apiReflection = ApiReflection(TestApiBackendService::class.java.packageName)
 
             val routePacketMsg = RoutePacketMsg.newBuilder()
-                    .setRouteHeaderMsg(RouteHeaderMsg.newBuilder().setSessionInfo("")
+                    .setRouteHeaderMsg(RouteHeaderMsg.newBuilder()
                             .setHeaderMsg(HeaderMsg.newBuilder().setMsgId(3)).setIsBackend(true))
                     .setMessage(ApiTestMsg1.newBuilder().setTestMsg("apiBackendMethodCall").build().toByteString())
                     .build()
@@ -165,7 +165,7 @@ class ApiReflectionTest : FunSpec(){
             val apiReflection = ApiReflection(TestApiServiceSpringBeans::class.java.packageName)
 
             val routePacketMsg = RoutePacketMsg.newBuilder()
-                    .setRouteHeaderMsg(RouteHeaderMsg.newBuilder().setSessionInfo("")
+                    .setRouteHeaderMsg(RouteHeaderMsg.newBuilder()
                             .setHeaderMsg(HeaderMsg.newBuilder().setMsgId(11)).setIsBackend(false))
                     .setMessage(ApiTestMsg1.newBuilder().setTestMsg("beanApiMethodCall").build().toByteString())
                     .build()
@@ -186,7 +186,7 @@ class ApiReflectionTest : FunSpec(){
             val apiReflection = ApiReflection(TestApiBackendServiceSpringBeans::class.java.packageName)
 
             val routePacketMsg = RoutePacketMsg.newBuilder()
-                    .setRouteHeaderMsg(RouteHeaderMsg.newBuilder().setSessionInfo("")
+                    .setRouteHeaderMsg(RouteHeaderMsg.newBuilder()
                             .setHeaderMsg(HeaderMsg.newBuilder().setMsgId(13)).setIsBackend(true))
                     .setMessage(ApiTestMsg1.newBuilder().setTestMsg("beanApiBackendMethodCall").build().toByteString())
                     .build()

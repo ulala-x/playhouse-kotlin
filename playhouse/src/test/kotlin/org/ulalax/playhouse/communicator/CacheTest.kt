@@ -74,9 +74,12 @@ class CacheTest : FunSpec() {
             val redisStorageClient = LettuceRedisClient(redisContainer.host,redisContainer.getMappedPort(port))
             redisStorageClient.connect()
 
-            for( i in 0 until 4096){
+            for( i in 0 until 4095){
                 redisStorageClient.getNodeId("$i") shouldBe i+1
             }
+
+            redisStorageClient.getNodeId("0") shouldBe 1
+
             val ex = shouldThrow<IllegalArgumentException> {
                 redisStorageClient.getNodeId("4096")
             }

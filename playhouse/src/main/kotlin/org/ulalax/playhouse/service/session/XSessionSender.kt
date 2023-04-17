@@ -11,7 +11,7 @@ import org.ulalax.playhouse.service.SessionSender
 class XSessionSender(serviceId:Short,private val clientCommunicator: ClientCommunicator, reqCache: RequestCache) :
     XSender(serviceId,clientCommunicator,reqCache), SessionSender {
 
-    fun relayToRoom(
+    fun relayToStage(
             playEndpoint: String,
             stageId: Long,
             sid:Int,

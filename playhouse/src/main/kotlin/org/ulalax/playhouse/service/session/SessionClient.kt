@@ -115,7 +115,7 @@ class SessionClient(
                     LOG.error("Target Stage is not exist - service type:$type, msgId:${clientPacket.msgId()}",this)
                 }else{
                     serverInfo = serviceInfoCenter.findServer(targetId.endpoint)
-                    sessionSender.relayToRoom(serverInfo.bindEndpoint(),targetId.stageId,sid,accountId,clientPacket)
+                    sessionSender.relayToStage(serverInfo.bindEndpoint(),targetId.stageId,sid,accountId,clientPacket)
                 }
             }
             else ->{
@@ -147,7 +147,7 @@ class SessionClient(
                     val joinStageMsg = JoinStageInfoUpdateReq.parseFrom(packet.data())
                     val playEndpoint =joinStageMsg.playEndpoint
                     val stageId = joinStageMsg.stageId
-                    val stageIndex = updateRoomInfo(playEndpoint,stageId)
+                    val stageIndex = updateStageInfo(playEndpoint,stageId)
 
                     sessionSender.reply(
                         ReplyPacket(JoinStageInfoUpdateRes.newBuilder().setStageIdx(stageIndex.toInt()).build()))
@@ -169,7 +169,7 @@ class SessionClient(
 
     }
 
-    private fun updateRoomInfo(playEndpoint: String, stageId: Long): Byte {
+    private fun updateStageInfo(playEndpoint: String, stageId: Long): Byte {
 
         var stageIndex:Byte? = null
         this.playEndpoints.forEach{action->

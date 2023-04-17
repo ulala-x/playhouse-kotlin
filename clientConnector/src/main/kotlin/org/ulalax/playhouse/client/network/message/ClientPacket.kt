@@ -98,7 +98,7 @@ class ClientPacket private constructor(val header: Header, private var payload: 
         fun toServerOf(targetId: TargetId, packet: Packet): ClientPacket {
             val header = Header(msgId = packet.msgId,serviceId = targetId.serviceId,stageIndex = targetId.stageIndex.toByte())
 
-            return  ClientPacket(header,packet.movePayload())
+            return  ClientPacket(header,packet.payload)
         }
 
         fun of(header: Header, payload: Payload): ClientPacket {
@@ -107,7 +107,7 @@ class ClientPacket private constructor(val header: Header, private var payload: 
 
     }
 
-    override fun movePayload(): Payload {
+    fun movePayload(): Payload {
         val temp = payload
         payload = EmptyPayload()
         return temp;

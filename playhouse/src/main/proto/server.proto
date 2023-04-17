@@ -16,10 +16,9 @@ message RouteHeaderMsg {
   bool is_reply = 4;
   bool is_base = 5;
   bool is_backend = 6;
-  string session_info = 7;
-  int64 stage_id = 8;
-  int64 account_id = 9;
-  bool for_client = 10;
+  int64 stage_id = 7;
+  int64 account_id = 8;
+  bool for_client = 9;
 }
 
 message RoutePacketMsg {

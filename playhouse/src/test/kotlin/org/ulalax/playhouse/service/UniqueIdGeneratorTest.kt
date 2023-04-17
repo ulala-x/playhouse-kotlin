@@ -1,12 +1,11 @@
-package org.ulalax.playhouse.communicator
+package org.ulalax.playhouse.service
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import org.ulalax.playhouse.service.UniqueIdGenerator
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class SnowflakeGeneratorTest : FunSpec({
+class UniqueIdGeneratorTest : FunSpec({
 
     val generator = UniqueIdGenerator(1)
 

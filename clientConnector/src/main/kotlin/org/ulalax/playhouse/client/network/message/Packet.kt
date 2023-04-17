@@ -9,7 +9,7 @@ interface   ReplyCallback{
 }
 
 interface BasePacket : AutoCloseable {
-    fun movePayload(): Payload
+//    fun movePayload(): Payload
     fun data(): ByteBuffer
 }
 
@@ -22,11 +22,11 @@ data class Packet @JvmOverloads  constructor(val msgId:Int=-1, var payload: Payl
         return this.payload.data();
     }
 
-    override fun movePayload(): Payload {
-        val temp = payload
-        payload = EmptyPayload()
-        return temp;
-    }
+//    override fun movePayload(): Payload {
+//        val temp = payload
+//        payload = EmptyPayload()
+//        return temp;
+//    }
     override fun close() {
         this.payload.close()
     }
@@ -44,11 +44,11 @@ data class ReplyPacket @JvmOverloads constructor(val errorCode: Short, val msgId
         return payload.data()
     }
 
-    override fun movePayload(): Payload {
-        val temp = payload
-        payload = EmptyPayload()
-        return temp;
-    }
+//    override fun movePayload(): Payload {
+//        val temp = payload
+//        payload = EmptyPayload()
+//        return temp;
+//    }
     override fun close() {
         payload.close()
     }

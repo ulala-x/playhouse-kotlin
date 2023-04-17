@@ -232,22 +232,22 @@ open class XSender(private val serviceId: Short,
         }
     }
 
-    fun relayToRoom(
-        playEndpoint: String,
-        stageId: Long,
-        sid:Int,
-        accountId: Long,
-        packet: Packet,
-        msgSeq: Short
-    ) {
-        val routePacket = RoutePacket.apiOf(packet, isBase = false, isBackend = false).apply {
-            this.routeHeader.stageId = stageId
-            this.routeHeader.accountId = accountId
-            this.routeHeader.header.msgSeq = msgSeq
-            this.routeHeader.sid = sid
-        }
-        clientCommunicator.send(playEndpoint, routePacket)
-    }
+//    fun relayToRoom(
+//        playEndpoint: String,
+//        stageId: Long,
+//        sid:Int,
+//        accountId: Long,
+//        packet: Packet,
+//        msgSeq: Short
+//    ) {
+//        val routePacket = RoutePacket.apiOf(packet, isBase = false, isBackend = false).apply {
+//            this.routeHeader.stageId = stageId
+//            this.routeHeader.accountId = accountId
+//            this.routeHeader.header.msgSeq = msgSeq
+//            this.routeHeader.sid = sid
+//        }
+//        clientCommunicator.send(playEndpoint, routePacket)
+//    }
 
     ///////////
 
