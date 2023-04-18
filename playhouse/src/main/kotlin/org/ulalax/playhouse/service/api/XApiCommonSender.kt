@@ -12,12 +12,6 @@ open class XApiCommonSender(serviceId: Short,
                             reqCache : RequestCache)
     : XSender(serviceId,clientCommunicator,reqCache), ApiCommonSender {
 
-//    override fun updateSession(sessionEndpoint: String,sid:Int,serviceId: Short,sessionInfo:String){
-//        val message = Server.UpdateSessionInfoMsg.newBuilder()
-//                .setServiceId(serviceId.toInt())
-//                .setSessionInfo(sessionInfo).build()
-//        sendToBaseSession(sessionEndpoint,sid, Packet(message))
-//    }
 
     override fun accountId(): Long {
         return this.currentHeader?.accountId ?: 0

@@ -1,4 +1,4 @@
-package org.ulalax.playhouse.service.api.reflection
+package org.ulalax.playhouse.service.api
 
 import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.FunSpec
@@ -19,13 +19,13 @@ import org.ulalax.playhouse.protocol.Test.ApiTestMsg1
 import org.ulalax.playhouse.service.api.ApiInstance
 import org.ulalax.playhouse.service.api.ApiReflection
 import org.ulalax.playhouse.service.api.AllApiSender
-import org.ulalax.playhouse.service.api.reflection.pojo.back.TestApiBackendService
-import org.ulalax.playhouse.service.api.reflection.pojo.front.TestApiService
-import org.ulalax.playhouse.service.api.reflection.beans.back.TestApiBackendServiceSpringBeans
-import org.ulalax.playhouse.service.api.reflection.beans.front.TestApiServiceSpringBeans
+import org.ulalax.playhouse.service.api.pojo.back.TestApiBackendService
+import org.ulalax.playhouse.service.api.pojo.front.TestApiService
+import org.ulalax.playhouse.service.api.beans.back.TestApiBackendServiceSpringBeans
+import org.ulalax.playhouse.service.api.beans.front.TestApiServiceSpringBeans
 
 @Configuration
-@ComponentScan("org.ulalax.playhouse.service.api.reflection")
+@ComponentScan("org.ulalax.playhouse.service.api")
 open class TestConfigure
 
 

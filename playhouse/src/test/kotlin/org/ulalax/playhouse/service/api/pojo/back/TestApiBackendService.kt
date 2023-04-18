@@ -1,5 +1,6 @@
-package org.ulalax.playhouse.service.api.reflection.pojo.back
+package org.ulalax.playhouse.service.api.pojo.back
 
+import kotlinx.coroutines.delay
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.protocol.Test
 import org.ulalax.playhouse.service.ApiBackendSender
@@ -7,14 +8,14 @@ import org.ulalax.playhouse.service.Sender
 import org.ulalax.playhouse.service.SystemPanel
 import org.ulalax.playhouse.service.api.ApiBackendService
 import org.ulalax.playhouse.service.api.BackendHandlerRegister
-import org.ulalax.playhouse.service.api.reflection.ApiReflectionTest
+import org.ulalax.playhouse.service.api.ApiReflectionTest
 
 
 class TestApiBackendService : ApiBackendService {
     private lateinit var systemPanel: SystemPanel
     private lateinit var sender: Sender
 
-    override fun init(systemPanel: SystemPanel, sender: Sender) {
+    override suspend fun init(systemPanel: SystemPanel, sender: Sender) {
         this.systemPanel = systemPanel
         this.sender = sender
         ApiReflectionTest.resultMessage = "backend init"
@@ -28,18 +29,20 @@ class TestApiBackendService : ApiBackendService {
     override fun instance(): ApiBackendService {
         return TestApiBackendService()
     }
-    fun test1(
+    suspend fun test1(
             packet: Packet,
             @Suppress("UNUSED_PARAMETER") apiBackendSender: ApiBackendSender){
         val message = Test.ApiTestMsg1.parseFrom(packet.data())
         ApiReflectionTest.resultMessage = message.testMsg
+        delay(10)
     }
 
-    fun test2(
+    suspend fun test2(
             packet: Packet,
             @Suppress("UNUSED_PARAMETER") apiBackendSender: ApiBackendSender){
         val message = Test.ApiTestMsg1.parseFrom(packet.data())
         ApiReflectionTest.resultMessage = message.testMsg
+        delay(10)
     }
 
 }

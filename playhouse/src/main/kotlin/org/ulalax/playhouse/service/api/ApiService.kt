@@ -5,26 +5,27 @@ import org.ulalax.playhouse.service.ApiBackendSender
 import org.ulalax.playhouse.service.ApiSender
 import org.ulalax.playhouse.service.Sender
 import org.ulalax.playhouse.service.SystemPanel
+import kotlin.reflect.KSuspendFunction2
 
-typealias  ApiHandler = (packet: Packet, apiSender: ApiSender)->Unit
-typealias ApiBackendHandler = (packet: Packet, apiSender: ApiBackendSender)->Unit
+typealias  ApiHandler = suspend (packet: Packet, apiSender: ApiSender)->Unit
+typealias ApiBackendHandler = suspend (packet: Packet, apiSender: ApiBackendSender)->Unit
 
 
 interface HandlerRegister {
     fun add(msgId:Int,handler:ApiHandler)
 }
 interface BackendHandlerRegister {
-    fun add(msgId:Int,handler:ApiBackendHandler)
+    fun add(msgId:Int, handler: ApiBackendHandler)
 }
 
 interface ApiService {
-    fun init(systemPanel: SystemPanel, sender: Sender)
+    suspend fun init(systemPanel: SystemPanel, sender: Sender)
     fun handles(register: HandlerRegister)
     fun instance():ApiService
 }
 
 interface ApiBackendService {
-    fun init(systemPanel: SystemPanel,sender: Sender)
+    suspend fun init(systemPanel: SystemPanel,sender: Sender)
     fun handles(register: BackendHandlerRegister)
     fun instance():ApiBackendService
 }

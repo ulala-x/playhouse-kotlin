@@ -3,22 +3,22 @@ package org.ulalax.playhouse.service.api
 import kotlin.reflect.KFunction
 
 class XHandlerRegister : HandlerRegister {
-    val handlers:MutableMap<Int,KFunction<*>> = mutableMapOf()
+    val handlers:MutableMap<Int,KFunction<Unit>> = mutableMapOf()
     override fun add(msgId:Int,handler:ApiHandler){
         if(handlers.contains(msgId)){
             throw IllegalStateException("already exist msgId:$msgId")
         }else{
-            handlers[msgId] = handler as KFunction<*>
+            handlers[msgId] = handler as KFunction<Unit>
         }
     }
 }
 class XBackendHandlerRegister : BackendHandlerRegister {
     val handlers:MutableMap<Int,KFunction<*>> = mutableMapOf()
-    override fun add(msgId:Int,handler:ApiBackendHandler){
+    override fun add(msgId:Int, handler: ApiBackendHandler){
         if(handlers.contains(msgId)){
             throw IllegalStateException("already exist msgId:$msgId")
         }else{
-            handlers[msgId] = handler as KFunction<*>
+            handlers[msgId] = handler as KFunction<Unit>
         }
     }
 }

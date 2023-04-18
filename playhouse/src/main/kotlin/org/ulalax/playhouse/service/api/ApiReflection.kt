@@ -12,8 +12,14 @@ import org.ulalax.playhouse.service.ApiSender
 import org.ulalax.playhouse.service.Sender
 import org.ulalax.playhouse.service.SystemPanel
 import java.lang.reflect.Method
+import kotlin.reflect.full.callSuspend
+import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
 import kotlin.reflect.jvm.javaMethod
+import kotlin.reflect.jvm.kotlinFunction
 import kotlin.system.exitProcess
+import kotlinx.coroutines.*
+import org.reflections.ReflectionUtils
+import kotlin.coroutines.Continuation
 
 data class ApiMethod(val msgId:Int,val className: String,val method: Method)
 data class ApiInstance(val instance:Any)
@@ -30,19 +36,24 @@ class ApiReflection(packageName: String) {
     init {
         val reflections = Reflections(packageName, Scanners.SubTypes,Scanners.MethodsSignature)
 
+
         extractInstance(reflections)
         extractHandlerMethod(reflections)
     }
 
-    fun callInitMethod(systemPanel: SystemPanel, sender: Sender){
+    suspend fun callInitMethod(systemPanel: SystemPanel, sender: Sender){
         initMethods.forEach{targetMethod->
 
             try{
                 if(!instances.containsKey(targetMethod.className)) throw ApiException.NotRegisterApiInstance(
                     targetMethod.className
                 )
+
                 val apiInstance:ApiInstance = instances[targetMethod.className]!!
-                targetMethod.method.invoke(apiInstance.instance,systemPanel,sender)
+                targetMethod.method.kotlinFunction!!.callSuspend(apiInstance.instance,systemPanel,sender)
+                //targetMethod.method.invoke(apiInstance.instance,systemPanel,sender)
+
+
             }catch (e:Exception){
                 LOG.error(ExceptionUtils.getStackTrace(e),this,e)
                 exitProcess(1)
@@ -50,16 +61,7 @@ class ApiReflection(packageName: String) {
         }
     }
 
-//    private val continuation = object : Continuation<Unit> {
-//        override val context: CoroutineContext = EmptyCoroutineContext
-//
-//        override fun resumeWith(result: Result<Unit>) {
-//            LOG.trace("Coroutine completed with result: $result",this)
-//        }
-//
-//    }
-
-    fun callMethod(routeHeader: RouteHeader, packet: Packet, isBackend :Boolean, apiSender: AllApiSender) = packet.use{
+    suspend fun callMethod(routeHeader: RouteHeader, packet: Packet, isBackend :Boolean, apiSender: AllApiSender) = packet.use{
         val msgName = routeHeader.msgId()
         //val packet = Packet(msgName,routePacket.movePayload())
         //val isBackend = routePacket.isBackend()
@@ -77,9 +79,11 @@ class ApiReflection(packageName: String) {
 
         try {
             if(isBackend){
-                targetMethod.method.invoke(targetInstance.instance,packet,apiSender as ApiBackendSender)
+                targetMethod.method.kotlinFunction!!.callSuspend(targetInstance.instance,packet,apiSender as ApiBackendSender)
+//                targetMethod.method.invoke(targetInstance.instance,packet,apiSender as ApiBackendSender)
             }else{
-                targetMethod.method.invoke(targetInstance.instance,packet,apiSender as ApiSender)
+                targetMethod.method.kotlinFunction!!.callSuspend(targetInstance.instance,packet,apiSender as ApiSender)
+//                targetMethod.method.invoke(targetInstance.instance,packet,apiSender as ApiSender)
 
             }
         }catch (e:Exception){
@@ -98,21 +102,36 @@ class ApiReflection(packageName: String) {
 
     private fun registerInitMethod(reflections: Reflections){
 
-        reflections.getMethodsWithSignature(SystemPanel::class.java,Sender::class.java)
-                .filter { el->el.name == "init" }
+        //[org.ulalax.playhouse.communicator.message.Packet, org.ulalax.playhouse.service.ApiSender, kotlin.coroutines.Continuation] -> {HashSet@5043}  size = 4
+
+//        reflections.getMethodsWithSignature().forEach { method->
+//
+//            if(method.name == "init"
+//                && method.kotlinFunction!!.isSuspend
+//                && method.returnType == Unit.javaClass
+//                && method.parameters.contentEquals(arrayOf(SystemPanel::class.java,Sender::class.java))){
+//                initMethods.add(ApiMethod(0, method.declaringClass.name, method))
+//            }
+//
+//
+//        }
+
+        reflections.getMethodsWithSignature(SystemPanel::class.java,Sender::class.java,Continuation::class.java)
+                .filter { el->el.name == "init" && !el.declaringClass.isInterface}
                 .forEach{ method ->
-            initMethods.add(ApiMethod(-1, method.declaringClass.name, method))
+            initMethods.add(ApiMethod(0, method.declaringClass.name, method))
         }
-        reflections.getMethodsWithSignature(SystemPanel::class.java,Sender::class.java)
-                .filter { el->el.name == "init" }
-                .forEach{ method ->
-                    initMethods.add(ApiMethod(-1, method.declaringClass.name, method))
-                }
+//        reflections.getMethodsWithSignature(SystemPanel::class.java,Sender::class.java)
+//                .filter { el->el.name == "init" && !el.declaringClass.isInterface }
+//                .forEach{ method ->
+//                    initMethods.add(ApiMethod(0, method.declaringClass.name, method))
+//                }
 
     }
     private fun registerHandlerMethod(reflections: Reflections){
         val handleMethods = reflections.getMethodsWithSignature(HandlerRegister::class.java).filter { el->el.name=="handles" }
         handleMethods.forEach { method ->
+            if(!method.declaringClass.isInterface){
                 val className = method.declaringClass.name
                 val apiInstance:ApiInstance = instances[className]!!
                 val handlerRegister = XHandlerRegister()
@@ -125,21 +144,24 @@ class ApiReflection(packageName: String) {
                     this.methods[el.key] = ApiMethod(el.key,className,el.value.javaMethod!!)
                     messageIndexChecker[el.key] = el.value.name
                 }
+            }
         }
     }
     private fun registerBackendHandlerMethod(reflections: Reflections){
         val handleMethods = reflections.getMethodsWithSignature(BackendHandlerRegister::class.java).filter { el->el.name=="handles" }
         handleMethods.forEach { method ->
-            val className = method.declaringClass.name
-            val apiInstance:ApiInstance = instances[className]!!
-            val handlerRegister = XBackendHandlerRegister()
-            method.invoke(apiInstance.instance,handlerRegister)
-            handlerRegister.handlers.forEach { el ->
-                if(messageIndexChecker.contains(el.key)){
-                    throw ApiException.DuplicatedMessageIndex("registered msgId is duplicated - msgId:${el.key}, methods: ${messageIndexChecker[el.key]}, ${el.value.name}")
+            if(!method.declaringClass.isInterface) {
+                val className = method.declaringClass.name
+                val apiInstance: ApiInstance = instances[className]!!
+                val handlerRegister = XBackendHandlerRegister()
+                method.invoke(apiInstance.instance, handlerRegister)
+                handlerRegister.handlers.forEach { el ->
+                    if (messageIndexChecker.contains(el.key)) {
+                        throw ApiException.DuplicatedMessageIndex("registered msgId is duplicated - msgId:${el.key}, methods: ${messageIndexChecker[el.key]}, ${el.value.name}")
+                    }
+                    this.backendMethods[el.key] = ApiMethod(el.key, className, el.value.javaMethod!!)
+                    messageIndexChecker[el.key] = el.value.name
                 }
-                this.backendMethods[el.key] = ApiMethod(el.key,className,el.value.javaMethod!!)
-                messageIndexChecker[el.key] = el.value.name
             }
         }
     }

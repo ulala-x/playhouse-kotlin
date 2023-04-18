@@ -1,7 +1,5 @@
 package org.ulalax.playhouse.service.api
 
-import org.ulalax.playhouse.communicator.message.RoutePacket
-import org.apache.commons.lang3.exception.ExceptionUtils
 import LOG
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
@@ -9,13 +7,18 @@ import com.github.benmanes.caffeine.cache.Scheduler
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.apache.commons.lang3.exception.ExceptionUtils
+import org.ulalax.playhouse.NamedThreadFactory
 import org.ulalax.playhouse.communicator.*
-import org.ulalax.playhouse.protocol.Common.*
-import org.ulalax.playhouse.service.XSystemPanel
+import org.ulalax.playhouse.communicator.message.RoutePacket
+import org.ulalax.playhouse.protocol.Common.BaseErrorCode
 import org.ulalax.playhouse.service.Sender
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.TimeUnit
+import org.ulalax.playhouse.service.XSystemPanel
+import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicReference
+
+
+
 
 class ApiProcessor(
         override val serviceId: Short,
@@ -32,16 +35,17 @@ class ApiProcessor(
 
     private val cache: Cache<Long, AccountApiProcessor>
     = Caffeine.newBuilder().scheduler(Scheduler.systemScheduler()).expireAfterWrite(5, TimeUnit.MINUTES).build()
+    private val cachedThreadPool : ExecutorService = Executors.newCachedThreadPool(NamedThreadFactory("ApiProcessor"))
 
-    override fun onStart() {
+    override fun onStart()  = runBlocking{
         state.set(ServerState.RUNNING)
         apiReflection.callInitMethod(systemPanel,sender)
         Thread({ messageLoop() },"api:message-loop").start()
     }
 
     private fun messageLoop() = runBlocking {
-        val accountCoroutineDispatcher = apiOption.accountPacketExcutor.asCoroutineDispatcher()
-        val commonCoroutineDispatcher = apiOption.commonExcutor.asCoroutineDispatcher()
+        val coroutineDispatcher = cachedThreadPool.asCoroutineDispatcher()
+        //val commonCoroutineDispatcher = apiOption.commonExecutor.asCoroutineDispatcher()
         while(state.get() != ServerState.DISABLE){
             var routePacket = msgQueue.poll()
             while(routePacket!=null){
@@ -58,7 +62,7 @@ class ApiProcessor(
                                         clientCommunicator,
                                         apiReflection,
                                         apiOption.apiCallBackHandler,
-                                        accountCoroutineDispatcher
+                                        coroutineDispatcher
                                 )
 
                                 cache.put(accountId,accountApiProcessor)
@@ -70,7 +74,7 @@ class ApiProcessor(
                                 setCurrentPacketHeader(routeHeader)
                             }
 
-                            launch(commonCoroutineDispatcher) {
+                            launch(coroutineDispatcher) {
                                 try{
                                     apiReflection.callMethod(
                                             routeHeader,

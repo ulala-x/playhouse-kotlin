@@ -1,4 +1,4 @@
-package org.ulalax.playhouse.service.api.reflection.beans.back
+package org.ulalax.playhouse.service.api.beans.back
 
 import kotlinx.coroutines.*
 import org.springframework.stereotype.Component
@@ -9,8 +9,8 @@ import org.ulalax.playhouse.service.Sender
 import org.ulalax.playhouse.service.SystemPanel
 import org.ulalax.playhouse.service.api.ApiBackendService
 import org.ulalax.playhouse.service.api.BackendHandlerRegister
-import org.ulalax.playhouse.service.api.reflection.ApiReflectionTest
-import org.ulalax.playhouse.service.api.reflection.AppContext
+import org.ulalax.playhouse.service.api.ApiReflectionTest
+import org.ulalax.playhouse.service.api.AppContext
 
 
 @Component
@@ -18,7 +18,7 @@ open class TestApiBackendServiceSpringBeans : ApiBackendService {
 
     private lateinit var systemPanel: SystemPanel
     private lateinit var sender: Sender
-    override fun init(systemPanel: SystemPanel, sender: Sender) {
+    override  suspend fun init(systemPanel: SystemPanel, sender: Sender) {
         this.systemPanel = systemPanel
         this.sender = sender
         ApiReflectionTest.resultMessage = "backend SpringBeanInit"
@@ -34,18 +34,20 @@ open class TestApiBackendServiceSpringBeans : ApiBackendService {
         return AppContext.applicationContext.getBean(this::class.java) as TestApiBackendServiceSpringBeans
     }
 
-    fun test1(
+    suspend fun test1(
             @Suppress("UNUSED_PARAMETER")packet: Packet,
             @Suppress("UNUSED_PARAMETER")apiSender: ApiBackendSender){
         val message = Test.ApiTestMsg1.parseFrom(packet.data())
         ApiReflectionTest.resultMessage = message.testMsg
+        delay(10)
     }
-    fun test2(
+    suspend fun test2(
             @Suppress("UNUSED_PARAMETER")packet: Packet,
             @Suppress("UNUSED_PARAMETER")apiSender: ApiBackendSender) {
 
 
         val message = Test.ApiTestMsg1.parseFrom(packet.data())
         ApiReflectionTest.resultMessage = message.testMsg
+        delay(10)
     }
 }
