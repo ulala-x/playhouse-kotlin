@@ -5,7 +5,6 @@ import io.kotest.matchers.shouldBe
 import io.netty.channel.Channel
 import LOG
 import io.netty.buffer.Unpooled
-import org.ulalax.playhouse.client.ApiPacketListener
 import org.ulalax.playhouse.client.Connector
 import org.ulalax.playhouse.client.network.message.Packet
 import org.ulalax.playhouse.communicator.ConstOption
@@ -90,16 +89,16 @@ class SessionNetworkTest : FunSpec(){
                 Thread.sleep(100)
                 resultValue shouldBe "onConnect"
 
-                connector.sendApi(api, Packet(TestMsg.newBuilder().setTestMsg("test").build()))
+                connector.sendToApi(api, Packet(TestMsg.newBuilder().setTestMsg("test").build()))
 
                 Thread.sleep(200)
                 resultValue shouldBe "test"
 
-                var replyPacket = connector.requestApi(api, Packet(TestMsg.newBuilder().setTestMsg("request").build()))
+                var replyPacket = connector.requestToApi(api, Packet(TestMsg.newBuilder().setTestMsg("request").build()))
                 LOG.info("message payload size: ${replyPacket.data().limit()},${replyPacket.msgId}",this)
                 TestMsg.parseFrom(replyPacket.data()).testMsg shouldBe "request"
 
-                replyPacket = connector.requestApi(api, Packet(TestMsg.newBuilder().setTestMsg("request").build()))
+                replyPacket = connector.requestToApi(api, Packet(TestMsg.newBuilder().setTestMsg("request").build()))
                 TestMsg.parseFrom(replyPacket.data()).testMsg shouldBe "request"
 
                 connector.disconnect()

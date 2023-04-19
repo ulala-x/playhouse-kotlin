@@ -54,27 +54,27 @@ class Connector(private val reqTimeoutSec:Long,
     }
 
 
-    fun sendApi(serviceId:Short, packet: Packet){
-        sendStage(serviceId,0,packet)
+    fun sendToApi(serviceId:Short, packet: Packet){
+        sendToStage(serviceId,0,packet)
     }
 
 
-    fun requestApi(serviceId: Short, packet: Packet, replyCallback: ReplyCallback){
-        requestStage(serviceId,0,packet,replyCallback)
+    fun requestToApi(serviceId: Short, packet: Packet, replyCallback: ReplyCallback){
+        requestToStage(serviceId,0,packet,replyCallback)
     }
 
 
-    suspend fun requestApi(serviceId: Short, packet: Packet): ReplyPacket {
-       return requestStage(serviceId,0,packet)
+    suspend fun requestToApi(serviceId: Short, packet: Packet): ReplyPacket {
+       return requestToStage(serviceId,0,packet)
     }
 
-    fun sendStage(serviceId:Short,stageIndex:Int, packet: Packet){
+    fun sendToStage(serviceId:Short, stageIndex:Int, packet: Packet){
         val clientPacket = ClientPacket.toServerOf(TargetId(serviceId,stageIndex),packet)
         clientNetwork.send(clientPacket)
     }
 
 
-    fun requestStage(serviceId: Short,stageIndex:Int, packet: Packet, replyCallback: ReplyCallback){
+    fun requestToStage(serviceId: Short, stageIndex:Int, packet: Packet, replyCallback: ReplyCallback){
         val seq = requestCache.getSequence()
 
         val clientPacket = ClientPacket.toServerOf(TargetId(serviceId,stageIndex),packet).apply {
@@ -85,7 +85,7 @@ class Connector(private val reqTimeoutSec:Long,
     }
 
 
-    suspend fun requestStage(serviceId: Short,stageIndex:Int, packet: Packet): ReplyPacket {
+    suspend fun requestToStage(serviceId: Short, stageIndex:Int, packet: Packet): ReplyPacket {
         val seq = requestCache.getSequence()
 
         val clientPacket = ClientPacket.toServerOf(TargetId(serviceId,stageIndex),packet).apply {
