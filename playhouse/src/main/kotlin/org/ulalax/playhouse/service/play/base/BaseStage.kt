@@ -28,7 +28,6 @@ class BaseStage(
 
     private val msgHandler = BaseStageCmdHandler()
     private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
-    private val baseStageCoroutineContext = ThreadPoolController.coroutineContext
     private var isUsing = AtomicBoolean(false)
 
 
@@ -72,15 +71,13 @@ class BaseStage(
             while(isUsing.get()){
                 val item = msgQueue.poll()
                 if(item!=null) {
-                    launch (baseStageCoroutineContext) {
-                        try {
-                            item.use {
-                                dispatch(item)
-                            }
-                        } catch (e: Exception) {
-                            stageSender.errorReply(routePacket.routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR_VALUE.toShort())
-                            LOG.error(ExceptionUtils.getStackTrace(e),this,e)
+                    try {
+                        item.use {
+                            dispatch(item)
                         }
+                    } catch (e: Exception) {
+                        stageSender.errorReply(routePacket.routeHeader, BaseErrorCode.UNCHECKED_CONTENTS_ERROR_VALUE.toShort())
+                        LOG.error(ExceptionUtils.getStackTrace(e),this,e)
                     }
                 }else{
                     isUsing.set(false)

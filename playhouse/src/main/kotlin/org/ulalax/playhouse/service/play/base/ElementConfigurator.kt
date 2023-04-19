@@ -9,10 +9,10 @@ class ElementConfigurator {
     val rooms = HashMap<String,(StageSender)-> Stage<Actor>>()
     var users = HashMap<String,(ActorSender)-> Actor>()
 
-    fun register(StageType:String, stage:(StageSender)-> Stage<out Actor>, actor:(ActorSender)-> Actor){
+    fun register(stageType:String, stage:(StageSender)-> Stage<out Actor>, actor:(ActorSender)-> Actor){
         @Suppress("UNCHECKED_CAST")
-        rooms[StageType] = stage as (StageSender) -> Stage<Actor>
-        users[StageType] = actor
+        rooms[stageType] = stage as (StageSender) -> Stage<Actor>
+        users[stageType] = actor
     }
 }
 

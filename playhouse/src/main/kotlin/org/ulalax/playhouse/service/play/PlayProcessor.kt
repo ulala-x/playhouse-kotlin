@@ -4,6 +4,9 @@ import org.ulalax.playhouse.communicator.message.RouteHeader
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import kotlinx.coroutines.runBlocking
 import LOG
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.communicator.message.ProtoPayload
@@ -54,7 +57,10 @@ class PlayProcessor(
         this.sender.errorReply(routeHeader,errorCode)
     }
 
-    private fun messageLoop() = runBlocking {
+    private fun messageLoop() {
+        val coroutineDispatcher = Dispatchers.IO
+        val scope = CoroutineScope(coroutineDispatcher)
+
         while(state.get() != ServerState.DISABLE){
             var routePacket = msgQueue.poll()
             while(routePacket!=null){
@@ -65,10 +71,14 @@ class PlayProcessor(
                     val roomPacket = RoutePacket.moveOf(routePacket)
 
                     if(isBase){
-                        doBaseRoomPacket(msgId, roomPacket, stageId)
+                        scope.launch{
+                            doBaseRoomPacket(msgId, roomPacket, stageId)
+                        }
                     }else{
-                        baseRooms[stageId]?.run { this.send(roomPacket) }
-                            ?: LOG.error("stageId:$stageId is not exist, msgName:$msgId",this)
+                        scope.launch{
+                            baseRooms[stageId]?.run { this.send(roomPacket) }
+                                ?: LOG.error("stageId:$stageId is not exist, msgName:$msgId",this)
+                        }
                     }
                 }
                 routePacket = msgQueue.poll()

@@ -9,7 +9,7 @@ import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.communicator.message.ReplyPacket
 import org.ulalax.playhouse.protocol.Server.*
 
-class JoinStageCmd(override val playService: PlayProcessor): BaseStageCmd {
+class JoinStageCmd(override val playProcessor: PlayProcessor): BaseStageCmd {
     override suspend fun execute(baseStage: BaseStage, routePacket: RoutePacket) {
 
         val request = JoinStageReq.parseFrom(routePacket.data())

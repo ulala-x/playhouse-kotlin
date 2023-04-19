@@ -32,11 +32,11 @@ class PlayServer constructor(private val commonOption: CommonOption,
         val storageClient = RedisStorageClient(commonOption.redisIp,commonOption.redisPort).apply { this.connect() }
         val serverInfoCenter = XServerInfoCenter()
 
-        val XSender = XSender(serviceId, communicateClient,requestCache)
+        val xSender = XSender(serviceId, communicateClient,requestCache)
 
         val nodeId = storageClient.getNodeId(bindEndpoint)
         val systemPanelImpl = XSystemPanel(serverInfoCenter,communicateClient,nodeId)
-        ControlContext.baseSender = XSender
+        ControlContext.baseSender = xSender
         ControlContext.systemPanel = systemPanelImpl
 
         val playService = PlayProcessor(serviceId, bindEndpoint, playOption, communicateClient, requestCache,serverInfoCenter)
@@ -47,7 +47,7 @@ class PlayServer constructor(private val commonOption: CommonOption,
             serverInfoCenter,
             playService,
             storageClient,
-            XSender,
+            xSender,
             systemPanelImpl,
             communicateServer,
             communicateClient

@@ -10,7 +10,7 @@ import org.ulalax.playhouse.service.play.PlayProcessor
 import org.ulalax.playhouse.service.play.base.BaseStage
 import org.ulalax.playhouse.service.play.base.BaseStageCmd
 
-class CreateJoinStageCmd(override val playService: PlayProcessor) : BaseStageCmd {
+class CreateJoinStageCmd(override val playProcessor: PlayProcessor) : BaseStageCmd {
     override suspend fun execute(baseStage: BaseStage, routePacket: RoutePacket) {
         val request = CreateJoinStageReq.parseFrom(routePacket.data())
         val createStagePacket = Packet(request.createPayloadId,request.createPayload)
@@ -25,8 +25,8 @@ class CreateJoinStageCmd(override val playService: PlayProcessor) : BaseStageCmd
         var createReply: ReplyPacket
         val responseBuilder = CreateJoinStageRes.newBuilder()
 
-        if(!playService.isValidType(stageType)){
-            playService.errorReply(routePacket.routeHeader, BaseErrorCode.STAGE_TYPE_IS_INVALID_VALUE.toShort())
+        if(!playProcessor.isValidType(stageType)){
+            playProcessor.errorReply(routePacket.routeHeader, BaseErrorCode.STAGE_TYPE_IS_INVALID_VALUE.toShort())
             return
         }
 
@@ -37,7 +37,7 @@ class CreateJoinStageCmd(override val playService: PlayProcessor) : BaseStageCmd
                 .setCreatePayload(ByteString.copyFrom(createReply.data()))
 
             if(!createReply.isSuccess()){
-                playService.removeRoom(stageId)
+                playProcessor.removeRoom(stageId)
                 val response = CreateJoinStageRes.newBuilder()
                                     .setCreatePayloadId(createReply.msgId)
                                     .setCreatePayload(ByteString.copyFrom(createReply.data())).build()

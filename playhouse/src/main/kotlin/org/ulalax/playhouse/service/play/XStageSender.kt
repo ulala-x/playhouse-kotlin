@@ -16,7 +16,7 @@ import java.time.Duration
 open class XStageSender(
     private val serviceId:Short,
     private val stageId:Long,
-    private val playService: PlayProcessor,
+    private val playProcessor: PlayProcessor,
     private val clientCommunicator: ClientCommunicator,
     reqCache: RequestCache,
 ) : XSender(serviceId, clientCommunicator,reqCache), StageSender {
@@ -48,7 +48,7 @@ open class XStageSender(
             initialDelay,
             period
         )
-        playService.onReceive(packet)
+        playProcessor.onReceive(packet)
         this.timerIds.add(timerId)
         return timerId
     }
@@ -61,14 +61,14 @@ open class XStageSender(
     ): Long {
         val timerId = makeTimerId()
         val packet = RoutePacket.addTimerOf(TimerMsg.Type.COUNT,this.stageId,timerId,timerCallback,initialDelay,period,count)
-        playService.onReceive(packet)
+        playProcessor.onReceive(packet)
         this.timerIds.add(timerId)
         return timerId
     }
 
     override fun cancelTimer(timerId: Long) {
         val packet = RoutePacket.addTimerOf(TimerMsg.Type.CANCEL,this.stageId,timerId,{}, Duration.ZERO, Duration.ZERO)
-        playService.onReceive(packet)
+        playProcessor.onReceive(packet)
         this.timerIds.remove(timerId)
     }
 
@@ -76,20 +76,20 @@ open class XStageSender(
 
         timerIds.forEach{timerId->
             val packet = RoutePacket.addTimerOf(TimerMsg.Type.CANCEL,this.stageId,timerId,{}, Duration.ZERO, Duration.ZERO)
-            playService.onReceive(packet)
+            playProcessor.onReceive(packet)
         }
         timerIds.clear()
 
         val packet = RoutePacket.stageOf(stageId,0,
             Packet(DestroyStage.getDescriptor().index),isBase = true,isBackend = false)
-        playService.onReceive(packet)
+        playProcessor.onReceive(packet)
     }
 
     override suspend fun <T> asyncBlock(preCallback: AsyncPreCallback<T>, postCallback: AsyncPostCallback<T>? ): Unit = coroutineScope {
         launch(ThreadPoolController.coroutineAsyncCallContext) {
             val result = preCallback()
             if(postCallback!=null){
-                playService.onReceive(AsyncBlockPacket.of(stageId,postCallback,result))
+                playProcessor.onReceive(AsyncBlockPacket.of(stageId,postCallback,result))
             }
 
         }

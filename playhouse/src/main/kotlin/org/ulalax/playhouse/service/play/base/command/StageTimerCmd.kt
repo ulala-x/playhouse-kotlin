@@ -6,7 +6,7 @@ import org.ulalax.playhouse.service.play.base.BaseStage
 import org.ulalax.playhouse.service.play.base.BaseStageCmd
 import LOG
 
-class StageTimerCmd(override val playService: PlayProcessor): BaseStageCmd {
+class StageTimerCmd(override val playProcessor: PlayProcessor): BaseStageCmd {
 
     override suspend fun execute(baseStage: BaseStage, routePacket: RoutePacket) {
 

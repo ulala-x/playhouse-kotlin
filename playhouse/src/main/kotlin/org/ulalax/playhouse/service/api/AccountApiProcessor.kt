@@ -18,9 +18,7 @@ class AccountApiProcessor(
         private val requestCache: RequestCache,
         private val clientCommunicator: ClientCommunicator,
         private val apiReflection:ApiReflection,
-        private val apiCallBack: ApiCallBack,
-        private var coroutineDispatcher: ExecutorCoroutineDispatcher
-        ) {
+        private val apiCallBack: ApiCallBack) {
 
     private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
     private var isUsing = AtomicBoolean(false)
