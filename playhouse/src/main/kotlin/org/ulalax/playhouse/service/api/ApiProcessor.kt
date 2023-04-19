@@ -4,6 +4,7 @@ import LOG
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.Scheduler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -39,63 +40,72 @@ class ApiProcessor(
 
     override fun onStart()  = runBlocking{
         state.set(ServerState.RUNNING)
-        apiReflection.callInitMethod(systemPanel,sender)
+
+        launch {
+            apiReflection.callInitMethod(systemPanel,sender)
+        }
+
         Thread({ messageLoop() },"api:message-loop").start()
     }
 
-    private fun messageLoop() = runBlocking {
+    private fun messageLoop(){
         val coroutineDispatcher = cachedThreadPool.asCoroutineDispatcher()
         //val commonCoroutineDispatcher = apiOption.commonExecutor.asCoroutineDispatcher()
-        while(state.get() != ServerState.DISABLE){
-            var routePacket = msgQueue.poll()
-            while(routePacket!=null){
-                routePacket.use {
-                    val routeHeader = routePacket.routeHeader
+        val scope = CoroutineScope(coroutineDispatcher)
+        while(state.get() != ServerState.DISABLE) {
+                var routePacket = msgQueue.poll()
+                while (routePacket != null) {
+                    routePacket.use {
+                        val routeHeader = routePacket.routeHeader
 
-                    try {
-                        val accountId = routeHeader.accountId
-                        if( accountId != 0.toLong()){
-                            var accountApiProcessor = cache.getIfPresent(accountId)
-                            if(accountApiProcessor==null){
-                                accountApiProcessor = AccountApiProcessor(serviceId,
+                        try {
+                            val accountId = routeHeader.accountId
+                            if (accountId != 0.toLong()) {
+                                var accountApiProcessor = cache.getIfPresent(accountId)
+                                if (accountApiProcessor == null) {
+                                    accountApiProcessor = AccountApiProcessor(
+                                        serviceId,
                                         requestCache,
                                         clientCommunicator,
                                         apiReflection,
                                         apiOption.apiCallBackHandler,
                                         coroutineDispatcher
-                                )
+                                    )
 
-                                cache.put(accountId,accountApiProcessor)
-                            }
-                            accountApiProcessor.dispatch(routePacket)
-                        }else{
+                                    cache.put(accountId, accountApiProcessor)
+                                }
+                                scope.launch{
+                                    accountApiProcessor.dispatch(routePacket)
+                                }
 
-                            val apiSender = AllApiSender(serviceId,clientCommunicator,requestCache).apply {
-                                setCurrentPacketHeader(routeHeader)
-                            }
+                            } else {
 
-                            launch(coroutineDispatcher) {
-                                try{
-                                    apiReflection.callMethod(
+                                val apiSender = AllApiSender(serviceId, clientCommunicator, requestCache).apply {
+                                    setCurrentPacketHeader(routeHeader)
+                                }
+
+                                scope.launch {
+                                    try {
+                                        apiReflection.callMethod(
                                             routeHeader,
                                             routePacket.toPacket(),
                                             routePacket.isBackend(),
                                             apiSender
-                                    )
-                                }catch (e:Exception){
-                                    apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
-                                    LOG.error(ExceptionUtils.getStackTrace(e),this,e)
+                                        )
+                                    } catch (e: Exception) {
+                                        apiSender.errorReply(routeHeader, BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
+                                        LOG.error(ExceptionUtils.getStackTrace(e), this, e)
+                                    }
                                 }
                             }
+                        } catch (e: Exception) {
+                            LOG.error(ExceptionUtils.getStackTrace(e), this, e)
                         }
-                    }catch (e:Exception){
-                        LOG.error(ExceptionUtils.getStackTrace(e),this,e)
                     }
+                    routePacket = msgQueue.poll()
                 }
-                routePacket = msgQueue.poll()
+                Thread.sleep(10)
             }
-            Thread.sleep(10)
-        }
     }
 
     override fun onReceive(routePacket: RoutePacket)  {

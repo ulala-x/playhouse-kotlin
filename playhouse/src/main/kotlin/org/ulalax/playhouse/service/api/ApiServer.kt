@@ -26,7 +26,7 @@ class ApiServer(private val commonOption: CommonOption, private val apiOption: A
 
 
         val requestCache = RequestCache(commonOption.requestTimeoutSec)
-        val storageClient = LettuceRedisClient(commonOption.redisIp,commonOption.redisPort).apply { this.connect() }
+        val storageClient = RedisStorageClient(commonOption.redisIp,commonOption.redisPort).apply { this.connect() }
 
         val serverInfoCenter = XServerInfoCenter()
 

@@ -21,7 +21,7 @@ class CacheTest : FunSpec() {
     init {
 
         test("Test ServerInfo update and get") {
-            val redisStorageClient = LettuceRedisClient(redisContainer.host,redisContainer.getMappedPort(port))
+            val redisStorageClient = RedisStorageClient(redisContainer.host,redisContainer.getMappedPort(port))
             redisStorageClient.connect()
 
             val endpoint1 ="127.0.0.1:8081"
@@ -71,7 +71,7 @@ class CacheTest : FunSpec() {
         }
 
         test("test get nodeId"){
-            val redisStorageClient = LettuceRedisClient(redisContainer.host,redisContainer.getMappedPort(port))
+            val redisStorageClient = RedisStorageClient(redisContainer.host,redisContainer.getMappedPort(port))
             redisStorageClient.connect()
 
             for( i in 0 until 4095){

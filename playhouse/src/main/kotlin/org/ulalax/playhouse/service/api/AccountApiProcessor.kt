@@ -1,6 +1,7 @@
 package org.ulalax.playhouse.service.api
 
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -30,33 +31,30 @@ class AccountApiProcessor(
             while(isUsing.get()){
                 val item = msgQueue.poll()
                 if(item!=null) {
-                    launch (coroutineDispatcher) {
-                        val routeHeader = item.routeHeader
-
-                        if (routeHeader.isBase) {
-                            when (routeHeader.msgId()) {
-                                Server.DisconnectNoticeMsg.getDescriptor().index -> {
-                                    val disconnectNoticeMsg = Server.DisconnectNoticeMsg.parseFrom(routePacket.data())
-                                    apiCallBack.onDisconnect(disconnectNoticeMsg.accountId)
-                                }
-                                else -> {
-                                    LOG.error("Invalid base Api packet:${routeHeader.msgId()}",this)
-                                }
+                    val routeHeader = item.routeHeader
+                    if (routeHeader.isBase) {
+                        when (routeHeader.msgId()) {
+                            Server.DisconnectNoticeMsg.getDescriptor().index -> {
+                                val disconnectNoticeMsg = Server.DisconnectNoticeMsg.parseFrom(routePacket.data())
+                                apiCallBack.onDisconnect(disconnectNoticeMsg.accountId)
+                            }
+                            else -> {
+                                LOG.error("Invalid base Api packet:${routeHeader.msgId()}",this)
                             }
                         }
+                    }
 
-                        val apiSender = AllApiSender(serviceId,clientCommunicator,requestCache).apply {
-                            setCurrentPacketHeader(routeHeader)
-                        }
+                    val apiSender = AllApiSender(serviceId,clientCommunicator,requestCache).apply {
+                        setCurrentPacketHeader(routeHeader)
+                    }
 
-                        try {
-                            item.use {
-                                apiReflection.callMethod(routeHeader,item.toPacket(),routeHeader.isBase,apiSender)
-                            }
-                        } catch (e: Exception) {
-                            apiSender.errorReply(routePacket.routeHeader, Common.BaseErrorCode.UNCHECKED_CONTENTS_ERROR_VALUE.toShort())
-                            LOG.error(ExceptionUtils.getStackTrace(e),this,e)
+                    try {
+                        item.use {
+                            apiReflection.callMethod(routeHeader,item.toPacket(),routeHeader.isBase,apiSender)
                         }
+                    } catch (e: Exception) {
+                        apiSender.errorReply(routePacket.routeHeader, Common.BaseErrorCode.UNCHECKED_CONTENTS_ERROR_VALUE.toShort())
+                        LOG.error(ExceptionUtils.getStackTrace(e),this,e)
                     }
                 }else{
                     isUsing.set(false)

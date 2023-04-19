@@ -6,14 +6,13 @@ import io.lettuce.core.api.async.RedisAsyncCommands
 import io.lettuce.core.codec.ByteArrayCodec
 import io.lettuce.core.masterreplica.MasterReplica
 import io.lettuce.core.masterreplica.StatefulRedisMasterReplicaConnection
-import io.netty.buffer.ByteBuf
 import org.ulalax.playhouse.XBitConverter
 import org.ulalax.playhouse.protocol.Server
 import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
 
 
-class LettuceRedisClient(redisIp:String,redisBindPort:Int) : StorageClient {
+class RedisStorageClient(redisIp:String, redisBindPort:Int) : StorageClient {
     private val redisURI:String = "redis://$redisIp:${redisBindPort}/"
     private lateinit var connection: StatefulRedisMasterReplicaConnection<ByteArray, ByteArray>
 

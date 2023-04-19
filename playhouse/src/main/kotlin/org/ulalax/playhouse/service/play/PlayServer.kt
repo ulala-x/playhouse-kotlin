@@ -29,7 +29,7 @@ class PlayServer constructor(private val commonOption: CommonOption,
 
         val requestCache = RequestCache(commonOption.requestTimeoutSec)
 
-        val storageClient = LettuceRedisClient(commonOption.redisIp,commonOption.redisPort).apply { this.connect() }
+        val storageClient = RedisStorageClient(commonOption.redisIp,commonOption.redisPort).apply { this.connect() }
         val serverInfoCenter = XServerInfoCenter()
 
         val XSender = XSender(serviceId, communicateClient,requestCache)
