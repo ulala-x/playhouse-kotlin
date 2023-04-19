@@ -175,13 +175,24 @@ class SessionClient(
     private fun updateStageInfo(playEndpoint: String, stageId: Long): Int {
 
         var stageIndex:Int? = null
+
         this.playEndpoints.forEach{action->
             if(action.value.stageId == stageId){
                 stageIndex = action.key
             }
         }
+
         if(stageIndex ==null){
-            stageIndex = stageIndexGenerator.incrementByte().toInt()
+            for(i in 1 until 256){
+                if(playEndpoint[i] == null){
+                    stageIndex = i
+                    break
+                }
+            }
+
+            if(stageIndex == null){
+                stageIndex = stageIndexGenerator.incrementByte().toInt()
+            }
         }
 
         this.playEndpoints[stageIndex!!] = TargetAddress(playEndpoint,stageId)
