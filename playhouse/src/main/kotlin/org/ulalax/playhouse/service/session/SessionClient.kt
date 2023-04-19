@@ -184,14 +184,10 @@ class SessionClient(
 
         if(stageIndex ==null){
             for(i in 1 until 256){
-                if(playEndpoint[i] == null){
+                if(!this.playEndpoints.containsKey(i)){
                     stageIndex = i
                     break
                 }
-            }
-
-            if(stageIndex == null){
-                stageIndex = stageIndexGenerator.incrementByte().toInt()
             }
         }
 
