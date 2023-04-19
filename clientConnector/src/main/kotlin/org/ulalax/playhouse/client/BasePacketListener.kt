@@ -5,8 +5,8 @@ import io.netty.channel.Channel
 import org.ulalax.playhouse.client.network.message.ClientPacket
 
 class BasePacketListener(private val requestCache: RequestCache,
-                         private val clientPacketListener: ClientPacketListener,
-
+                         private val apiPacketListener: ApiPacketListener,
+                         private val stagePacketListener: StagePacketListener,
 ) : BasePacketListener {
 
 
@@ -27,10 +27,13 @@ class BasePacketListener(private val requestCache: RequestCache,
 
         val packet = clientPacket.toPacket()
         packet.use {
-            clientPacketListener.onReceive(
-                TargetId(clientPacket.serviceId(),clientPacket.header.stageIndex.toInt()),
-                packet
-            )
+            val serviceId = clientPacket.serviceId()
+            val stageIndex = clientPacket.header.stageIndex
+            if(stageIndex > 0){
+                stagePacketListener.onReceive(serviceId,stageIndex.toInt(),it)
+            }else{
+                apiPacketListener.onReceive(serviceId,it)
+            }
         }
     }
 

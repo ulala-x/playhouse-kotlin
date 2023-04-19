@@ -4,11 +4,20 @@ import com.google.protobuf.GeneratedMessageV3
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufOutputStream
 import org.ulalax.playhouse.THBuffer
-import org.ulalax.playhouse.client.TargetId
 import org.ulalax.playhouse.client.network.ByteBufferAllocator
 import org.ulalax.playhouse.client.network.PacketParser
 import java.io.IOException
 import java.nio.ByteBuffer
+
+
+data class TargetId(val serviceId:Short,val stageIndex:Int = 0){
+    init {
+        if(stageIndex > Byte.MAX_VALUE){
+            throw ArithmeticException("stageIndex overflow")
+        }
+    }
+}
+
 
 class Header constructor(var serviceId: Short= 0,
                          var msgId:Int= 0,

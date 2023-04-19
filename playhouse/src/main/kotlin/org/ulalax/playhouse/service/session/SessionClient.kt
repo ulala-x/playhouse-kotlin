@@ -13,9 +13,12 @@ data class TargetAddress(val endpoint:String, val stageId: Long = 0)
 
 class StageIndexGenerator
 {
-    private var byteValue: Byte = 0
-    fun incrementByte():Byte {
-        byteValue = ((byteValue + 1) and 0xff).toByte()
+    private var byteValue: UByte = 0u
+    fun incrementByte():UByte {
+        byteValue = ((byteValue + 1u) and 0xffu).toUByte()
+        if(byteValue == 0.toUByte()){
+            byteValue = incrementByte()
+        }
         return byteValue
     }
 }
@@ -37,7 +40,7 @@ class SessionClient(
     var isAuthenticated = false
     private val signInURIs = HashSet<String>()
     private var accountId:Long = 0L
-    private var playEndpoints = hashMapOf<Byte,TargetAddress>()
+    private var playEndpoints = hashMapOf<Int,TargetAddress>()
     private var authenticateServiceId:Short = 0.toShort()
     private var authServerEndpoint:String = ""
     private val stageIndexGenerator = StageIndexGenerator()
@@ -110,7 +113,7 @@ class SessionClient(
             }
             ServiceType.Play ->{
 
-                val targetId = playEndpoints[clientPacket.header.stageIndex]
+                val targetId = playEndpoints[clientPacket.header.stageIndex.toInt()]
                 if(targetId == null){
                     LOG.error("Target Stage is not exist - service type:$type, msgId:${clientPacket.msgId()}",this)
                 }else{
@@ -150,7 +153,7 @@ class SessionClient(
                     val stageIndex = updateStageInfo(playEndpoint,stageId)
 
                     sessionSender.reply(
-                        ReplyPacket(JoinStageInfoUpdateRes.newBuilder().setStageIdx(stageIndex.toInt()).build()))
+                        ReplyPacket(JoinStageInfoUpdateRes.newBuilder().setStageIdx(stageIndex).build()))
 
                     LOG.debug("stage info updated - accountId:$accountId, endpoint:$playEndpoint, stageId:$stageId $",this)
                 }
@@ -169,16 +172,16 @@ class SessionClient(
 
     }
 
-    private fun updateStageInfo(playEndpoint: String, stageId: Long): Byte {
+    private fun updateStageInfo(playEndpoint: String, stageId: Long): Int {
 
-        var stageIndex:Byte? = null
+        var stageIndex:Int? = null
         this.playEndpoints.forEach{action->
             if(action.value.stageId == stageId){
                 stageIndex = action.key
             }
         }
         if(stageIndex ==null){
-            stageIndex = stageIndexGenerator.incrementByte()
+            stageIndex = stageIndexGenerator.incrementByte().toInt()
         }
 
         this.playEndpoints[stageIndex!!] = TargetAddress(playEndpoint,stageId)
@@ -186,7 +189,7 @@ class SessionClient(
         return stageIndex!!
     }
     private fun clearRoomInfo(stageId: Long){
-        var stageIndex:Byte? = null
+        var stageIndex:Int? = null
         this.playEndpoints.forEach{action->
             if(action.value.stageId == stageId){
                 stageIndex = action.key

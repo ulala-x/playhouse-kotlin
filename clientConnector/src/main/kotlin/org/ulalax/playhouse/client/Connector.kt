@@ -2,28 +2,19 @@ package org.ulalax.playhouse.client
 
 import org.ulalax.playhouse.client.network.ClientNetwork
 import kotlinx.coroutines.CompletableDeferred
-import org.ulalax.playhouse.client.network.message.ClientPacket
-import org.ulalax.playhouse.client.network.message.Packet
-import org.ulalax.playhouse.client.network.message.ReplyCallback
-import org.ulalax.playhouse.client.network.message.ReplyPacket
+import org.ulalax.playhouse.client.network.message.*
 import java.net.URI
 
-data class TargetId(val serviceId:Short,val stageIndex:Int = 0){
-    init {
-        if(stageIndex > Byte.MAX_VALUE){
-            throw ArithmeticException("stageIndex overflow")
-        }
-    }
-}
 
 class Connector(private val reqTimeoutSec:Long,
                 private val useWebsocket: Boolean=false,
-                clientPacketListener: ClientPacketListener
+                apiPacketListener: ApiPacketListener,
+                stagePacketListener: StagePacketListener,
         ) {
 
     private lateinit var clientNetwork: ClientNetwork
     private val requestCache = RequestCache(reqTimeoutSec)
-    private val connectorListener = BasePacketListener(requestCache,clientPacketListener)
+    private val connectorListener = BasePacketListener(requestCache,apiPacketListener,stagePacketListener)
 
     fun connect(host:String,port:Int){
 
@@ -38,11 +29,9 @@ class Connector(private val reqTimeoutSec:Long,
             clientNetwork.init(null)
             clientNetwork.connect(host,port)
         }
-
-
     }
 
-    suspend fun deferredConnect(host:String, port:Int){
+    suspend fun connectAsync(host:String, port:Int){
         clientNetwork = ClientNetwork(connectorListener)
 
         if(useWebsocket){
@@ -65,17 +54,30 @@ class Connector(private val reqTimeoutSec:Long,
     }
 
 
+    fun sendApi(serviceId:Short, packet: Packet){
+        sendStage(serviceId,0,packet)
+    }
 
-    fun send(targetId:TargetId, packet: Packet){
-        val clientPacket = ClientPacket.toServerOf(targetId,packet)
+
+    fun requestApi(serviceId: Short, packet: Packet, replyCallback: ReplyCallback){
+        requestStage(serviceId,0,packet,replyCallback)
+    }
+
+
+    suspend fun requestApi(serviceId: Short, packet: Packet): ReplyPacket {
+       return requestStage(serviceId,0,packet)
+    }
+
+    fun sendStage(serviceId:Short,stageIndex:Int, packet: Packet){
+        val clientPacket = ClientPacket.toServerOf(TargetId(serviceId,stageIndex),packet)
         clientNetwork.send(clientPacket)
     }
 
 
-    fun request(targetId:TargetId, packet: Packet, replyCallback: ReplyCallback){
+    fun requestStage(serviceId: Short,stageIndex:Int, packet: Packet, replyCallback: ReplyCallback){
         val seq = requestCache.getSequence()
 
-        val clientPacket = ClientPacket.toServerOf(targetId,packet).apply {
+        val clientPacket = ClientPacket.toServerOf(TargetId(serviceId,stageIndex),packet).apply {
             this.setMsgSeq(seq.toShort() )
         }
         clientNetwork.send(clientPacket)
@@ -83,10 +85,10 @@ class Connector(private val reqTimeoutSec:Long,
     }
 
 
-    suspend fun request(targetId:TargetId, packet: Packet): ReplyPacket {
+    suspend fun requestStage(serviceId: Short,stageIndex:Int, packet: Packet): ReplyPacket {
         val seq = requestCache.getSequence()
 
-        val clientPacket = ClientPacket.toServerOf(targetId,packet).apply {
+        val clientPacket = ClientPacket.toServerOf(TargetId(serviceId,stageIndex),packet).apply {
             this.setMsgSeq(seq)
         }
         clientNetwork.send(clientPacket)

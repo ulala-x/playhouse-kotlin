@@ -5,8 +5,8 @@ import io.kotest.matchers.shouldBe
 import io.netty.channel.Channel
 import LOG
 import io.netty.buffer.Unpooled
+import org.ulalax.playhouse.client.ApiPacketListener
 import org.ulalax.playhouse.client.Connector
-import org.ulalax.playhouse.client.TargetId
 import org.ulalax.playhouse.client.network.message.Packet
 import org.ulalax.playhouse.communicator.ConstOption
 import org.ulalax.playhouse.communicator.IpFinder
@@ -76,25 +76,30 @@ class SessionNetworkTest : FunSpec(){
                 server.start()
                 Thread.sleep(100)
 
-                val connector = Connector(0, useWebSocket) { targetId: TargetId, packet: Packet ->
-                    LOG.info("client: received packet:$targetId,${packet.msgId}",this)
-                }
+                val connector = Connector(0, useWebSocket,
+                { serviceId: Short, packet: Packet ->
+                    // ApiPacketListener의 onReceive 함수를 구현하는 람다식
+                    LOG.info("onApiReceive - serviceId:$serviceId, packet:${packet.msgId}",this)
+
+                },{ serviceId: Short, stageIndex: Int, packet: Packet ->
+                        LOG.info("onStageReceive - serviceId:$serviceId, stageIndex:$stageIndex packet:${packet.msgId}",this)
+                })
 
                 connector.connect("127.0.0.1", port)
 
                 Thread.sleep(100)
                 resultValue shouldBe "onConnect"
 
-                connector.send(TargetId(api), Packet(TestMsg.newBuilder().setTestMsg("test").build()))
+                connector.sendApi(api, Packet(TestMsg.newBuilder().setTestMsg("test").build()))
 
                 Thread.sleep(200)
                 resultValue shouldBe "test"
 
-                var replyPacket = connector.request(TargetId(api), Packet(TestMsg.newBuilder().setTestMsg("request").build()))
+                var replyPacket = connector.requestApi(api, Packet(TestMsg.newBuilder().setTestMsg("request").build()))
                 LOG.info("message payload size: ${replyPacket.data().limit()},${replyPacket.msgId}",this)
                 TestMsg.parseFrom(replyPacket.data()).testMsg shouldBe "request"
 
-                replyPacket = connector.request(TargetId(api), Packet(TestMsg.newBuilder().setTestMsg("request").build()))
+                replyPacket = connector.requestApi(api, Packet(TestMsg.newBuilder().setTestMsg("request").build()))
                 TestMsg.parseFrom(replyPacket.data()).testMsg shouldBe "request"
 
                 connector.disconnect()

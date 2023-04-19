@@ -47,7 +47,7 @@ open class PacketParser {
 
                 LOG.info("${body.data()}",this);
 
-                val clientPacket = ClientPacket.of(Header(serviceId,msgId,msgSeq, 0,stageIndex), FramePayload(body))
+                val clientPacket = ClientPacket.of(Header(serviceId,msgId,msgSeq, 0,stageIndex.toUByte()), FramePayload(body))
                 packets.add(clientPacket)
             }catch (e:Exception){
                 LOG.error(ExceptionUtils.getStackTrace(e),this,e)
