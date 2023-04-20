@@ -11,7 +11,6 @@ import org.ulalax.playhouse.protocol.Server.*
 
 class JoinStageCmd(override val playProcessor: PlayProcessor): BaseStageCmd {
     override suspend fun execute(baseStage: BaseStage, routePacket: RoutePacket) {
-
         val request = JoinStageReq.parseFrom(routePacket.data())
         val accountId = routePacket.accountId()
         val sessionEndpoint = request.sessionEndpoint

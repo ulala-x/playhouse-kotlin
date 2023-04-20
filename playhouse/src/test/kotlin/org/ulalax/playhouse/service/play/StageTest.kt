@@ -19,7 +19,7 @@ import org.ulalax.playhouse.service.play.base.BaseStage
 
 class StageTest : FunSpec() {
 
-    private val resultList = mutableListOf<RoutePacket>()
+    //private val resultList = mutableListOf<RoutePacket>()
     private val stageType = "dungeon"
     private lateinit var playProcessor:PlayProcessor
     private val testStageId = 10000L
@@ -54,7 +54,7 @@ class StageTest : FunSpec() {
         }
 
         afterTest{
-            resultList.clear()
+            //resultList.clear()
         }
 
         test("create room should be success") {

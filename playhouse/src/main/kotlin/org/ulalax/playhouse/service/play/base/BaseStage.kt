@@ -30,9 +30,7 @@ class BaseStage(
     private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
     private var isUsing = AtomicBoolean(false)
 
-
-
-    lateinit var stage: Stage<Actor>
+    private lateinit var stage: Stage<Actor>
     var isCreated = false
 
     init {
@@ -41,7 +39,7 @@ class BaseStage(
         msgHandler.register(CreateJoinStageReq.getDescriptor().index, CreateJoinStageCmd(playService))
         msgHandler.register(StageTimer.getDescriptor().index, StageTimerCmd(playService))
         msgHandler.register(DisconnectNoticeMsg.getDescriptor().index, DisconnectNoticeCmd(playService))
-        msgHandler.register(AsyncBlock.getDescriptor().index, AsyncBlockCmd<Any>(playService))
+        msgHandler.register(AsyncBlock.getDescriptor().index, AsyncBlockCmd(playService))
     }
 
     private suspend fun dispatch(routePacket: RoutePacket) {
@@ -186,6 +184,4 @@ class BaseStage(
             LOG.error("user is not exist : $accountId",this)
         }
     }
-
-
 }

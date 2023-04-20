@@ -2,7 +2,6 @@ package org.ulalax.playhouse.service.play
 
 import org.ulalax.playhouse.communicator.message.RouteHeader
 import org.ulalax.playhouse.communicator.message.RoutePacket
-import kotlinx.coroutines.runBlocking
 import LOG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +37,6 @@ class PlayProcessor(
     private val timerManager = TimerManager(this)
     private val sender :XSender = XSender(serviceId, clientCommunicator ,requestCache)
 
-
     override fun onStart() {
         state.set(ServerState.RUNNING)
 
@@ -72,7 +70,7 @@ class PlayProcessor(
 
                     if(isBase){
                         scope.launch{
-                            doBaseRoomPacket(msgId, roomPacket, stageId)
+                            doBaseStagePacket(msgId, roomPacket, stageId)
                         }
                     }else{
                         scope.launch{
@@ -87,7 +85,7 @@ class PlayProcessor(
         }
     }
 
-    private suspend fun doBaseRoomPacket(
+    private suspend fun doBaseStagePacket(
         msgId: Int,
         routePacket: RoutePacket,
         stageId: Long,
@@ -98,13 +96,13 @@ class PlayProcessor(
                 if(baseRooms.contains(stageId)){
                     errorReply(routePacket.routeHeader,BaseErrorCode.ALREADY_EXIST_STAGE_VALUE.toShort())
                 }else{
-                    makeBaseRoom(stageId).send(routePacket)
+                    makeBaseStage(stageId).send(routePacket)
                 }
             }
 
             CreateJoinStageReq.getDescriptor().index -> {
                 baseRooms[stageId]?.send(routePacket)
-                    ?: makeBaseRoom(stageId).send(routePacket)
+                    ?: makeBaseStage(stageId).send(routePacket)
             }
 
             TimerMsg.getDescriptor().index -> {
@@ -172,14 +170,14 @@ class PlayProcessor(
                 else -> {
                     LOG.error("Invalid timer type $type",this)}
             }
-        }?: LOG.error("room for timer is not exist:$stageId, ${timerMsg.type}",this)
+        }?: LOG.error("stage for timer is not exist - stageId:$stageId, timerType:${timerMsg.type}",this)
     }
 
     override fun onReceive(routePacket: RoutePacket) {
             msgQueue.add(routePacket)
     }
 
-    private fun makeBaseRoom(stageId: Long): BaseStage {
+    private fun makeBaseStage(stageId: Long): BaseStage {
         val baseStage = BaseStage(stageId,this,clientCommunicator,requestCache,serverInfoCenter)
         baseRooms[stageId] = baseStage
         return baseStage
@@ -201,7 +199,6 @@ class PlayProcessor(
     override fun getServiceType(): ServiceType {
         return ServiceType.Play
     }
-
 
     override fun pause() {
         this.state.set(ServerState.PAUSE)
@@ -232,18 +229,14 @@ class PlayProcessor(
     }
 
     fun createContentRoom(stageType:String, roomSender: XStageSender): Stage<Actor> {
-        return  playOption.elementConfigurator.rooms[stageType]!!.invoke(roomSender)
+        return  playOption.elementConfigurator.stages[stageType]!!.invoke(roomSender)
     }
 
-
     fun createContentUser(stageType: String, userSender: XActorSender): Actor {
-        return playOption.elementConfigurator.users[stageType]!!.invoke(userSender)
+        return playOption.elementConfigurator.actors[stageType]!!.invoke(userSender)
     }
 
     fun isValidType(stageType: String): Boolean {
-        return playOption.elementConfigurator.rooms.contains(stageType)
+        return playOption.elementConfigurator.stages.contains(stageType)
     }
-
-
-
 }

@@ -11,7 +11,10 @@ class AtomicShort {
 
     fun incrementAndGet(): Short {
         val current = atomicInteger.get()
-        val next = (current + 1) and Short.MAX_VALUE.toInt()
+        var next = (current + 1) and Short.MAX_VALUE.toInt()
+        if(next == 0){
+           next = 1
+        }
         atomicInteger.compareAndSet(current, next)
         return next.toShort()
     }

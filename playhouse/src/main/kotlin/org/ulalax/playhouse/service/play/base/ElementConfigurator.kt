@@ -6,13 +6,13 @@ import org.ulalax.playhouse.service.play.Actor
 import org.ulalax.playhouse.service.play.ActorSender
 
 class ElementConfigurator {
-    val rooms = HashMap<String,(StageSender)-> Stage<Actor>>()
-    var users = HashMap<String,(ActorSender)-> Actor>()
+    val stages = HashMap<String,(StageSender)-> Stage<Actor>>()
+    val actors = HashMap<String,(ActorSender)-> Actor>()
 
     fun register(stageType:String, stage:(StageSender)-> Stage<out Actor>, actor:(ActorSender)-> Actor){
         @Suppress("UNCHECKED_CAST")
-        rooms[stageType] = stage as (StageSender) -> Stage<Actor>
-        users[stageType] = actor
+        stages[stageType] = stage as (StageSender) -> Stage<Actor>
+        actors[stageType] = actor
     }
 }
 

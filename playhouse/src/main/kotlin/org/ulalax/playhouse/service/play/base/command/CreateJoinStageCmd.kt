@@ -38,11 +38,7 @@ class CreateJoinStageCmd(override val playProcessor: PlayProcessor) : BaseStageC
 
             if(!createReply.isSuccess()){
                 playProcessor.removeRoom(stageId)
-                val response = CreateJoinStageRes.newBuilder()
-                                    .setCreatePayloadId(createReply.msgId)
-                                    .setCreatePayload(ByteString.copyFrom(createReply.data())).build()
-
-                baseStage.reply(ReplyPacket(createReply.errorCode,response))
+                baseStage.reply(ReplyPacket(createReply.errorCode,responseBuilder.build()))
                 return
             }else{
                 baseStage.onPostCreate()
@@ -54,17 +50,15 @@ class CreateJoinStageCmd(override val playProcessor: PlayProcessor) : BaseStageC
         val joinReply = joinResult.first
         val stageIndex = joinResult.second
 
-        val response = responseBuilder
+        responseBuilder
             .setJoinPayloadId(joinReply.msgId)
             .setJoinPayload(ByteString.copyFrom(joinReply.data()))
             .setStageIdx(stageIndex)
-            .build()
 
-        baseStage.reply(ReplyPacket(joinReply.errorCode,response))
+        baseStage.reply(ReplyPacket(joinReply.errorCode,responseBuilder.build()))
 
         if(joinReply.isSuccess()){
             baseStage.onPostJoinRoom(accountId)
         }
-
     }
 }

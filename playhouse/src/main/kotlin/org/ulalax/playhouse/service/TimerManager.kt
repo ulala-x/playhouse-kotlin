@@ -3,10 +3,11 @@ package org.ulalax.playhouse.service
 import org.ulalax.playhouse.communicator.Processor
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.HashMap
 
 class  TimerManager(private val processor: Processor){
-    private val timerIds:MutableMap<Long, TimerTask> = HashMap();
+    private val timerIds:MutableMap<Long, TimerTask> = ConcurrentHashMap();
     private val timer = Timer("PlayHoseTimer", false)
 
     fun start(){
