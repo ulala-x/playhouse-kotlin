@@ -23,17 +23,12 @@ class ClientPacket private constructor(val header: Header, var payload: Payload)
         return payload.data()
     }
 
-    fun serviceId():Short {
-        return header.serviceId
-    }
-    fun msgId():Int {
-        return header.msgId
-    }
 
+    val serviceId:Short
+        get() = header.serviceId
+    val msgId:Int
+        get() =  header.msgId
 
-    fun header(): Header {
-        return header;
-    }
 
     fun setMsgSeq(msgSeq: Short) {
         this.header.msgSeq = msgSeq

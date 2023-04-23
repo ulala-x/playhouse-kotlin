@@ -44,7 +44,7 @@ class StageTest : FunSpec() {
             val serverInfoCenter: ServerInfoCenter = mockk()
 
             playProcessor = PlayProcessor(2, bindEndpoint, playOption, clientCommunicator, reqCache,mockk())
-            xStageSender = spyk(XStageSender(2,stageId,playProcessor,clientCommunicator,reqCache))
+            xStageSender = spyk(XStageSender(2,stageId,stageType,playProcessor,clientCommunicator,reqCache))
             stage = spyk(BaseStage(stageId,playProcessor,clientCommunicator,reqCache,serverInfoCenter,xStageSender),recordPrivateCalls = true)
 
             coEvery { stage["updateSessionRoomInfo"](any<String>(),any<Int>()) } returns 1
@@ -70,7 +70,7 @@ class StageTest : FunSpec() {
 
             result.routeHeader.header.errorCode.shouldBe(Common.BaseErrorCode.SUCCESS.number)
 
-            result.msgId() shouldBe Server.CreateStageRes.getDescriptor().index
+            result.msgId shouldBe Server.CreateStageRes.getDescriptor().index
             val createStageRes = Server.CreateStageRes.parseFrom(result.data())
 
             createStageRes.payloadId shouldBe TestMsg.getDescriptor().index
@@ -106,7 +106,7 @@ class StageTest : FunSpec() {
             val result = slotPacket.captured
 
             //then
-            result.msgId() shouldBe Server.JoinStageRes.getDescriptor().index
+            result.msgId shouldBe Server.JoinStageRes.getDescriptor().index
             val joinStageRes = Server.JoinStageRes.parseFrom(result.data())
 
             joinStageRes.payloadId shouldBe TestMsg.getDescriptor().index
@@ -123,7 +123,7 @@ class StageTest : FunSpec() {
 
             val result = slotPacket.captured
 
-            result.msgId().shouldBe(Server.CreateJoinStageRes.getDescriptor().index)
+            result.msgId.shouldBe(Server.CreateJoinStageRes.getDescriptor().index)
             val createJoinStageRes = Server.CreateJoinStageRes.parseFrom(result.data())
 
             createJoinStageRes.isCreated.shouldBeTrue()
@@ -145,7 +145,7 @@ class StageTest : FunSpec() {
 
             val result = slotPacket.captured
 
-            result.msgId().shouldBe(Server.CreateJoinStageRes.getDescriptor().index)
+            result.msgId.shouldBe(Server.CreateJoinStageRes.getDescriptor().index)
 
             val createJoinStageRes = Server.CreateJoinStageRes.parseFrom(result.data())
             createJoinStageRes.isCreated shouldBe false

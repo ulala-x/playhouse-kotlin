@@ -56,7 +56,7 @@ class SessionProcessor(
                     LOG.debug("SessionService:onReceive ${clientPacket.header.msgId} : from client",this)
                     val sessionClient = clients[sessionId]
                     if (sessionClient == null) {
-                        LOG.error("sessionId is not exist $sessionId,${clientPacket.msgId()}",this)
+                        LOG.error("sessionId is not exist $sessionId,${clientPacket.msgId}",this)
                     }else{
                         sessionClient.onReceive(clientPacket)
                     }
@@ -76,7 +76,7 @@ class SessionProcessor(
 
                 routePacket.use {
                     val sessionId = routePacket.routeHeader.sid
-                    val packetName = routePacket.msgId()
+                    val packetName = routePacket.msgId
                     val sessionClient = clients[sessionId]
                     if(sessionClient == null) {
                         LOG.error("sessionId is already disconnected  $sessionId,$packetName",this)

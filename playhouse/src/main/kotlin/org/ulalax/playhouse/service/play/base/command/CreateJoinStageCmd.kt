@@ -16,8 +16,8 @@ class CreateJoinStageCmd(override val playProcessor: PlayProcessor) : BaseStageC
         val createStagePacket = Packet(request.createPayloadId,request.createPayload)
         val stageType = request.stageType
         val joinStagePacket = Packet(request.joinPayloadId,request.joinPayload)
-        val accountId = routePacket.accountId()
-        val stageId = routePacket.stageId()
+        val accountId = routePacket.accountId
+        val stageId = routePacket.stageId
         val sessionEndpoint = request.sessionEndpoint
         val sid = request.sid
         val apiEndpoint = routePacket.routeHeader.from

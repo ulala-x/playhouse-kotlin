@@ -42,7 +42,6 @@ class PlayProcessor(
 
         threadForCoroutine = Thread({ messageLoop() },"play:message-loop")
         threadForCoroutine.start()
-        timerManager.start()
     }
     fun removeRoom(stageId:Long){
         this.baseRooms.remove(stageId)
@@ -63,7 +62,7 @@ class PlayProcessor(
             var routePacket = msgQueue.poll()
             while(routePacket!=null){
                 routePacket.use {
-                    val msgId = routePacket.msgId()
+                    val msgId = routePacket.msgId
                     val isBase = routePacket.isBase()
                     val stageId = routePacket.routeHeader.stageId
                     val roomPacket = RoutePacket.moveOf(routePacket)
@@ -92,7 +91,7 @@ class PlayProcessor(
     ) {
         when (msgId) {
             CreateStageReq.getDescriptor().index -> {
-                val stageId = routePacket.stageId()
+                val stageId = routePacket.stageId
                 if(baseRooms.contains(stageId)){
                     errorReply(routePacket.routeHeader,BaseErrorCode.ALREADY_EXIST_STAGE_VALUE.toShort())
                 }else{

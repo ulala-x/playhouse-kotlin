@@ -6,22 +6,25 @@ import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.service.*
 
-class AllApiSender (private val serviceId:Short,
+class AllApiSender (override val serviceId:Short,
+                    override val accountId:Long,
+                    override val sessionEndpoint:String,
+                    override val sid:Int,
                     private val clientCommunicator: ClientCommunicator,
-                    private val reqCache: RequestCache
+                    private val reqCache: RequestCache,
 ) : XApiCommonSender(serviceId,clientCommunicator,reqCache),
     ApiSender, ApiBackendSender {
 
     override fun getFromEndpoint(): String {
         return this.currentHeader?.from ?:""
     }
-    override fun sessionEndpoint(): String {
-        return this.currentHeader?.from ?:""
-    }
-
-    override fun sid():Int {
-        return this.currentHeader?.sid ?:0
-    }
+//    override fun sessionEndpoint(): String {
+//        return this.currentHeader?.from ?:""
+//    }
+//
+//    override fun getSid():Int {
+//        return this.currentHeader?.sid ?:0
+//    }
 
 
     override fun authenticate(accountId:Long){
@@ -36,7 +39,7 @@ class AllApiSender (private val serviceId:Short,
     }
 
     fun clone(): AllApiSender {
-        return AllApiSender(this.serviceId,this.clientCommunicator,this.reqCache)
+        return AllApiSender(this.serviceId,this.accountId,this.sessionEndpoint,this.sid,this.clientCommunicator,this.reqCache)
     }
 
 }

@@ -14,23 +14,16 @@ import org.ulalax.playhouse.service.*
 import java.time.Duration
 
 open class XStageSender(
-    private val serviceId:Short,
-    private val stageId:Long,
+    override val serviceId:Short,
+    override val stageId:Long,
+    override var stageType: String,
     private val playProcessor: PlayProcessor,
     private val clientCommunicator: ClientCommunicator,
     reqCache: RequestCache,
 ) : XSender(serviceId, clientCommunicator,reqCache), StageSender {
 
     private val timerIds = HashSet<Long>()
-    var stageType:String = ""
 
-    override fun stageId(): Long {
-        return stageId
-    }
-
-    override fun stageType(): String {
-        return stageType
-    }
     private fun makeTimerId(): Long {
         return TimerIdMaker.makeId()
     }
@@ -94,10 +87,9 @@ open class XStageSender(
 
         }
     }
-
-
     fun hasTimer(timerId: Long): Boolean {
         return timerIds.contains(timerId)
     }
+
 
 }

@@ -10,15 +10,6 @@ class  TimerManager(private val processor: Processor){
     private val timerIds:MutableMap<Long, TimerTask> = ConcurrentHashMap();
     private val timer = Timer("PlayHoseTimer", false)
 
-    fun start(){
-//        timer.scheduleAtFixedRate(object : TimerTask() {
-//            override fun run() {
-//              //  SpaceOffice.loggingRoomState()
-//            }
-//        },1000,5000)
-    }
-
-
     class RepeatTimerTask(
         private val processor: Processor,
         private val stageId:Long,

@@ -76,7 +76,7 @@ internal class CommunicatorTest : FunSpec() {
             sleep(200)
 
             apiResults.size.shouldBe(1)
-            apiResults[0].msgId().shouldBe(HeaderMsg.getDescriptor().index)
+            apiResults[0].msgId.shouldBe(HeaderMsg.getDescriptor().index)
 
             ////////// api to session ///////////////
 
@@ -87,7 +87,7 @@ internal class CommunicatorTest : FunSpec() {
             sleep(200)
 
             sessionResults.size.shouldBe(1)
-            sessionResults[0].msgId().shouldBe(1)
+            sessionResults[0].msgId.shouldBe(1)
         }
     }
 

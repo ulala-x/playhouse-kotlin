@@ -34,7 +34,7 @@ class SessionNetworkTest : FunSpec(){
         }
 
         override fun onReceive(channel: Channel, clientPacket: ClientPacket) = clientPacket.use {
-            LOG.info("server received : ${clientPacket.msgId()}",this)
+            LOG.info("server received : ${clientPacket.msgId}",this)
 
             val testMsg = TestMsg.parseFrom(clientPacket.data())
             resultValue = testMsg.testMsg

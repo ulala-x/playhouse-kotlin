@@ -86,7 +86,7 @@ class Communicator(private val option: CommunicatorOption,
     private fun isPacketToClient(routePacket: RoutePacket) = routePacket.routeHeader.sid > 0
     override fun onReceive(routePacket: RoutePacket) {
 
-        LOG.debug("onReceive : ${routePacket.msgId()}, from:${routePacket.routeHeader.from}",this)
+        LOG.debug("onReceive : ${routePacket.msgId}, from:${routePacket.routeHeader.from}",this)
 
         performanceTester.incCounter()
 

@@ -11,19 +11,19 @@ import java.time.Duration
 
 interface SystemPanel{
 
-    fun randomServerInfo(serviceId: Short) : ServerInfo
-    fun serverInfo(endpoint:String) : ServerInfo
-    fun serverList(): List<ServerInfo>
+    fun getServerInfoByService(serviceId: Short) : ServerInfo
+    fun getServerInfoByEndpoint(endpoint:String) : ServerInfo
+    fun getServers(): List<ServerInfo>
     fun pause()
     fun resume()
     fun shutdown()
-    fun serverState(): ServerState
+    fun getServerState(): ServerState
     fun generateUUID(): Long
 
 }
 interface Sender {
-
-    fun serviceId():Short
+    //fun getServiceId():Short
+    val serviceId:Short
     fun reply(reply: ReplyPacket)
     fun sendToClient(sessionEndpoint: String,sid:Int,packet: Packet)
     fun sendToApi(apiEndpoint:String, packet: Packet)
@@ -46,7 +46,7 @@ interface Sender {
 
 interface ApiCommonSender : Sender {
 
-    fun accountId():Long
+    val  accountId:Long
     suspend fun createStage(playEndpoint:String, stageType:String, stageId:Long, packet: Packet): CreateStageResult
     suspend fun joinStage(playEndpoint:String,
                           stageId:Long,
@@ -64,15 +64,15 @@ interface ApiCommonSender : Sender {
 interface ApiSender : ApiCommonSender {
 
     fun authenticate(accountId:Long)
-    fun sessionEndpoint():String
-    fun sid():Int
+    val  sessionEndpoint:String
+    val  sid:Int
 
 
     fun sendToClient(packet: Packet){
-        sendToClient(sessionEndpoint(),sid(),packet)
+        sendToClient(sessionEndpoint,sid,packet)
     }
     fun sessionClose(){
-        sessionClose(sessionEndpoint(),sid())
+        sessionClose(sessionEndpoint,sid)
     }
 
 }
@@ -84,8 +84,8 @@ typealias AsyncPostCallback<T> = suspend (T)->Unit
 interface StageSender : Sender {
 
     //fun reply(reply: ReplyPacket)
-    fun stageId():Long
-    fun stageType():String
+    val stageId:Long
+    val stageType:String
 
     fun addRepeatTimer(initialDelay: Duration, period: Duration, timerCallback: TimerCallback): Long
     fun addCountTimer(initialDelay: Duration, count: Int, period: Duration, timerCallback: TimerCallback): Long

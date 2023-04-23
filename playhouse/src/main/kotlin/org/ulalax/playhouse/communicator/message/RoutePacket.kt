@@ -81,18 +81,14 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
     var timerId: Long = 0
     var timerCallback: TimerCallback = {}
 
-    fun msgId(): Int {
-        return routeHeader.header.msgId
-    }
-
-    fun serviceId(): Short {
-        return routeHeader.header.serviceId
-    }
+    val msgId:Int
+        get()=routeHeader.header.msgId
+    val serviceId:Short
+        get() = routeHeader.header.serviceId
 
     fun isBackend(): Boolean {
         return routeHeader.isBackend
     }
-
 
     override fun data(): ByteBuffer {
         return payload.data();
@@ -102,28 +98,23 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         return ReplyPacket(routeHeader.header.errorCode, routeHeader.msgId(), movePayload())
     }
 
-    fun header(): Header {
-        return routeHeader.header
-    }
+    val header:Header
+        get() = routeHeader.header
 
     fun toClientPacket(): ClientPacket {
-//        val packetMsg = PacketMsg.newBuilder()
-//            .setHeaderMsg(routeHeader.header.toMsg())
-//            .setMessage(message).build()
         return ClientPacket.of(routeHeader.header, movePayload())
     }
 
     fun toPacket(): Packet {
-        return Packet(msgId(), movePayload())
+        return Packet(msgId, movePayload())
     }
 
     fun isBase(): Boolean {
         return routeHeader.isBase
     }
 
-    fun accountId(): Long {
-        return routeHeader.accountId
-    }
+    val accountId: Long
+        get()=routeHeader.accountId
 
     fun setMsgSeq(msgSeq: Short) {
         routeHeader.header.msgSeq = msgSeq
@@ -136,10 +127,8 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
     fun isReply(): Boolean {
         return routeHeader.isReply
     }
-
-    fun stageId(): Long {
-        return routeHeader.stageId
-    }
+    val stageId:Long
+        get() = routeHeader.stageId
 
     fun isSystem(): Boolean {
         return routeHeader.isSystem
@@ -302,8 +291,8 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
 
             buffer.capacity(packetSize)
             buffer.writeShort(bodySize)
-            buffer.writeShort(clientPacket.serviceId().toInt())
-            buffer.writeInt(clientPacket.msgId())
+            buffer.writeShort(clientPacket.serviceId.toInt())
+            buffer.writeInt(clientPacket.msgId)
             buffer.writeShort(clientPacket.header.msgSeq.toInt())
             buffer.writeByte(clientPacket.header.stageIndex.toInt())
             buffer.writeShort(clientPacket.header.errorCode.toInt())

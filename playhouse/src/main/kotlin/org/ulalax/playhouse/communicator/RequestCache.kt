@@ -57,8 +57,8 @@ open class RequestCache(timeout:Long) {
     }
 
     fun onReply(packet: RoutePacket) = try {
-        val msgSeq = packet.header().msgSeq
-        val msgId = packet.header().msgId
+        val msgSeq = packet.header.msgSeq
+        val msgId = packet.header.msgId
 
         cache.getIfPresent(msgSeq)?.run {
             this.onReceive(packet)

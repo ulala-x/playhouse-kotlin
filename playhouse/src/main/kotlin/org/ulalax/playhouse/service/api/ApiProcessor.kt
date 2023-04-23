@@ -76,11 +76,12 @@ class ApiProcessor(
 
                             } else {
 
-                                val apiSender = AllApiSender(serviceId, clientCommunicator, requestCache).apply {
-                                    setCurrentPacketHeader(routeHeader)
-                                }
-
                                 scope.launch {
+
+                                    val apiSender = AllApiSender(serviceId,accountId, "",1,clientCommunicator, requestCache).apply {
+                                        setCurrentPacketHeader(routeHeader)
+                                    }
+
                                     try {
                                         apiReflection.callMethod(
                                             routeHeader,

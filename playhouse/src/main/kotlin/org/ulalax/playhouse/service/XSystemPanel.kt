@@ -11,15 +11,15 @@ class XSystemPanel(
     lateinit var communicator: Communicator
     private val idGenerator = UniqueIdGenerator(nodeId)
 
-    override fun randomServerInfo(serviceId:Short): ServerInfo {
+    override fun getServerInfoByService(serviceId:Short): ServerInfo {
         return serverInfoCenter.findRoundRobinServer(serviceId)
     }
 
-    override fun serverInfo(endpoint: String): ServerInfo {
+    override fun getServerInfoByEndpoint(endpoint: String): ServerInfo {
         return serverInfoCenter.findServer(endpoint)
     }
 
-    override fun serverList(): List<ServerInfo> {
+    override fun getServers(): List<ServerInfo> {
         return serverInfoCenter.getServerList()
     }
 
@@ -35,7 +35,7 @@ class XSystemPanel(
         communicator.stop()
     }
 
-    override fun serverState(): ServerState {
+    override fun getServerState(): ServerState {
         return communicator.serverState()
     }
 

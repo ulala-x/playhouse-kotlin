@@ -44,7 +44,7 @@ class BaseSystem(private val serverSystem: ServerSystem,
                 routePacket.use {
                     try{
                         if (routePacket.isBase()) {
-                            when (routePacket.msgId()) {
+                            when (routePacket.msgId) {
                                 START -> {
                                     serverSystem.onStart()
                                 }
@@ -58,12 +58,12 @@ class BaseSystem(private val serverSystem: ServerSystem,
                                     serverSystem.onStop()
                                 }
                                 else -> {
-                                    LOG.error("Invalid baseSystem packet ${routePacket.msgId()}",this)
+                                    LOG.error("Invalid baseSystem packet ${routePacket.msgId}",this)
                                 }
                             }
                         } else {
                             xSender.setCurrentPacketHeader(routePacket.routeHeader)
-                            serverSystem.onDispatch(Packet(routePacket.msgId(), routePacket.movePayload()))
+                            serverSystem.onDispatch(Packet(routePacket.msgId, routePacket.movePayload()))
                         }
                     }catch (e:Exception){
                         LOG.error(ExceptionUtils.getStackTrace(e),this)

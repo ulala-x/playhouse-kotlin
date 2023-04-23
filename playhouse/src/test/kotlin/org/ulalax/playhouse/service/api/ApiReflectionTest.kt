@@ -36,6 +36,9 @@ object AppContext {
 class ApiReflectionTest : FunSpec(){
 
     private val nodeId = 1
+    private val accountId:Long = 1
+    private val sessionEndpoint = "127.0.0.1:5555"
+    private val sid = 2
 
     override suspend fun beforeSpec(spec: Spec) {
         // 테스트 실행 전에 수행할 코드 작성
@@ -67,7 +70,7 @@ class ApiReflectionTest : FunSpec(){
             val serverInfoCenter: ServerInfoCenter = mockk(relaxed = true)
             val requestCache = RequestCache(5)
             var systemPanel = XSystemPanel(serverInfoCenter,communicator,nodeId)
-            var allApiSender = AllApiSender(1, communicator,requestCache)
+            var allApiSender = AllApiSender(1, accountId,sessionEndpoint,sid,communicator,requestCache)
 
             apiReflection.callInitMethod(systemPanel,allApiSender)
             resultMessage.shouldBe("init")
@@ -79,7 +82,7 @@ class ApiReflectionTest : FunSpec(){
             val serverInfoCenter: ServerInfoCenter = mockk(relaxed = true)
             val requestCache = RequestCache(5)
             var systemPanel = XSystemPanel(serverInfoCenter,communicator,nodeId)
-            var allApiSender = AllApiSender(1, communicator,requestCache)
+            var allApiSender = AllApiSender(1, accountId,sessionEndpoint,sid,communicator,requestCache)
 
             apiReflection.callInitMethod(systemPanel,allApiSender)
             resultMessage.shouldBe("backend init")
@@ -93,7 +96,7 @@ class ApiReflectionTest : FunSpec(){
             val serverInfoCenter: ServerInfoCenter = mockk(relaxed = true)
             val requestCache = RequestCache(5)
             var systemPanelImpl = XSystemPanel(serverInfoCenter,communicator,nodeId)
-            var allApiSender = AllApiSender(1, communicator,requestCache)
+            var allApiSender = AllApiSender(1,accountId,sessionEndpoint,sid, communicator,requestCache)
 
             apiReflection.callInitMethod(systemPanelImpl,allApiSender)
             resultMessage.shouldBe("SpringBeanInit")
@@ -105,7 +108,7 @@ class ApiReflectionTest : FunSpec(){
             val communicator: ClientCommunicator = mockk(relaxed = true)
             val serverInfoCenter: ServerInfoCenter = mockk(relaxed = true)
             val requestCache = RequestCache(5)
-            var allApiSender = AllApiSender(1, communicator,requestCache)
+            var allApiSender = AllApiSender(1,accountId, sessionEndpoint,sid,communicator,requestCache)
 
             var systemPanelImpl = XSystemPanel(serverInfoCenter,communicator,nodeId)
 
@@ -126,7 +129,7 @@ class ApiReflectionTest : FunSpec(){
                     .build()
 
             val routePacket = RoutePacket.of(routePacketMsg)
-            val apiSenderImpl = AllApiSender(1,object :ClientCommunicator{
+            val apiSenderImpl = AllApiSender(1,accountId,sessionEndpoint,sid,object :ClientCommunicator{
                 override fun connect(endpoint: String) {}
                 override fun send(endpoint: String, routePacket: RoutePacket) {}
                 override fun communicate() {}
@@ -149,7 +152,7 @@ class ApiReflectionTest : FunSpec(){
                     .build()
 
             val routePacket = RoutePacket.of(routePacketMsg)
-            val apiSender = AllApiSender(1,object :ClientCommunicator{
+            val apiSender = AllApiSender(1,accountId,sessionEndpoint,sid,object :ClientCommunicator{
                 override fun connect(endpoint: String) {}
                 override fun send(endpoint: String, routePacket: RoutePacket) {}
                 override fun communicate() {}
@@ -171,7 +174,7 @@ class ApiReflectionTest : FunSpec(){
                     .build()
 
             val routePacket = RoutePacket.of(routePacketMsg)
-            val apiSender = AllApiSender(1,object :ClientCommunicator{
+            val apiSender = AllApiSender(1,accountId,sessionEndpoint,sid,object :ClientCommunicator{
                 override fun connect(endpoint: String) {}
                 override fun send(endpoint: String, routePacket: RoutePacket) {}
                 override fun communicate() {}
@@ -192,7 +195,7 @@ class ApiReflectionTest : FunSpec(){
                     .build()
 
             val routePacket = RoutePacket.of(routePacketMsg)
-            val apiSender = AllApiSender(1,object :ClientCommunicator{
+            val apiSender = AllApiSender(1,accountId,sessionEndpoint,sid,object :ClientCommunicator{
                 override fun connect(endpoint: String) {}
                 override fun send(endpoint: String, routePacket: RoutePacket) {}
                 override fun communicate() {}

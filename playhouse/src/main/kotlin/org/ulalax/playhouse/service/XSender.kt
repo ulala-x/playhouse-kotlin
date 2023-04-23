@@ -8,7 +8,7 @@ import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.communicator.message.*
 import org.ulalax.playhouse.protocol.Server.*
 
-open class XSender(private val serviceId: Short,
+open class XSender(override val serviceId: Short,
                    private val clientCommunicator: ClientCommunicator,
                    private val reqCache : RequestCache
 ) : Sender {
@@ -24,9 +24,9 @@ open class XSender(private val serviceId: Short,
         this.currentHeader = null
     }
 
-    override fun serviceId(): Short {
-        return this.serviceId
-    }
+//    override fun getServiceId(): Short {
+//        return this.serviceId
+//    }
 
     override fun reply(reply: ReplyPacket){
         this.currentHeader ?.run {

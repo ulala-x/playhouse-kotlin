@@ -4,7 +4,6 @@ import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.ulalax.playhouse.communicator.ServerInfoCenter
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import org.apache.commons.lang3.exception.ExceptionUtils
 import LOG
 import org.ulalax.playhouse.communicator.RequestCache
@@ -18,12 +17,12 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
 class BaseStage(
-    stageId:Long,
+    val stageId:Long,
     private val playService: PlayProcessor,
     clientCommunicator: ClientCommunicator,
     reqCache: RequestCache,
     private val serverInfoCenter: ServerInfoCenter,
-    val stageSender:XStageSender = XStageSender(playService.serviceId, stageId,playService,clientCommunicator ,reqCache)
+    val stageSender:XStageSender = XStageSender(playService.serviceId, stageId,"",playService,clientCommunicator ,reqCache)
     ) {
 
     private val msgHandler = BaseStageCmdHandler()
@@ -48,10 +47,10 @@ class BaseStage(
             if(routePacket.isBase()){
                 msgHandler.dispatch(this,routePacket)
             }else{
-                val accountId = routePacket.accountId()
+                val accountId = routePacket.accountId
                 val baseUser = playService.findUser(accountId)
                 if(baseUser !=null){
-                    stage.onDispatch(baseUser.actor , Packet(routePacket.msgId(),routePacket.movePayload()))
+                    stage.onDispatch(baseUser.actor , Packet(routePacket.msgId,routePacket.movePayload()))
                 }
             }
         }catch (e:Exception){
@@ -120,7 +119,7 @@ class BaseStage(
 
     private suspend fun updateSessionRoomInfo(sessionEndpoint: String, sid: Int): Int{
         val joinStageInfoUpdateReq = JoinStageInfoUpdateReq.newBuilder()
-            .setStageId(stageId()).setPlayEndpoint(playService.endpoint()).build()
+            .setStageId(stageId).setPlayEndpoint(playService.endpoint()).build()
 
         val res = this.stageSender.requestToBaseSession(sessionEndpoint,sid,  Packet(joinStageInfoUpdateReq))
         val result = JoinStageInfoUpdateRes.parseFrom(res.data())
@@ -138,9 +137,6 @@ class BaseStage(
         this.stageSender.sendToBaseSession(sessionEndpoint,sid, Packet(request))
     }
 
-    fun stageId(): Long {
-       return this.stageSender.stageId()
-    }
 
     fun cancelTimer(timerId: Long) {
         this.stageSender.cancelTimer(timerId)

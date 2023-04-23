@@ -7,15 +7,16 @@ import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.protocol.Server
 import org.ulalax.playhouse.service.*
 
-open class XApiCommonSender(serviceId: Short,
+abstract class XApiCommonSender(
+                            serviceId: Short,
                             clientCommunicator: ClientCommunicator,
                             reqCache : RequestCache)
     : XSender(serviceId,clientCommunicator,reqCache), ApiCommonSender {
 
 
-    override fun accountId(): Long {
-        return this.currentHeader?.accountId ?: 0
-    }
+//    override fun getAccountId(): Long {
+//        return this.currentHeader?.accountId ?: 0
+//    }
 
     override suspend fun createStage(playEndpoint:String, stageType:String, stageId:Long, packet: Packet): CreateStageResult {
         val req = Server.CreateStageReq.newBuilder()

@@ -69,8 +69,8 @@ class SessionClient(
 
     // from client
     fun onReceive(clientPacket: ClientPacket) {
-        val serviceId = clientPacket.serviceId()
-        val msgName = clientPacket.msgId()
+        val serviceId = clientPacket.serviceId
+        val msgName = clientPacket.msgId
         if(isAuthenticated){
             relayTo(serviceId, clientPacket)
         }else{
@@ -115,21 +115,21 @@ class SessionClient(
 
                 val targetId = playEndpoints[clientPacket.header.stageIndex.toInt()]
                 if(targetId == null){
-                    LOG.error("Target Stage is not exist - service type:$type, msgId:${clientPacket.msgId()}",this)
+                    LOG.error("Target Stage is not exist - service type:$type, msgId:${clientPacket.msgId}",this)
                 }else{
                     serverInfo = serviceInfoCenter.findServer(targetId.endpoint)
                     sessionSender.relayToStage(serverInfo.bindEndpoint(),targetId.stageId,sid,accountId,clientPacket)
                 }
             }
             else ->{
-                    LOG.error("Invalid Service Type request - service type:$type, msgId:${clientPacket.msgId()}",this)
+                    LOG.error("Invalid Service Type request - service type:$type, msgId:${clientPacket.msgId}",this)
             }
         }
     }
 
     // from backend server
     fun onReceive(packet: RoutePacket) {
-        val msgName = packet.msgId()
+        val msgName = packet.msgId
         val isBase = packet.isBase()
 
         if(isBase){

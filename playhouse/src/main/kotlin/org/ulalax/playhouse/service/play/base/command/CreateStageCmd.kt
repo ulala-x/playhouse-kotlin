@@ -24,7 +24,7 @@ class CreateStageCmd(override val playProcessor: PlayProcessor): BaseStageCmd {
         }
 
         val outcome  = baseStage.create(stageType,packet)
-        val stageId = baseStage.stageId()
+        val stageId = baseStage.stageId
 
         if(!outcome.isSuccess()){
             this.playProcessor.removeRoom(stageId)
