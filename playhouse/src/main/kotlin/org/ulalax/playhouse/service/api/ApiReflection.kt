@@ -13,12 +13,9 @@ import org.ulalax.playhouse.service.Sender
 import org.ulalax.playhouse.service.SystemPanel
 import java.lang.reflect.Method
 import kotlin.reflect.full.callSuspend
-import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
 import kotlin.reflect.jvm.javaMethod
 import kotlin.reflect.jvm.kotlinFunction
 import kotlin.system.exitProcess
-import kotlinx.coroutines.*
-import org.reflections.ReflectionUtils
 import kotlin.coroutines.Continuation
 
 data class ApiMethod(val msgId:Int,val className: String,val method: Method)
@@ -62,16 +59,16 @@ class ApiReflection(packageName: String) {
     }
 
     suspend fun callMethod(routeHeader: RouteHeader, packet: Packet, isBackend :Boolean, apiSender: AllApiSender) = packet.use{
-        val msgName = routeHeader.msgId()
+        val msgId = routeHeader.msgId()
         //val packet = Packet(msgName,routePacket.movePayload())
         //val isBackend = routePacket.isBackend()
 
         val targetMethod = if(isBackend) {
-            if(!backendMethods.containsKey(msgName)) throw ApiException.NotRegisterApiMethod(msgName)
-            backendMethods[msgName]!!
+            if(!backendMethods.containsKey(msgId)) throw ApiException.NotRegisterApiMethod("msgId:${packet.msgId} is not registered")
+            backendMethods[msgId]!!
         } else{
-            if(!methods.containsKey(msgName)) throw ApiException.NotRegisterApiMethod(msgName)
-            methods[msgName]!!
+            if(!methods.containsKey(msgId)) throw ApiException.NotRegisterApiMethod("msgId:${packet.msgId} is not registered")
+            methods[msgId]!!
         }
 
         if(!instances.containsKey(targetMethod.className)) throw ApiException.NotRegisterApiInstance(targetMethod.className)

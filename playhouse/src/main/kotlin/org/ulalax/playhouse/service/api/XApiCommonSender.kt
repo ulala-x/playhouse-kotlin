@@ -62,10 +62,14 @@ abstract class XApiCommonSender(
                 .setJoinPayload(ByteString.copyFrom(joinPacket.data())).build()
 
         val reply = requestToBaseStage(playEndpoint,stageId,accountId, Packet(req))
+
         val res = Server.CreateJoinStageRes.parseFrom(reply.data())
+
+
         return CreateJoinStageResult(
                 reply.errorCode,
                 res.isCreated,
+                res.stageIdx,
                 Packet(res.createPayloadId, res.createPayload),
                 Packet(res.joinPayloadId, res.joinPayload)
         )

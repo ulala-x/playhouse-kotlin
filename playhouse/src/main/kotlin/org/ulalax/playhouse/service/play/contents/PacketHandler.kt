@@ -1,15 +1,14 @@
 package org.ulalax.playhouse.service.play.contents
-import Logger
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.service.api.ApiException
 
-class PacketHandler<S,A>(private val log: Logger) {
+class PacketHandler<S,A> {
 
     private val messageMap = HashMap<Int, PacketCmd<S, A>>()
     suspend fun dispatch(stage: S, actor: A, packet: Packet){
         messageMap[packet.msgId]
             ?.execute(stage,actor,packet)
-            ?:log.error("unregistered packet ${packet.msgId}",this::class.simpleName)
+            ?:throw ApiException.NotRegisterApiMethod("msgId:${packet.msgId} is not registered")
     }
 
     fun add(msgId:Int, cmd: PacketCmd<S, A>){

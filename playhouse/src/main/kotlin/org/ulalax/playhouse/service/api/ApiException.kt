@@ -9,7 +9,7 @@ open class ApiException :Exception{
     }
 
     class NotRegisterApiMethod: ApiException {
-        constructor(msgId: Int):super("$msgId: ApiMethod is not resister")
+        constructor(message: String):super(message)
     }
     class NotRegisterApiInstance: ApiException {
         constructor(className: String):super("$className: ApiInstance is not resister")
