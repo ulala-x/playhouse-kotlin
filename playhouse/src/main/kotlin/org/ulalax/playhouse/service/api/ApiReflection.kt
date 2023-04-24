@@ -96,7 +96,7 @@ class ApiReflection(packageName: String) {
     private fun extractHandlerMethod(reflections: Reflections) {
         registerInitMethod(reflections)
         registerHandlerMethod(reflections)
-        registerBackendHandlerMethod(reflections)
+        //registerBackendHandlerMethod(reflections)
     }
 
 
@@ -129,13 +129,14 @@ class ApiReflection(packageName: String) {
 
     }
     private fun registerHandlerMethod(reflections: Reflections){
-        val handleMethods = reflections.getMethodsWithSignature(HandlerRegister::class.java).filter { el->el.name=="handles" }
+        val handleMethods = reflections.getMethodsWithSignature(HandlerRegister::class.java,BackendHandlerRegister::class.java).filter { el->el.name=="handles" }
         handleMethods.forEach { method ->
             if(!method.declaringClass.isInterface){
                 val className = method.declaringClass.name
                 val apiInstance:ApiInstance = instances[className]!!
                 val handlerRegister = XHandlerRegister()
-                method.invoke(apiInstance.instance,handlerRegister)
+                val backendHandlerRegister = XBackendHandlerRegister()
+                method.invoke(apiInstance.instance,handlerRegister,backendHandlerRegister)
 
                 handlerRegister.handlers.forEach { el ->
                     if(messageIndexChecker.contains(el.key)){
@@ -144,18 +145,8 @@ class ApiReflection(packageName: String) {
                     this.methods[el.key] = ApiMethod(el.key,className,el.value.javaMethod!!)
                     messageIndexChecker[el.key] = el.value.name
                 }
-            }
-        }
-    }
-    private fun registerBackendHandlerMethod(reflections: Reflections){
-        val handleMethods = reflections.getMethodsWithSignature(BackendHandlerRegister::class.java).filter { el->el.name=="handles" }
-        handleMethods.forEach { method ->
-            if(!method.declaringClass.isInterface) {
-                val className = method.declaringClass.name
-                val apiInstance: ApiInstance = instances[className]!!
-                val handlerRegister = XBackendHandlerRegister()
-                method.invoke(apiInstance.instance, handlerRegister)
-                handlerRegister.handlers.forEach { el ->
+
+                backendHandlerRegister.handlers.forEach { el ->
                     if (messageIndexChecker.contains(el.key)) {
                         throw ApiException.DuplicatedMessageIndex("registered msgId is duplicated - msgId:${el.key}, methods: ${messageIndexChecker[el.key]}, ${el.value.name}")
                     }
@@ -165,6 +156,24 @@ class ApiReflection(packageName: String) {
             }
         }
     }
+//    private fun registerBackendHandlerMethod(reflections: Reflections){
+//        val handleMethods = reflections.getMethodsWithSignature(BackendHandlerRegister::class.java).filter { el->el.name=="handles" }
+//        handleMethods.forEach { method ->
+//            if(!method.declaringClass.isInterface) {
+//                val className = method.declaringClass.name
+//                val apiInstance: ApiInstance = instances[className]!!
+//                val handlerRegister = XBackendHandlerRegister()
+//                method.invoke(apiInstance.instance, handlerRegister)
+//                handlerRegister.handlers.forEach { el ->
+//                    if (messageIndexChecker.contains(el.key)) {
+//                        throw ApiException.DuplicatedMessageIndex("registered msgId is duplicated - msgId:${el.key}, methods: ${messageIndexChecker[el.key]}, ${el.value.name}")
+//                    }
+//                    this.backendMethods[el.key] = ApiMethod(el.key, className, el.value.javaMethod!!)
+//                    messageIndexChecker[el.key] = el.value.name
+//                }
+//            }
+//        }
+//    }
 
 
     private fun extractInstance(reflections: Reflections) {
@@ -175,13 +184,13 @@ class ApiReflection(packageName: String) {
             val instance = instanceMethod.invoke(clazz.getDeclaredConstructor().newInstance()) as ApiService
             instances[name] = ApiInstance(instance)
         }
-        val backendClasses = reflections.getSubTypesOf(ApiBackendService::class.java)
-        backendClasses.forEach { clazz ->
-            val name = clazz.name
-            val instanceMethod = clazz.getMethod("instance")
-            val instance = instanceMethod.invoke(clazz.getDeclaredConstructor().newInstance()) as ApiBackendService
-            instances[name] = ApiInstance(instance)
-        }
+//        val backendClasses = reflections.getSubTypesOf(ApiBackendService::class.java)
+//        backendClasses.forEach { clazz ->
+//            val name = clazz.name
+//            val instanceMethod = clazz.getMethod("instance")
+//            val instance = instanceMethod.invoke(clazz.getDeclaredConstructor().newInstance()) as ApiBackendService
+//            instances[name] = ApiInstance(instance)
+//        }
     }
 
 

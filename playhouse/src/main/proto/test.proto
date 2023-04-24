@@ -8,20 +8,20 @@ message TestMsg{
   int32 testNumber = 2;
 }
 
-message ApiTestMsg1{
+message ApiTestMsg{
   string testMsg = 1;
   int32 testNumber = 2;
 }
-message ApiTestMsg2{
+message ApiTestBeanMsg{
   string testMsg = 1;
   int32 testNumber = 2;
 }
 
-message ApiHandlerTestMsg1{
+message ApiBackendTestMsg{
   string testMsg = 1;
   int32 testNumber = 2;
 }
-message ApiHandlerTestMsg2{
+message ApiBackendTestBeanMsg{
   string testMsg = 1;
   int32 testNumber = 2;
 }

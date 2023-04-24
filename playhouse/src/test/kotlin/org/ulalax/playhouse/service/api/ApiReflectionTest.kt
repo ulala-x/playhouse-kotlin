@@ -15,14 +15,9 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.protocol.Server.*
-import org.ulalax.playhouse.protocol.Test.ApiTestMsg1
-import org.ulalax.playhouse.service.api.ApiInstance
-import org.ulalax.playhouse.service.api.ApiReflection
-import org.ulalax.playhouse.service.api.AllApiSender
-import org.ulalax.playhouse.service.api.pojo.back.TestApiBackendService
-import org.ulalax.playhouse.service.api.pojo.front.TestApiService
-import org.ulalax.playhouse.service.api.beans.back.TestApiBackendServiceSpringBeans
-import org.ulalax.playhouse.service.api.beans.front.TestApiServiceSpringBeans
+import org.ulalax.playhouse.protocol.Test.*
+import org.ulalax.playhouse.service.api.pojo.TestApiService
+import org.ulalax.playhouse.service.api.beans.TestApiServiceSpringBeans
 
 @Configuration
 @ComponentScan("org.ulalax.playhouse.service.api")
@@ -58,7 +53,7 @@ class ApiReflectionTest : FunSpec(){
         test("makeClassInstanceMap") {
             val apiReflection = ApiReflection(ApiReflectionTest::class.java.packageName)
             val instances: Map<String, ApiInstance> = apiReflection.instances
-            instances.shouldHaveSize(4)
+            instances.shouldHaveSize(2)
         }
 
         // init method call test
@@ -75,18 +70,6 @@ class ApiReflectionTest : FunSpec(){
             apiReflection.callInitMethod(systemPanel,allApiSender)
             resultMessage.shouldBe("init")
         }
-        test("pojoBackendInitMethodCall"){
-            val apiReflection = ApiReflection(TestApiBackendService::class.java.packageName)
-
-            val communicator: ClientCommunicator = mockk(relaxed = true)
-            val serverInfoCenter: ServerInfoCenter = mockk(relaxed = true)
-            val requestCache = RequestCache(5)
-            var systemPanel = XSystemPanel(serverInfoCenter,communicator,nodeId)
-            var allApiSender = AllApiSender(1, accountId,sessionEndpoint,sid,communicator,requestCache)
-
-            apiReflection.callInitMethod(systemPanel,allApiSender)
-            resultMessage.shouldBe("backend init")
-        }
 
 
         test("apiSpringBeanInitMethodCall"){
@@ -102,20 +85,6 @@ class ApiReflectionTest : FunSpec(){
             resultMessage.shouldBe("SpringBeanInit")
         }
 
-        test("backendApiSpringBeanInitMethodCall"){
-            val apiReflection = ApiReflection(TestApiBackendServiceSpringBeans::class.java.packageName)
-
-            val communicator: ClientCommunicator = mockk(relaxed = true)
-            val serverInfoCenter: ServerInfoCenter = mockk(relaxed = true)
-            val requestCache = RequestCache(5)
-            var allApiSender = AllApiSender(1,accountId, sessionEndpoint,sid,communicator,requestCache)
-
-            var systemPanelImpl = XSystemPanel(serverInfoCenter,communicator,nodeId)
-
-
-            apiReflection.callInitMethod(systemPanelImpl,allApiSender)
-            resultMessage.shouldBe("backend SpringBeanInit")
-        }
 
         //registered method call test
 
@@ -124,8 +93,8 @@ class ApiReflectionTest : FunSpec(){
 
             val routePacketMsg = RoutePacketMsg.newBuilder()
                     .setRouteHeaderMsg(RouteHeaderMsg.newBuilder()
-                            .setHeaderMsg(HeaderMsg.newBuilder().setMsgId(1)).setIsBackend(false))
-                    .setMessage(ApiTestMsg1.newBuilder().setTestMsg("apiMethodCall").build().toByteString())
+                            .setHeaderMsg(HeaderMsg.newBuilder().setMsgId(ApiTestMsg.getDescriptor().index)).setIsBackend(false))
+                    .setMessage(ApiTestMsg.newBuilder().setTestMsg("apiMethodCall").build().toByteString())
                     .build()
 
             val routePacket = RoutePacket.of(routePacketMsg)
@@ -143,12 +112,13 @@ class ApiReflectionTest : FunSpec(){
 
 
         test("apiBackendMethodCall"){
-            val apiReflection = ApiReflection(TestApiBackendService::class.java.packageName)
+            val apiReflection = ApiReflection(TestApiService::class.java.packageName)
 
             val routePacketMsg = RoutePacketMsg.newBuilder()
                     .setRouteHeaderMsg(RouteHeaderMsg.newBuilder()
-                            .setHeaderMsg(HeaderMsg.newBuilder().setMsgId(3)).setIsBackend(true))
-                    .setMessage(ApiTestMsg1.newBuilder().setTestMsg("apiBackendMethodCall").build().toByteString())
+                            .setHeaderMsg(HeaderMsg.newBuilder().setMsgId(ApiBackendTestMsg.getDescriptor().index))
+                            .setIsBackend(true))
+                    .setMessage(ApiBackendTestMsg.newBuilder().setTestMsg("apiBackendMethodCall").build().toByteString())
                     .build()
 
             val routePacket = RoutePacket.of(routePacketMsg)
@@ -169,8 +139,8 @@ class ApiReflectionTest : FunSpec(){
 
             val routePacketMsg = RoutePacketMsg.newBuilder()
                     .setRouteHeaderMsg(RouteHeaderMsg.newBuilder()
-                            .setHeaderMsg(HeaderMsg.newBuilder().setMsgId(11)).setIsBackend(false))
-                    .setMessage(ApiTestMsg1.newBuilder().setTestMsg("beanApiMethodCall").build().toByteString())
+                            .setHeaderMsg(HeaderMsg.newBuilder().setMsgId(ApiTestBeanMsg.getDescriptor().index)).setIsBackend(false))
+                    .setMessage(ApiTestBeanMsg.newBuilder().setTestMsg("beanApiMethodCall").build().toByteString())
                     .build()
 
             val routePacket = RoutePacket.of(routePacketMsg)
@@ -186,12 +156,12 @@ class ApiReflectionTest : FunSpec(){
             resultMessage.shouldBe("beanApiMethodCall")
         }
         test("beanApiBackendMethodCall"){
-            val apiReflection = ApiReflection(TestApiBackendServiceSpringBeans::class.java.packageName)
+            val apiReflection = ApiReflection(TestApiServiceSpringBeans::class.java.packageName)
 
             val routePacketMsg = RoutePacketMsg.newBuilder()
                     .setRouteHeaderMsg(RouteHeaderMsg.newBuilder()
-                            .setHeaderMsg(HeaderMsg.newBuilder().setMsgId(13)).setIsBackend(true))
-                    .setMessage(ApiTestMsg1.newBuilder().setTestMsg("beanApiBackendMethodCall").build().toByteString())
+                            .setHeaderMsg(HeaderMsg.newBuilder().setMsgId(ApiBackendTestBeanMsg.getDescriptor().index)).setIsBackend(true))
+                    .setMessage(ApiBackendTestBeanMsg.newBuilder().setTestMsg("beanApiBackendMethodCall").build().toByteString())
                     .build()
 
             val routePacket = RoutePacket.of(routePacketMsg)

@@ -1,8 +1,9 @@
-package org.ulalax.playhouse.service.api.pojo.front
+package org.ulalax.playhouse.service.api.pojo
 
 import kotlinx.coroutines.delay
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.protocol.Test
+import org.ulalax.playhouse.service.ApiBackendSender
 import org.ulalax.playhouse.service.ApiSender
 import org.ulalax.playhouse.service.Sender
 import org.ulalax.playhouse.service.SystemPanel
@@ -20,9 +21,9 @@ class TestApiService  : ApiService {
         delay(1)
     }
 
-    override fun handles(register: HandlerRegister) {
-        register.add(1,::test1)
-        register.add(2,::test2)
+    override fun handles(register: HandlerRegister, backendHandlerRegister: BackendHandlerRegister) {
+        register.add(Test.ApiTestMsg.getDescriptor().index,::test1)
+        backendHandlerRegister.add(Test.ApiBackendTestMsg.getDescriptor().index,::test2)
     }
 
     override fun instance(): ApiService {
@@ -30,20 +31,19 @@ class TestApiService  : ApiService {
     }
 
     suspend fun test1(
-            packet: Packet,
-            @Suppress("UNUSED_PARAMETER") apiSender: ApiSender){
-        val message = Test.ApiTestMsg1.parseFrom(packet.data())
+        packet: Packet,
+        @Suppress("UNUSED_PARAMETER") apiSender: ApiSender){
+        val message = Test.ApiTestMsg.parseFrom(packet.data())
         ApiReflectionTest.resultMessage = message.testMsg
-        delay(10)
+        delay(1)
     }
 
     suspend fun test2(
-            packet: Packet,
-            @Suppress("UNUSED_PARAMETER") apiSender: ApiSender){
-
-        delay(10)
-
-        val message = Test.ApiTestMsg1.parseFrom(packet.data())
+        @Suppress("UNUSED_PARAMETER")packet: Packet,
+        @Suppress("UNUSED_PARAMETER")apiSender: ApiBackendSender
+    ) {
+        val message = Test.ApiBackendTestMsg.parseFrom(packet.data())
         ApiReflectionTest.resultMessage = message.testMsg
+        delay(10)
     }
 }

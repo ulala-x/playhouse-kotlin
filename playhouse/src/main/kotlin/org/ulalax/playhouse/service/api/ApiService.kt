@@ -20,14 +20,14 @@ interface BackendHandlerRegister {
 
 interface ApiService {
     suspend fun init(systemPanel: SystemPanel, sender: Sender)
-    fun handles(register: HandlerRegister)
     fun instance():ApiService
+    fun handles(register: HandlerRegister,backendRegister:BackendHandlerRegister)
 }
 
-interface ApiBackendService {
-    suspend fun init(systemPanel: SystemPanel,sender: Sender)
-    fun handles(register: BackendHandlerRegister)
-    fun instance():ApiBackendService
-}
+//interface ApiBackendService {
+//    suspend fun init(systemPanel: SystemPanel,sender: Sender)
+//    fun instance():ApiBackendService
+//    fun handles(register: BackendHandlerRegister)
+//}
 
 
