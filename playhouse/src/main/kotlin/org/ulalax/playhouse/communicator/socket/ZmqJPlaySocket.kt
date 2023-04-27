@@ -61,8 +61,10 @@ class ZmqJPlaySocket  (
             ZFrame(buffer.array(), buffer.arrayOffset()+buffer.readerIndex(),buffer.readableBytes())
         }
 
-
         message.use{
+
+            LOG.trace("sendTo:$target, packetInfo:${routePacket.routeHeader}",this)
+
             message.add(ZFrame(target.toByteArray()))
             message.add(ZFrame(routePacket.routeHeader.toByteArray()))
             message.add(frame)

@@ -74,6 +74,13 @@ class RouteHeader private constructor(val header: Header,
         return this.header.msgId
     }
 
+    override fun toString(): String {
+        return "RouteHeader(header=$header, sid=$sid, isSystem=$isSystem, " +
+                "isBase=$isBase, isBackend=$isBackend, isReply=$isReply, " +
+                "accountId=$accountId, stageId=$stageId, forClient=$forClient, " +
+                "from='$from')"
+    }
+
 }
 
 open class RoutePacket protected constructor(val routeHeader: RouteHeader, private var payload: Payload) : BasePacket {
@@ -255,6 +262,8 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
         fun replyOf(
                 serviceId: Short,
                 msgSeq: Short,
+                sid:Int,
+                forClient: Boolean,
                 reply: ReplyPacket
         ): RoutePacket {
             val header = Header(msgId = reply.msgId).apply {
@@ -264,6 +273,8 @@ open class RoutePacket protected constructor(val routeHeader: RouteHeader, priva
             }
             val routeHeader = RouteHeader.of(header).apply {
                 this.isReply = true
+                this.sid = sid
+                this.forClient = forClient
             }
             return RoutePacket(routeHeader, reply.movePayload())
         }

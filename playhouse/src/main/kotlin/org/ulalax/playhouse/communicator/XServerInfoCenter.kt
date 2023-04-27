@@ -38,7 +38,7 @@ class XServerInfoCenter : ServerInfoCenter {
     override fun findServer(endpoint: String): XServerInfo {
         val serverInfo = serverInfoMap[endpoint]
         if(serverInfo == null || !serverInfo.isValid()){
-            throw CommunicatorException.NotExistServerInfo()
+            throw CommunicatorException.NotExistServerInfo("Cannot find serverInfo information that matches the requested endpoint:$endpoint")
         }
         return serverInfo
     }
@@ -51,7 +51,7 @@ class XServerInfoCenter : ServerInfoCenter {
             }
 
         if(list.isEmpty()){
-            throw CommunicatorException.NotExistServerInfo()
+            throw CommunicatorException.NotExistServerInfo("Cannot find serverInfo information that matches the requested serviceId:$serviceId")
         }
 
         var next = offset.incrementAndGet()
@@ -78,7 +78,7 @@ class XServerInfoCenter : ServerInfoCenter {
                 }
 
         if(list.isEmpty()){
-            throw CommunicatorException.NotExistServerInfo()
+            throw CommunicatorException.NotExistServerInfo("Cannot find serverInfo information that matches the requested serviceId:$serviceId")
         }
         val index:Int = (accountId % list.size).toInt()
         return list[index]
@@ -90,7 +90,7 @@ class XServerInfoCenter : ServerInfoCenter {
                 .filter { it.serviceId == serviceId }
 
         if(list.isEmpty()){
-            throw CommunicatorException.NotExistServerInfo()
+            throw CommunicatorException.NotExistServerInfo("Cannot find serverInfo information that matches the requested serviceId:$serviceId")
         }
         return list.first().serviceType
     }

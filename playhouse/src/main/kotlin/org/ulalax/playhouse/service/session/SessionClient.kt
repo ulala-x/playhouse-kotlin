@@ -2,12 +2,17 @@ package org.ulalax.playhouse.service.session
 
 import io.netty.channel.Channel
 import LOG
+import kotlinx.coroutines.coroutineScope
+import org.apache.commons.lang3.exception.ExceptionUtils
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.communicator.message.ClientPacket
 import org.ulalax.playhouse.communicator.message.Packet
 import org.ulalax.playhouse.communicator.message.ReplyPacket
+import org.ulalax.playhouse.protocol.Common
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicBoolean
 
 data class TargetAddress(val endpoint:String, val stageId: Long = 0)
 
@@ -44,6 +49,8 @@ class SessionClient(
     private var authenticateServiceId:Short = 0.toShort()
     private var authServerEndpoint:String = ""
     private val stageIndexGenerator = StageIndexGenerator()
+    private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
+    private var isUsing = AtomicBoolean(false)
 
     init {
         signInURIs.addAll(urls)
@@ -68,7 +75,7 @@ class SessionClient(
     }
 
     // from client
-    fun onReceive(clientPacket: ClientPacket) {
+    fun dispatch(clientPacket: ClientPacket) {
         val serviceId = clientPacket.serviceId
         val msgName = clientPacket.msgId
         if(isAuthenticated){
@@ -113,9 +120,10 @@ class SessionClient(
             }
             ServiceType.Play ->{
 
-                val targetId = playEndpoints[clientPacket.header.stageIndex.toInt()]
+                val stageIndex = clientPacket.header.stageIndex.toInt()
+                val targetId = playEndpoints[stageIndex]
                 if(targetId == null){
-                    LOG.error("Target Stage is not exist - service type:$type, msgId:${clientPacket.msgId}",this)
+                    LOG.error("Target Stage is not exist - stageIndex:$stageIndex, msgId:${clientPacket.msgId}",this)
                 }else{
                     serverInfo = serviceInfoCenter.findServer(targetId.endpoint)
                     sessionSender.relayToStage(serverInfo.bindEndpoint(),targetId.stageId,sid,accountId,clientPacket)
@@ -127,18 +135,40 @@ class SessionClient(
         }
     }
 
+    suspend fun receive(routePacket: RoutePacket) = coroutineScope {
+        msgQueue.add(routePacket)
+        if(isUsing.compareAndSet(false,true)){
+            while(isUsing.get()){
+                val item = msgQueue.poll()
+                if(item!=null) {
+                    try {
+                        item.use {
+                            sessionSender.setCurrentPacketHeader(routePacket.routeHeader)
+                            dispatch(item)
+                        }
+                    } catch (e: Exception) {
+                        sessionSender.errorReply(routePacket.routeHeader, Common.BaseErrorCode.SYSTEM_ERROR_VALUE.toShort())
+                        LOG.error(ExceptionUtils.getStackTrace(e),this,e)
+                    }
+                }else{
+                    isUsing.set(false)
+                }
+            }
+        }
+    }
     // from backend server
-    fun onReceive(packet: RoutePacket) {
+    fun dispatch(packet: RoutePacket) {
         val msgName = packet.msgId
         val isBase = packet.isBase()
 
         if(isBase){
+
             when(msgName){
                 AuthenticateMsg.getDescriptor().index -> {
                     val authenticateMsg = AuthenticateMsg.parseFrom(packet.data())
                     val apiEndpoint = packet.routeHeader.from
                     authenticate(authenticateMsg.serviceId.toShort(),apiEndpoint, authenticateMsg.accountId)
-                    LOG.debug("authenticated - accountId:$accountId ,from:$apiEndpoint",this)
+                    LOG.debug("authenticated - accountId:$accountId ,from:$apiEndpoint, sid:$sid",this)
                 }
 
                 SessionCloseMsg.getDescriptor().index -> {

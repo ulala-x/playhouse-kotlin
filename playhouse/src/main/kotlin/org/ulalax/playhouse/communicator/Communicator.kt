@@ -82,15 +82,14 @@ class Communicator(private val option: CommunicatorOption,
     fun awaitTermination() {
         messageLoop.awaitTermination()
     }
-
-    private fun isPacketToClient(routePacket: RoutePacket) = routePacket.routeHeader.sid > 0
     override fun onReceive(routePacket: RoutePacket) {
 
-        LOG.debug("onReceive : ${routePacket.msgId}, from:${routePacket.routeHeader.from}",this)
+//        LOG.debug("onReceive : serviceType:${processor.getServiceType()},serviceId:${processor.serviceId},endpoint:${option.bindEndpoint}",this)
+        LOG.trace("onReceive: from:${routePacket.routeHeader.from}, packetInfo:${routePacket.routeHeader}",this)
 
         performanceTester.incCounter()
 
-        if ( !isPacketToClient(routePacket) &&  routePacket.isReply()) {
+        if ( !routePacket.forClient() &&  routePacket.isReply()) {
             requestCache.onReply(routePacket)
             return
         }

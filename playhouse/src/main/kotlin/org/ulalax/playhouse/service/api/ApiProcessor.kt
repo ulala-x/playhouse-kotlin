@@ -54,6 +54,7 @@ class ApiProcessor(
                 while (routePacket != null) {
                     routePacket.use {
                         val routeHeader = routePacket.routeHeader
+                        val dispatchPacket = RoutePacket.moveOf(routePacket)
 
                         try {
                             val accountId = routeHeader.accountId
@@ -70,23 +71,24 @@ class ApiProcessor(
 
                                     cache.put(accountId, accountApiProcessor)
                                 }
+
                                 scope.launch{
-                                    accountApiProcessor.dispatch(routePacket)
+                                    accountApiProcessor.dispatch(dispatchPacket)
                                 }
 
                             } else {
 
                                 scope.launch {
 
-                                    val apiSender = AllApiSender(serviceId,accountId, "",1,clientCommunicator, requestCache).apply {
+                                    val apiSender = AllApiSender(serviceId,accountId, routeHeader.from,routeHeader.sid,clientCommunicator, requestCache).apply {
                                         setCurrentPacketHeader(routeHeader)
                                     }
 
                                     try {
                                         apiReflection.callMethod(
                                             routeHeader,
-                                            routePacket.toPacket(),
-                                            routePacket.isBackend(),
+                                            dispatchPacket.toPacket(),
+                                            dispatchPacket.isBackend(),
                                             apiSender
                                         )
                                     } catch (e: Exception) {

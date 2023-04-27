@@ -34,8 +34,8 @@ open class XSender(override val serviceId: Short,
             if(msgSeq != 0.toShort() ){
                 val sid = this.sid
                 val from = this.from
-                val routePacket = RoutePacket.replyOf(serviceId,msgSeq,reply).apply {
-                    this.routeHeader.sid = sid
+                val forClient = this.forClient
+                val routePacket = RoutePacket.replyOf(serviceId,msgSeq,sid,forClient,reply).apply {
                     this.routeHeader.forClient = forClient
                 }
                 clientCommunicator.send(from,routePacket)
@@ -58,7 +58,7 @@ open class XSender(override val serviceId: Short,
     }
 
     suspend fun requestToBaseSession(sessionEndpoint: String, sid: Int, packet: Packet): ReplyPacket {
-        val seq = getSequence()
+        val seq = reqCache.getSequence()
         val deferred = CompletableDeferred<ReplyPacket>()
         reqCache.put(seq, ReplyObject(deferred =  deferred))
         val routePacket = RoutePacket.sessionOf(sid,packet,isBase = true, isBackend = true).apply {
@@ -221,13 +221,13 @@ open class XSender(override val serviceId: Short,
         return deferred.await()
     }
 
-
-
     fun errorReply(routeHeader: RouteHeader, errorCode: Short) {
         val msgSeq = routeHeader.header.msgSeq
         val from = routeHeader.from
+        val sid = routeHeader.sid
+        val forClient = routeHeader.forClient
         if(msgSeq >0) {
-          val reply =  RoutePacket.replyOf(this.serviceId, msgSeq, ReplyPacket(errorCode = errorCode))
+          val reply =  RoutePacket.replyOf(this.serviceId, msgSeq, sid,forClient,ReplyPacket(errorCode = errorCode, msgId = 0))
           clientCommunicator.send(from,reply)
         }
     }

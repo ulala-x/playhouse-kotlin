@@ -1,3 +1,4 @@
+import org.apache.commons.lang3.exception.ExceptionUtils
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -6,8 +7,8 @@ interface Logger {
     fun info(message: String, className: String?)
     fun warn(message: String, className: String?)
     fun error(message: String, className: String?, ex: Throwable? = null)
-    fun trace(message: String, simpleName: String?)
-    fun fatal(message: String, simpleName: String?)
+    fun trace(message: String, className: String?)
+    fun fatal(message: String, className: String?)
 }
 enum class LogLevel(val intValue: Int) {
     TRACE(0),
@@ -46,6 +47,7 @@ class ConsoleLogger : Logger {
         } else {
             println("${getTimeStamp()} ERROR: ($className) - $message")
         }
+        println(ExceptionUtils.getMessage(ex))
     }
 
     override fun fatal(message: String, className: String?) {
@@ -103,4 +105,6 @@ object LOG  {
             log.warn(message,clazz::class.simpleName)
         }
     }
+
+
 }

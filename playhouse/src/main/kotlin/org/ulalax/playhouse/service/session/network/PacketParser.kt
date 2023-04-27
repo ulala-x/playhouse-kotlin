@@ -25,10 +25,10 @@ open class PacketParser {
 
                 val bodySize = buf.getShort(buf.readerIndex())
 
-                if (bodySize > MAX_PACKET_SIZE) {
-                    LOG.error("body size over : $bodySize",this)
-                    throw IOException("BodySizeOver")
-                }
+//                if (bodySize > MAX_PACKET_SIZE) {
+//                    LOG.error("body size over : $bodySize",this)
+//                    throw IOException("BodySizeOver")
+//                }
 
                 if (buf.readableBytes() < HEADER_SIZE + bodySize) {
                     return packets

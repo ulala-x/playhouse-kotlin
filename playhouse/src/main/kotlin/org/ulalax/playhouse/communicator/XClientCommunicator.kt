@@ -15,19 +15,29 @@ class XClientCommunicator(private val playSocket: PlaySocket) : ClientCommunicat
         if(connected.contains(endpoint)) return
 
         jobBucket.add{
-            playSocket.connect(endpoint)
-            connected.add(endpoint)
-            disconnected.remove(endpoint)
+            try {
+                playSocket.connect(endpoint)
+                connected.add(endpoint)
+                disconnected.remove(endpoint)
+                LOG.info("connected with $endpoint",this)
+            }catch (e:Exception){
+                LOG.error( "connect error - endpoint:$endpoint ,error: ${e.message}",this)
+            }
         }
     }
     override fun disconnect(endpoint: String) {
         if(disconnected.contains(endpoint)) return
 
         jobBucket.add{
-            playSocket.disconnect(endpoint)
-            disconnected.add(endpoint)
-            connected.remove(endpoint)
+            try{
+                playSocket.disconnect(endpoint)
+                LOG.info("disconnected with $endpoint",this)
+            }catch (e:Exception){
+                LOG.error( "disconnect error - endpoint:$endpoint ,error: ${e.message}",this)
+            }
         }
+        disconnected.add(endpoint)
+        connected.remove(endpoint)
     }
 
     override fun stop() {

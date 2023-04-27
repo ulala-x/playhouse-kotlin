@@ -21,9 +21,9 @@ class TestApiService  : ApiService {
         delay(1)
     }
 
-    override fun handles(register: HandlerRegister, backendHandlerRegister: BackendHandlerRegister) {
+    override fun handles(register: HandlerRegister, backendRegister: BackendHandlerRegister) {
         register.add(Test.ApiTestMsg.getDescriptor().index,::test1)
-        backendHandlerRegister.add(Test.ApiBackendTestMsg.getDescriptor().index,::test2)
+        backendRegister.add(Test.ApiBackendTestMsg.getDescriptor().index,::test2)
     }
 
     override fun instance(): ApiService {
@@ -35,7 +35,7 @@ class TestApiService  : ApiService {
         @Suppress("UNUSED_PARAMETER") apiSender: ApiSender){
         val message = Test.ApiTestMsg.parseFrom(packet.data())
         ApiReflectionTest.resultMessage = message.testMsg
-        delay(1)
+      //  delay(1)
     }
 
     suspend fun test2(

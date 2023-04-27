@@ -22,14 +22,13 @@ class RedisStorageClient(redisIp:String, redisBindPort:Int) : StorageClient {
     private val redisNodeSequenceKey = "playhouse_nodeId_Seq"
 
     override fun updateServerInfo(serverInfo: XServerInfo) {
-        //asyncCommands.expire(redisKey.toByteArray(),60)
         asyncCommands.hset(redisServerInfoKey.toByteArray(),serverInfo.bindEndpoint.toByteArray(),serverInfo.toByteArray())
     }
 
     override fun getServerList(endpoint:String): List<XServerInfo> {
         return asyncCommands.hgetall(redisServerInfoKey.toByteArray()).get(1,TimeUnit.SECONDS)
             .values.map {serverInfo-> XServerInfo.of(Server.ServerInfoMsg.parseFrom(serverInfo)) }
-            .filter { it.bindEndpoint != endpoint }.toList()
+            .filter { it.bindEndpoint != endpoint }.filter { !it.timeOver() }.toList()
     }
 
     override fun getNodeId(bindEndpoint: String): Int {
@@ -49,7 +48,7 @@ class RedisStorageClient(redisIp:String, redisBindPort:Int) : StorageClient {
 
 
     fun connect() {
-        var redisClient:RedisClient = RedisClient.create()
+        val redisClient:RedisClient = RedisClient.create()
         connection = MasterReplica.connect(redisClient, ByteArrayCodec.INSTANCE, RedisURI.create(redisURI))
         asyncCommands = connection.async()
     }

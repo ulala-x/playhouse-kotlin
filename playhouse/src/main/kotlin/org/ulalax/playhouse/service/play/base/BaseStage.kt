@@ -87,7 +87,7 @@ class BaseStage(
 
     suspend fun create(stageType:String, packet: Packet): ReplyPacket {
 
-        this.stage = playService.createContentRoom(stageType,stageSender)
+        this.stage = playService.createContentStage(stageType,stageSender)
         this.stageSender.stageType = stageType
         val outcome  = this.stage.onCreate(packet)
         this.isCreated = true
@@ -100,7 +100,7 @@ class BaseStage(
 
         if (baseUser == null) {
             val userSender = XActorSender(accountId, sessionEndpoint, sid,apiEndpoint,this,serverInfoCenter)
-            val user = playService.createContentUser(this.stageSender.stageType,userSender)
+            val user = playService.createContentActor(this.stageSender.stageType,userSender)
             baseUser = BaseActor(user, userSender)
             baseUser.actor.onCreate()
             playService.addUser(baseUser)
@@ -122,6 +122,11 @@ class BaseStage(
             .setStageId(stageId).setPlayEndpoint(playService.endpoint()).build()
 
         val res = this.stageSender.requestToBaseSession(sessionEndpoint,sid,  Packet(joinStageInfoUpdateReq))
+
+        if(!res.isSuccess()){
+
+        }
+
         val result = JoinStageInfoUpdateRes.parseFrom(res.data())
         return result.stageIdx
 

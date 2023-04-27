@@ -2,6 +2,9 @@ package org.ulalax.playhouse.service.session
 
 import io.netty.channel.Channel
 import LOG
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.ulalax.playhouse.communicator.message.RoutePacket
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.communicator.message.ClientPacket
@@ -58,7 +61,7 @@ class SessionProcessor(
                     if (sessionClient == null) {
                         LOG.error("sessionId is not exist $sessionId,${clientPacket.msgId}",this)
                     }else{
-                        sessionClient.onReceive(clientPacket)
+                        sessionClient.dispatch(clientPacket)
                     }
                 }
                 message = clientQueue.poll()
@@ -69,19 +72,25 @@ class SessionProcessor(
     }
 
     private fun serverMessageLoop() {
+        val coroutineDispatcher = Dispatchers.IO
+        val scope = CoroutineScope(coroutineDispatcher)
 
         while(state.get() != ServerState.DISABLE) {
             var routePacket = serverQueue.poll()
             while(routePacket!=null){
 
                 routePacket.use {
-                    val sessionId = routePacket.routeHeader.sid
-                    val packetName = routePacket.msgId
-                    val sessionClient = clients[sessionId]
+                    val sid = routePacket.routeHeader.sid
+                    val msgId = routePacket.msgId
+                    val isBase = routePacket.isBase()
+                    val sessionClient = clients[sid]
                     if(sessionClient == null) {
-                        LOG.error("sessionId is already disconnected  $sessionId,$packetName",this)
+                        LOG.error("sessionId is already disconnected  sid:$sid,msgId:$msgId,isBase:$isBase",this)
                     }else{
-                        sessionClient.onReceive(routePacket)
+                        val receivePacket = RoutePacket.moveOf(routePacket)
+                        scope.launch {
+                            sessionClient.receive(receivePacket)
+                        }
                     }
                 }
 

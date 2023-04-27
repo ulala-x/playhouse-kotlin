@@ -24,9 +24,9 @@ data class ReplyObject (
         future?.complete(packet.toReplyPacket())
     }
     fun throws(errorCode: Short){
-        callback?.onReceive(ReplyPacket(errorCode))
-        deferred?.complete(ReplyPacket(errorCode))
-        future?.complete(ReplyPacket(errorCode))
+        callback?.onReceive(ReplyPacket(errorCode,0))
+        deferred?.complete(ReplyPacket(errorCode,0))
+        future?.complete(ReplyPacket(errorCode,0))
     }
 }
 
@@ -60,12 +60,14 @@ open class RequestCache(timeout:Long) {
         val msgSeq = packet.header.msgSeq
         val msgId = packet.header.msgId
 
-        cache.getIfPresent(msgSeq)?.run {
-            this.onReceive(packet)
+        val replyObject = cache.getIfPresent(msgSeq)
+        if(replyObject != null){
+            replyObject.onReceive(packet)
             cache.invalidate(msgSeq)
-        } ?: {
+        }else{
             LOG.error("$msgSeq, $msgId request is not exist",this)
         }
+
     }catch (e:Exception){
         LOG.error(ExceptionUtils.getStackTrace(e),this,e)
     }

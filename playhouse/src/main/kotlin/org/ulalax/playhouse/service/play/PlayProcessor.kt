@@ -30,8 +30,8 @@ class PlayProcessor(
 
 ) : Processor {
     private var state = AtomicReference(ServerState.DISABLE)
-    private val baseUsers:MutableMap<Long, BaseActor> = ConcurrentHashMap()
-    private val baseRooms:MutableMap<Long, BaseStage> = ConcurrentHashMap()
+    private val baseActors:MutableMap<Long, BaseActor> = ConcurrentHashMap()
+    private val baseStages:MutableMap<Long, BaseStage> = ConcurrentHashMap()
     private lateinit var threadForCoroutine:Thread
     private val msgQueue = ConcurrentLinkedQueue<RoutePacket>()
     private val timerManager = TimerManager(this)
@@ -44,10 +44,10 @@ class PlayProcessor(
         threadForCoroutine.start()
     }
     fun removeRoom(stageId:Long){
-        this.baseRooms.remove(stageId)
+        this.baseStages.remove(stageId)
     }
     fun removeUser(accountId:Long){
-        this.baseUsers.remove(accountId)
+        this.baseActors.remove(accountId)
     }
 
     fun errorReply(routeHeader: RouteHeader, errorCode:Short){
@@ -65,6 +65,7 @@ class PlayProcessor(
                     val msgId = routePacket.msgId
                     val isBase = routePacket.isBase()
                     val stageId = routePacket.routeHeader.stageId
+                    val accountId = routePacket.accountId
                     val roomPacket = RoutePacket.moveOf(routePacket)
 
                     if(isBase){
@@ -73,8 +74,8 @@ class PlayProcessor(
                         }
                     }else{
                         scope.launch{
-                            baseRooms[stageId]?.run { this.send(roomPacket) }
-                                ?: LOG.error("stageId:$stageId is not exist, msgName:$msgId",this)
+                            baseStages[stageId]?.run { this.send(roomPacket) }
+                                ?: LOG.error("stageId:$stageId is not exist,accountId:${accountId}, msgId:$msgId",this)
                         }
                     }
                 }
@@ -91,8 +92,7 @@ class PlayProcessor(
     ) {
         when (msgId) {
             CreateStageReq.getDescriptor().index -> {
-                val stageId = routePacket.stageId
-                if(baseRooms.contains(stageId)){
+                if(baseStages.contains(stageId)){
                     errorReply(routePacket.routeHeader,BaseErrorCode.ALREADY_EXIST_STAGE_VALUE.toShort())
                 }else{
                     makeBaseStage(stageId).send(routePacket)
@@ -100,7 +100,7 @@ class PlayProcessor(
             }
 
             CreateJoinStageReq.getDescriptor().index -> {
-                baseRooms[stageId]?.send(routePacket)
+                baseStages[stageId]?.send(routePacket)
                     ?: makeBaseStage(stageId).send(routePacket)
             }
 
@@ -111,12 +111,12 @@ class PlayProcessor(
             }
 
             DestroyStage.getDescriptor().index -> {
-                baseRooms.remove(stageId)
+                baseStages.remove(stageId)
             }
 
             else -> {
-                var room = baseRooms[stageId]
-                if (room == null) {
+                val baseStage = baseStages[stageId]
+                if (baseStage == null) {
                     LOG.error(" room is not exist :$stageId,$msgId",this)
                     errorReply(routePacket.routeHeader, BaseErrorCode.STAGE_IS_NOT_EXIST_VALUE.toShort())
                     return
@@ -128,7 +128,7 @@ class PlayProcessor(
                     DisconnectNoticeMsg.getDescriptor().index,
                     AsyncBlock.getDescriptor().index,
                     -> {
-                        room.send(routePacket)
+                        baseStage.send(routePacket)
                     }
 
                     else -> {
@@ -141,7 +141,7 @@ class PlayProcessor(
     }
 
     private fun timerProcess(stageId: Long, timerId:Long,timerMsg: TimerMsg,timerCallback: TimerCallback) {
-        baseRooms[stageId]?.run {
+        baseStages[stageId]?.run {
             when(val type = timerMsg.type){
                 TimerMsg.Type.REPEAT ->{
                     timerManager.registerRepeatTimer(
@@ -178,7 +178,7 @@ class PlayProcessor(
 
     private fun makeBaseStage(stageId: Long): BaseStage {
         val baseStage = BaseStage(stageId,this,clientCommunicator,requestCache,serverInfoCenter)
-        baseRooms[stageId] = baseStage
+        baseStages[stageId] = baseStage
         return baseStage
     }
 
@@ -188,7 +188,7 @@ class PlayProcessor(
     }
 
     override fun getWeightPoint(): Int {
-        return baseUsers.size
+        return baseActors.size
     }
 
     override fun getServerState(): ServerState {
@@ -208,15 +208,15 @@ class PlayProcessor(
     }
 
     fun findUser(accountId: Long): BaseActor? {
-        return baseUsers[accountId]
+        return baseActors[accountId]
     }
 
     fun addUser(baseActor: BaseActor) {
-        baseUsers[baseActor.actorSender.accountId] = baseActor
+        baseActors[baseActor.actorSender.accountId] = baseActor
     }
 
     fun findRoom(stageId: Long): BaseStage? {
-        return baseRooms[stageId]
+        return baseStages[stageId]
     }
 
     fun endpoint(): String {
@@ -224,15 +224,15 @@ class PlayProcessor(
     }
 
     fun cancelTimer(stageId: Long, timerId: Long) {
-        baseRooms[stageId]?.cancelTimer(timerId)
+        baseStages[stageId]?.cancelTimer(timerId)
     }
 
-    fun createContentRoom(stageType:String, roomSender: XStageSender): Stage<Actor> {
-        return  playOption.elementConfigurator.stages[stageType]!!.invoke(roomSender)
+    fun createContentStage(stageType:String, stageSender: XStageSender): Stage<Actor> {
+        return  playOption.elementConfigurator.stages[stageType]!!.invoke(stageSender)
     }
 
-    fun createContentUser(stageType: String, userSender: XActorSender): Actor {
-        return playOption.elementConfigurator.actors[stageType]!!.invoke(userSender)
+    fun createContentActor(stageType: String, actorSender: XActorSender): Actor {
+        return playOption.elementConfigurator.actors[stageType]!!.invoke(actorSender)
     }
 
     fun isValidType(stageType: String): Boolean {

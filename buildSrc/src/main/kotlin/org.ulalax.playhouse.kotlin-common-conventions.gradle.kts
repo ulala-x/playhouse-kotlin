@@ -32,6 +32,14 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+sourceSets.main {
+    java.srcDirs("src/main/Java", "src/main/Kotlin")
+}
+
+
+java {
+    withSourcesJar()
+}
 
 
 

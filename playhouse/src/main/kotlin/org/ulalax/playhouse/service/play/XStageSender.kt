@@ -1,5 +1,6 @@
 package org.ulalax.playhouse.service.play
 
+import kotlinx.coroutines.CompletableDeferred
 import org.ulalax.playhouse.communicator.ClientCommunicator
 import org.ulalax.playhouse.communicator.message.AsyncBlockPacket
 import org.ulalax.playhouse.communicator.message.RoutePacket
@@ -7,8 +8,10 @@ import org.ulalax.playhouse.service.TimerCallback
 import org.ulalax.playhouse.service.TimerIdMaker
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import org.ulalax.playhouse.communicator.ReplyObject
 import org.ulalax.playhouse.communicator.RequestCache
 import org.ulalax.playhouse.communicator.message.Packet
+import org.ulalax.playhouse.communicator.message.ReplyPacket
 import org.ulalax.playhouse.protocol.Server.*
 import org.ulalax.playhouse.service.*
 import java.time.Duration
@@ -18,7 +21,7 @@ open class XStageSender(
     override val stageId:Long,
     override var stageType: String,
     private val playProcessor: PlayProcessor,
-    private val clientCommunicator: ClientCommunicator,
+    clientCommunicator: ClientCommunicator,
     reqCache: RequestCache,
 ) : XSender(serviceId, clientCommunicator,reqCache), StageSender {
 
@@ -90,6 +93,8 @@ open class XStageSender(
     fun hasTimer(timerId: Long): Boolean {
         return timerIds.contains(timerId)
     }
+
+
 
 
 }

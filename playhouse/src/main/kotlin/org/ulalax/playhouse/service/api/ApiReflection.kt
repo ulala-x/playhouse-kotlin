@@ -29,6 +29,7 @@ class ApiReflection(packageName: String) {
     private val methods:MutableMap<Int, ApiMethod> = HashMap()
     private val backendMethods:MutableMap<Int, ApiMethod> = HashMap()
     private val messageIndexChecker:MutableMap<Int,String> =  mutableMapOf()
+    private val backendMessageIndexChecker:MutableMap<Int,String> =  mutableMapOf()
 
     init {
         val reflections = Reflections(packageName, Scanners.SubTypes,Scanners.MethodsSignature)
@@ -47,6 +48,9 @@ class ApiReflection(packageName: String) {
                 )
 
                 val apiInstance:ApiInstance = instances[targetMethod.className]!!
+
+
+
                 targetMethod.method.kotlinFunction!!.callSuspend(apiInstance.instance,systemPanel,sender)
                 //targetMethod.method.invoke(apiInstance.instance,systemPanel,sender)
 
@@ -63,12 +67,23 @@ class ApiReflection(packageName: String) {
         //val packet = Packet(msgName,routePacket.movePayload())
         //val isBackend = routePacket.isBackend()
 
-        val targetMethod = if(isBackend) {
-            if(!backendMethods.containsKey(msgId)) throw ApiException.NotRegisterApiMethod("msgId:${packet.msgId} is not registered")
-            backendMethods[msgId]!!
+        val targetMethod:ApiMethod
+
+        if(isBackend) {
+            if(!backendMethods.containsKey(msgId)){
+                LOG.error("msgId:${packet.msgId} is not registered, backend from:${routeHeader.from}",this)
+                apiSender.errorReply(routeHeader, BaseErrorCode.UNREGISTER_PACKET_VALUE.toShort())
+                return@use
+            }
+            targetMethod =  backendMethods[msgId]!!
         } else{
-            if(!methods.containsKey(msgId)) throw ApiException.NotRegisterApiMethod("msgId:${packet.msgId} is not registered")
-            methods[msgId]!!
+            if(!methods.containsKey(msgId)) {
+                LOG.error("msgId:${packet.msgId} is not registered, from:${routeHeader.from}",this)
+                apiSender.errorReply(routeHeader, BaseErrorCode.UNREGISTER_PACKET_VALUE.toShort())
+                return@use
+                //throw ApiException.NotRegisterApiMethod("msgId:${packet.msgId} is not registered, from:${routeHeader.from}")
+            }
+            targetMethod =  methods[msgId]!!
         }
 
         if(!instances.containsKey(targetMethod.className)) throw ApiException.NotRegisterApiInstance(targetMethod.className)
@@ -99,30 +114,11 @@ class ApiReflection(packageName: String) {
 
     private fun registerInitMethod(reflections: Reflections){
 
-        //[org.ulalax.playhouse.communicator.message.Packet, org.ulalax.playhouse.service.ApiSender, kotlin.coroutines.Continuation] -> {HashSet@5043}  size = 4
-
-//        reflections.getMethodsWithSignature().forEach { method->
-//
-//            if(method.name == "init"
-//                && method.kotlinFunction!!.isSuspend
-//                && method.returnType == Unit.javaClass
-//                && method.parameters.contentEquals(arrayOf(SystemPanel::class.java,Sender::class.java))){
-//                initMethods.add(ApiMethod(0, method.declaringClass.name, method))
-//            }
-//
-//
-//        }
-
         reflections.getMethodsWithSignature(SystemPanel::class.java,Sender::class.java,Continuation::class.java)
                 .filter { el->el.name == "init" && !el.declaringClass.isInterface}
                 .forEach{ method ->
             initMethods.add(ApiMethod(0, method.declaringClass.name, method))
         }
-//        reflections.getMethodsWithSignature(SystemPanel::class.java,Sender::class.java)
-//                .filter { el->el.name == "init" && !el.declaringClass.isInterface }
-//                .forEach{ method ->
-//                    initMethods.add(ApiMethod(0, method.declaringClass.name, method))
-//                }
 
     }
     private fun registerHandlerMethod(reflections: Reflections){
@@ -144,11 +140,11 @@ class ApiReflection(packageName: String) {
                 }
 
                 backendHandlerRegister.handlers.forEach { el ->
-                    if (messageIndexChecker.contains(el.key)) {
+                    if (backendMessageIndexChecker.contains(el.key)) {
                         throw ApiException.DuplicatedMessageIndex("registered msgId is duplicated - msgId:${el.key}, methods: ${messageIndexChecker[el.key]}, ${el.value.name}")
                     }
                     this.backendMethods[el.key] = ApiMethod(el.key, className, el.value.javaMethod!!)
-                    messageIndexChecker[el.key] = el.value.name
+                    backendMessageIndexChecker[el.key] = el.value.name
                 }
             }
         }

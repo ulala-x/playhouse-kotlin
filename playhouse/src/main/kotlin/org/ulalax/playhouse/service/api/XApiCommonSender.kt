@@ -29,50 +29,5 @@ abstract class XApiCommonSender(
         return CreateStageResult(reply.errorCode, Packet(res.payloadId,res.payload))
     }
 
-    override suspend fun joinStage(playEndpoint: String, stageId: Long,
-                                   accountId: Long, sessionEndpoint: String, sid:Int,
-                                   packet: Packet
-    ): JoinStageResult {
-        val req = Server.JoinStageReq.newBuilder()
-                .setSessionEndpoint(sessionEndpoint)
-                .setSid(sid)
-                .setPayloadId(packet.msgId)
-                .setPayload(ByteString.copyFrom(packet.data())).build()
 
-        val reply  = requestToBaseStage(playEndpoint,stageId,accountId, Packet(req))
-        val res = Server.JoinStageRes.parseFrom(reply.data())
-
-        return JoinStageResult(reply.errorCode,res.stageIdx, Packet(res.payloadId,res.payload))
-
-    }
-
-    override suspend fun createJoinStage(
-            playEndpoint: String, stageType: String, stageId: Long,
-            createPacket: Packet,
-            accountId: Long, sessionEndpoint: String, sid:Int,
-            joinPacket: Packet,
-    ): CreateJoinStageResult {
-        val req = Server.CreateJoinStageReq.newBuilder()
-                .setStageType(stageType)
-                .setCreatePayloadId(createPacket.msgId)
-                .setCreatePayload(ByteString.copyFrom(createPacket.data()))
-                .setSessionEndpoint(sessionEndpoint)
-                .setSid(sid)
-                .setJoinPayloadId(joinPacket.msgId)
-                .setJoinPayload(ByteString.copyFrom(joinPacket.data())).build()
-
-        val reply = requestToBaseStage(playEndpoint,stageId,accountId, Packet(req))
-
-        val res = Server.CreateJoinStageRes.parseFrom(reply.data())
-
-
-        return CreateJoinStageResult(
-                reply.errorCode,
-                res.isCreated,
-                res.stageIdx,
-                Packet(res.createPayloadId, res.createPayload),
-                Packet(res.joinPayloadId, res.joinPayload)
-        )
-
-    }
 }

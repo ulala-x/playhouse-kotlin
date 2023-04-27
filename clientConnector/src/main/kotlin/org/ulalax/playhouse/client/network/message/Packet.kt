@@ -14,7 +14,7 @@ interface BasePacket : AutoCloseable {
 }
 
 
-data class Packet @JvmOverloads  constructor(val msgId:Int=-1, var payload: Payload = EmptyPayload()) :BasePacket {
+data class Packet @JvmOverloads  constructor(val msgId:Int, var payload: Payload = EmptyPayload()) :BasePacket {
     constructor(message: GeneratedMessageV3) : this(message.descriptorForType.index, ProtoPayload(message))
     constructor(msgId: Int, message:ByteString):this(msgId, ByteStringPayload(message))
 
@@ -31,7 +31,7 @@ data class Packet @JvmOverloads  constructor(val msgId:Int=-1, var payload: Payl
         this.payload.close()
     }
 }
-data class ReplyPacket @JvmOverloads constructor(val errorCode: Short, val msgId:Int=-1, private var payload: Payload = EmptyPayload()): BasePacket {
+data class ReplyPacket @JvmOverloads constructor(val errorCode: Short, val msgId:Int = 0, private var payload: Payload = EmptyPayload()): BasePacket {
     constructor(message: GeneratedMessageV3)
             : this(0,message.descriptorForType.index, ProtoPayload(message))
     constructor(errorCode: Short,message: GeneratedMessageV3)

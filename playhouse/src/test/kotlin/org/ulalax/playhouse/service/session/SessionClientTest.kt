@@ -50,7 +50,7 @@ internal class SessionClientTest : FunSpec() {
         test("without authenticate send packet ,socket should be disconnected" ){
             val sessionClient = SessionClient(serviceId,sid,channel,serviceCenter,clientCommunicator,urls,reqCache)
             val clientPacket = ClientPacket.toServerOf(api, Packet(testMsgId))
-            sessionClient.onReceive(clientPacket)
+            sessionClient.dispatch(clientPacket)
             verify(exactly = 1){channel.disconnect()}
         }
 
@@ -60,7 +60,7 @@ internal class SessionClientTest : FunSpec() {
             urls.add("$api:$testMsgId")
 
             val sessionClient = SessionClient(serviceId,sid,channel,serviceCenter,clientCommunicator,urls,reqCache)
-            sessionClient.onReceive(ClientPacket.toServerOf(api, Packet(testMsgId)))
+            sessionClient.dispatch(ClientPacket.toServerOf(api, Packet(testMsgId)))
 
             verify (exactly = 1) {clientCommunicator.send(any(),any())}
         }
@@ -79,7 +79,7 @@ internal class SessionClientTest : FunSpec() {
             val sessionClient = SessionClient(serviceId,sid,channel,serviceCenter,clientCommunicator,urls,reqCache)
 
             //when
-            sessionClient.onReceive(RoutePacket.sessionOf(sid, Packet(message), isBase = true, isBackend = true))
+            sessionClient.dispatch(RoutePacket.sessionOf(sid, Packet(message), isBase = true, isBackend = true))
 
             //then
             sessionClient.isAuthenticated.shouldBeTrue()

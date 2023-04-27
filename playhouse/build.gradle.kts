@@ -37,29 +37,16 @@ protobuf {
 
 dependencies {
     api(project(":common"))
-//    implementation("org.zeromq:zmqj:4.3.4.1")
-//    api(project(":zmq"))
-//    implementation("org.zeromq:jmq:1.0")
     implementation(Depend.lettuce)
     implementation(Depend.commonsValidator)
     implementation("org.reflections:reflections:0.10.2")
     implementation("io.netty:netty-all:4.1.90.Final")
-    implementation("org.springframework:spring-context:6.0.6")
-    // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-reflect
+    implementation(kotlin("reflect"))
     runtimeOnly("org.jetbrains.kotlin:kotlin-reflect:1.7.20")
 
-    // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-
-//    testImplementation("it.ozimov:embedded-redis:0.7.3")
     testApi(project(":clientConnector"))
-    implementation(kotlin("reflect"))
-    // https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter
-    // https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter
+    testImplementation("org.springframework:spring-context:6.0.6")
     testImplementation("org.testcontainers:junit-jupiter:1.17.6")
-    // https://mvnrepository.com/artifact/io.kotest/kotest-assertions-core-jvm
-    // https://mvnrepository.com/artifact/io.kotest/kotest-runner-junit5
-
-    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     testImplementation("org.slf4j:slf4j-simple:2.0.6")
 }
 

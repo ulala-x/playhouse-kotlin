@@ -23,9 +23,9 @@ data class ReplyObject (
         future?.complete(packet.toReplyPacket())
     }
     fun throws(errorCode: Short){
-        callback?.onReceive(ReplyPacket(errorCode))
-        deferred?.complete(ReplyPacket(errorCode))
-        future?.complete(ReplyPacket(errorCode))
+        callback?.onReceive(ReplyPacket(errorCode,0))
+        deferred?.complete(ReplyPacket(errorCode,0))
+        future?.complete(ReplyPacket(errorCode,0))
     }
 }
 

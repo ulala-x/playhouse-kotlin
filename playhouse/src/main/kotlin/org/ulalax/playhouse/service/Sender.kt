@@ -48,24 +48,24 @@ interface ApiCommonSender : Sender {
 
     val  accountId:Long
     suspend fun createStage(playEndpoint:String, stageType:String, stageId:Long, packet: Packet): CreateStageResult
-    suspend fun joinStage(playEndpoint:String,
-                          stageId:Long,
-                          accountId: Long,
-                          sessionEndpoint: String,
-                          sid:Int,
-                          packet: Packet
-    ): JoinStageResult
-    suspend fun createJoinStage(playEndpoint:String, stageType:String, stageId:Long,
-                                createPacket: Packet,
-                                accountId: Long, sessionEndpoint: String, sid:Int,
-                                joinPacket: Packet,
-    ): CreateJoinStageResult
+
 }
 interface ApiSender : ApiCommonSender {
 
     fun authenticate(accountId:Long)
     val  sessionEndpoint:String
     val  sid:Int
+
+    suspend fun joinStage(playEndpoint:String,
+                          stageId:Long,
+                          packet: Packet
+    ): JoinStageResult
+    suspend fun createJoinStage(playEndpoint:String,
+                                stageType:String,
+                                stageId:Long,
+                                createPacket: Packet,
+                                joinPacket: Packet,
+    ): CreateJoinStageResult
 
 
     fun sendToClient(packet: Packet){
@@ -75,6 +75,10 @@ interface ApiSender : ApiCommonSender {
         sessionClose(sessionEndpoint,sid)
     }
 
+}
+
+interface ApiBackendSender : ApiCommonSender {
+    fun getFromEndpoint():String
 }
 
 typealias AsyncPreCallback<T> = suspend ()->T
@@ -96,7 +100,5 @@ interface StageSender : Sender {
 
 }
 
-interface ApiBackendSender : ApiCommonSender {
-    fun getFromEndpoint():String
-}
+
 interface SessionSender : Sender {}
