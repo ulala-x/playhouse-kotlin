@@ -87,8 +87,10 @@ open class XSender(override val serviceId: Short,
         }
         clientCommunicator.send(apiEndpoint, routePacket)
     }
-    fun sendToBaseApi(apiEndpoint:String,packet: Packet){
-        val routePacket = RoutePacket.apiOf(packet, isBase = true, isBackend = true)
+    fun sendToBaseApi(apiEndpoint:String,accountId:Long,packet: Packet){
+        val routePacket = RoutePacket.apiOf(packet, isBase = true, isBackend = true).apply {
+            this.routeHeader.accountId = accountId
+        }
         clientCommunicator.send(apiEndpoint, routePacket)
     }
 

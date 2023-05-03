@@ -117,8 +117,10 @@ class PlayProcessor(
             else -> {
                 val baseStage = baseStages[stageId]
                 if (baseStage == null) {
-                    LOG.error(" room is not exist :$stageId,$msgId",this)
-                    errorReply(routePacket.routeHeader, BaseErrorCode.STAGE_IS_NOT_EXIST_VALUE.toShort())
+                    if(msgId != StageTimer.getDescriptor().index){
+                        LOG.error(" room is not exist :$stageId,$msgId",this)
+                        errorReply(routePacket.routeHeader, BaseErrorCode.STAGE_IS_NOT_EXIST_VALUE.toShort())
+                    }
                     return
                 }
 

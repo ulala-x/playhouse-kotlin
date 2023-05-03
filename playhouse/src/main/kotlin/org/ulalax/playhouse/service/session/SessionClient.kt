@@ -2,7 +2,6 @@ package org.ulalax.playhouse.service.session
 
 import io.netty.channel.Channel
 import LOG
-import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.ulalax.playhouse.communicator.*
 import org.ulalax.playhouse.communicator.message.RoutePacket
@@ -65,8 +64,8 @@ class SessionClient(
     fun disconnect() {
         if(isAuthenticated){
             val serverInfo = findSuitableServer(authenticateServiceId,authServerEndpoint)
-            val disconnectPacket = Packet(DisconnectNoticeMsg.newBuilder().setAccountId(accountId).build())
-            sessionSender.sendToBaseApi(serverInfo.bindEndpoint(),disconnectPacket)
+            val disconnectPacket = Packet(DisconnectNoticeMsg.newBuilder().build())
+            sessionSender.sendToBaseApi(serverInfo.bindEndpoint(),accountId,disconnectPacket)
             playEndpoints.forEach{ (_, targetId) ->
                 val targetServer = serviceInfoCenter.findServer(targetId.endpoint)
                 sessionSender.sendToBaseStage(targetServer.bindEndpoint,targetId.stageId,accountId,disconnectPacket)
@@ -135,7 +134,7 @@ class SessionClient(
         }
     }
 
-    suspend fun receive(routePacket: RoutePacket) = coroutineScope {
+    fun send(routePacket: RoutePacket)  {
         msgQueue.add(routePacket)
         if(isUsing.compareAndSet(false,true)){
             while(isUsing.get()){

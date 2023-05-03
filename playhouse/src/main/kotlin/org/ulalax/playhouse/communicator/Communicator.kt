@@ -51,11 +51,11 @@ class Communicator(private val option: CommunicatorOption,
 
         systemPanel.communicator = this
 
+        communicateServer.bind(this)
+
         messageLoop.start()
         addressResolver.start()
         baseSystem.start()
-
-        communicateServer.bind(this)
 
         processor.onStart()
         performanceTester.start()

@@ -26,8 +26,9 @@ class Header constructor(var serviceId: Short=0, var msgId:Int=0, var msgSeq:Sho
             .setServiceId(this.serviceId.toInt())
             .setMsgId(this.msgId)
             .setMsgSeq(this.msgSeq.toInt())
+            .setErrorCode(this.errorCode.toInt())
             .setStageIndex(this.stageIndex.toInt())
-            .setErrorCode(this.errorCode.toInt()).build()
+            .build()
     }
 
     override fun toString(): String {

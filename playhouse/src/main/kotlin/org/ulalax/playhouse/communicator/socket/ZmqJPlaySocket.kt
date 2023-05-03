@@ -46,6 +46,8 @@ class ZmqJPlaySocket  (
     }
     override fun send(target: String, routePacket: RoutePacket){
 
+        LOG.trace("sendTo:$target, packetInfo:${routePacket.routeHeader}",this)
+
         var message = ZMessage()
         val payload = routePacket.getPayload()
 
@@ -62,9 +64,6 @@ class ZmqJPlaySocket  (
         }
 
         message.use{
-
-            LOG.trace("sendTo:$target, packetInfo:${routePacket.routeHeader}",this)
-
             message.add(ZFrame(target.toByteArray()))
             message.add(ZFrame(routePacket.routeHeader.toByteArray()))
             message.add(frame)

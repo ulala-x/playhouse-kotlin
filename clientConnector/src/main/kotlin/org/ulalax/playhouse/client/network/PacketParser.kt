@@ -11,7 +11,7 @@ import java.io.IOException
 open class PacketParser {
     companion object {
         const val MAX_PACKET_SIZE = 65535
-        const val HEADER_SIZE = 11
+        const val HEADER_SIZE = 13
     }
 
     open fun parse(buf:ByteBuf): ArrayDeque<ClientPacket> {

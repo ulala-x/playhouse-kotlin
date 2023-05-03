@@ -72,9 +72,6 @@ class SessionProcessor(
     }
 
     private fun serverMessageLoop() {
-        val coroutineDispatcher = Dispatchers.IO
-        val scope = CoroutineScope(coroutineDispatcher)
-
         while(state.get() != ServerState.DISABLE) {
             var routePacket = serverQueue.poll()
             while(routePacket!=null){
@@ -88,9 +85,7 @@ class SessionProcessor(
                         LOG.error("sessionId is already disconnected  sid:$sid,msgId:$msgId,isBase:$isBase",this)
                     }else{
                         val receivePacket = RoutePacket.moveOf(routePacket)
-                        scope.launch {
-                            sessionClient.receive(receivePacket)
-                        }
+                        sessionClient.send(receivePacket)
                     }
                 }
 

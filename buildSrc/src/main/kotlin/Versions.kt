@@ -16,6 +16,6 @@ object Versions {
     val lettuce = "6.2.0.RELEASE"
 
     val groupId = "org.ulalax.playhouse"
-    val version = "1.0"
+    val version = "0.1"
 
 }
